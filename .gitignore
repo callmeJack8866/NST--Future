@@ -1,0 +1,74 @@
+# --------------------------------------------------
+# Node
+# --------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+*.tmp
+
+# --------------------------------------------------
+# Environment variables
+# --------------------------------------------------
+.env
+.env*.local
+
+# --------------------------------------------------
+# Next.js
+# --------------------------------------------------
+.next/
+out/
+.next/cache/
+.next/static/
+.vercel/
+
+# Build output
+dist/
+build/
+
+# --------------------------------------------------
+# NestJS
+# --------------------------------------------------
+# Build artifacts (TS → JS output)
+dist/
+*.tsbuildinfo
+
+# --------------------------------------------------
+# OS / Editors / IDE
+# --------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IntelliJ / WebStorm
+.idea/
+*.iml
+
+# --------------------------------------------------
+# TypeScript
+# --------------------------------------------------
+*.tsbuildinfo
+
+# --------------------------------------------------
+# Testing
+# --------------------------------------------------
+coverage/
+jest-cache/
+jest-output/
+
+# --------------------------------------------------
+# Misc
+# --------------------------------------------------
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+

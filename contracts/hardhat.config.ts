@@ -29,10 +29,10 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey: {
-      bsc: process.env.BSCSCAN_API_KEY || "",
-      bscTestnet: process.env.BSCSCAN_API_KEY || "",
-    },
+    apiKey: process.env.BSCSCAN_API_KEY || "",
+  },
+  sourcify: {
+    enabled: false,
   },
 };
 

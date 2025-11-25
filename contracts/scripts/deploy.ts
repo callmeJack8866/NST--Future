@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 async function main() {
-  console.log("🚀 Deploying NST Finance v1.1 (with Points & Airdrop System)...\n");
+  console.log("🚀 Deploying NST Finance (with Team Node Reservations)...\n");
 
   const [deployer] = await ethers.getSigners();
   console.log("Deploying contracts with account:", deployer.address);
@@ -15,14 +15,14 @@ async function main() {
   const treasuryAddress = process.env.TREASURY_ADDRESS || deployer.address;
   console.log("Treasury address:", treasuryAddress);
 
-  // Deploy NSTFinance v1.1
-  console.log("\n📝 Deploying NSTFinance v1.1 contract...");
+  // Deploy NSTFinance
+  console.log("\n📝 Deploying NSTFinance contract...");
   const NSTFinance = await ethers.getContractFactory("NSTFinance");
   const nstFinance = await NSTFinance.deploy(treasuryAddress);
   await nstFinance.waitForDeployment();
 
   const nstFinanceAddress = await nstFinance.getAddress();
-  console.log("✅ NSTFinance v1.1 deployed to:", nstFinanceAddress);
+  console.log("✅ NSTFinance deployed to:", nstFinanceAddress);
 
   // Verify contract constants
   console.log("\n📊 Contract Configuration:");
@@ -30,6 +30,9 @@ async function main() {
   console.log("  Node Price:", ethers.formatEther(await nstFinance.NODE_PRICE()), "USD");
   console.log("  Max Nodes Per User:", (await nstFinance.MAX_NODES_PER_USER()).toString());
   console.log("  Max Total Nodes:", (await nstFinance.MAX_TOTAL_NODES()).toString());
+  console.log("  Max Public Nodes:", (await nstFinance.MAX_PUBLIC_NODES()).toString());
+  console.log("  Team Reserved Nodes:", (await nstFinance.TEAM_RESERVED_NODES()).toString());
+  console.log("  Team Lock Duration:", Number(await nstFinance.TEAM_LOCK_DURATION()) / 86400, "days");
   console.log("  Node Holder Points Multiplier:", (await nstFinance.NODE_HOLDER_MULTIPLIER()).toString() + "x");
 
   // Add supported tokens
@@ -113,6 +116,14 @@ async function main() {
   console.log("  Nodes Remaining:", stats[3].toString());
   console.log("  Total Points Distributed:", ethers.formatEther(stats[4]));
 
+  // Get node distribution stats
+  const nodeStats = await nstFinance.getNodeStats();
+  console.log("\n📊 Node Distribution:");
+  console.log("  Public Nodes Issued:", nodeStats[0].toString(), "/ 100");
+  console.log("  Team Nodes Issued:", nodeStats[1].toString(), "/ 20");
+  console.log("  Public Remaining:", nodeStats[2].toString());
+  console.log("  Team Remaining:", nodeStats[3].toString());
+
   // Load ABIs
   const nstFinanceArtifact = await ethers.getContractAt("NSTFinance", nstFinanceAddress);
   const nstFinanceABI = JSON.parse(
@@ -128,7 +139,7 @@ async function main() {
 
   // Create deployment object
   const deploymentData = {
-    version: "1.1.0",
+    version: "1.2.0",
     network: {
       name: network.name,
       chainId: Number(network.chainId),
@@ -158,7 +169,10 @@ async function main() {
       minimumDonation: "100", // USD
       nodePrice: "2000", // USD
       maxNodesPerUser: 5,
-      maxTotalNodes: 100,
+      maxTotalNodes: 120, // Updated from 100
+      maxPublicNodes: 100, // NEW
+      teamReservedNodes: 20, // NEW
+      teamLockDuration: "730 days", // NEW: 2 years
       pointsPerUSD: 1,
       nodeHolderMultiplier: 2,
       nodeReferralReward: "500", // NST
@@ -197,7 +211,7 @@ async function main() {
 
   // Summary
   console.log("\n" + "=".repeat(70));
-  console.log("🎉 NST Finance v1.1 Deployment Complete!");
+  console.log("🎉 NST Finance Deployment Complete!");
   console.log("=".repeat(70));
   console.log("📍 Contract Address:", nstFinanceAddress);
   console.log("💼 Treasury:", treasuryAddress);
@@ -216,7 +230,8 @@ async function main() {
     console.log("3. 💰 Transfer NST tokens to contract");
     console.log("4. ✅ Call setClaimEnabled(true)");
     console.log("5. 📸 Setup monthly snapshot automation (10th & 20th)");
-    console.log("6. 🔍 Verify contract on BSCScan");
+    console.log("6. 👥 Allocate team nodes (if needed)");
+    console.log("7. 🔍 Verify contract on BSCScan");
     console.log("=".repeat(70));
   } else {
     console.log("\n✅ Local environment ready for testing!");

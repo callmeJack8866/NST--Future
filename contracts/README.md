@@ -86,7 +86,10 @@ contracts/
 | Min Donation | 100 USD |
 | Node Price | 2000 USD |
 | Max Nodes/User | 5 |
-| Total Nodes | 100 |
+| Total Nodes | 120 |
+| Public Nodes | 100 |
+| Team Reserved | 20 |
+| Team Lock | 2 years |
 | Points/USD | 1 point |
 | Node Holder Bonus | 2x points |
 
@@ -137,6 +140,28 @@ After deploying to testnet/mainnet:
 3. Transfer NST to contract for rewards
 4. Enable claims: `setClaimEnabled(true)`
 5. Setup monthly snapshots (10th & 20th)
+6. Allocate team nodes (if needed)
+
+## Team Node System 
+
+NST Finance reserves 20 nodes for the team:
+
+- **Total Nodes**: 120 (100 public + 20 team)
+- **Team Allocation**: Owner-controlled via `allocateTeamNodes()`
+- **Lock Period**: 2 years from deployment
+- **Benefits**: Team nodes earn all rewards (points, NST, referrals)
+- **Restriction**: Cannot be transferred (locked in contract)
+- **Transparency**: All allocations visible on-chain
+
+### Allocate Team Nodes
+
+```bash
+# Set team addresses in .env
+TEAM_ADDRESSES=0xAddress1:5,0xAddress2:10,0xAddress3:5
+
+# Run configuration
+npm run configure:testnet
+```
 
 ## Security
 

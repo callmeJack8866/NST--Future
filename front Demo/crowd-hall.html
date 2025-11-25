@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>NST – 买方众筹大厅</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top, rgba(56,189,248,0.18), transparent 55%),
+        radial-gradient(circle at bottom, rgba(129,140,248,0.18), transparent 55%),
+        #020617;
+      color: #e2e8f0;
+    }
+
+    /* ========= 顶部导航相关样式（导航最终版） ========= */
+
+    /* 主按钮：桌面 & 手机共用 */
+    .main-pill {
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(37,99,235,0.9);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.28), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .main-pill:hover {
+      background: linear-gradient(to right, #22c55e, #0ea5e9, #6366f1);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9), 0 10px 25px rgba(15,23,42,0.85);
+    }
+
+    /* 顶部三颗按钮专用：严格按文字宽度，不拉伸 */
+    .top-pill {
+      flex: 0 0 auto;
+    }
+
+    /* 子菜单容器：透明，只保留内部胶囊 */
+    .submenu-panel {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* 子按钮：胶囊 + 渐变边框，宽度随文字 */
+    .submenu-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #22d3ee, #6366f1);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .submenu-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #38bdf8, #a855f7);
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9);
+    }
+
+    /* 语言主按钮：紫蓝系 */
+    .lang-pill-trigger {
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(147,51,234,0.85);
+      background:
+        radial-gradient(circle at top left, rgba(192,132,252,0.25), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .lang-pill-trigger:hover {
+      background: linear-gradient(to right, #6366f1, #a855f7);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(221,214,254,0.95), 0 10px 25px rgba(15,23,42,0.9);
+    }
+
+    /* 语言子按钮：胶囊 + 渐变边框 */
+    .lang-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #a855f7, #38bdf8);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .lang-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #c4b5fd, #7dd3fc);
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(226,232,240,0.9);
+    }
+
+    /* 手机端：更紧凑 */
+    @media (max-width: 767px) {
+      .main-pill {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .lang-pill-trigger {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .submenu-item {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+      .lang-item {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+    }
+
+    /* ========= 众筹大厅自身样式 ========= */
+
+    .card {
+      background: rgba(15,23,42,0.96);
+      border-radius: 1.25rem;
+      border: 1px solid rgba(148,163,184,0.35);
+    }
+    .subcard {
+      background: rgba(15,23,42,0.94);
+      border-radius: 1rem;
+      border: 1px solid rgba(71,85,105,0.9);
+    }
+    .tab-active {
+      background: #1d4ed8;
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(129,140,248,0.9);
+    }
+    .tab-inactive {
+      background: rgba(15,23,42,0.96);
+      color: #d1d5db;
+      border: 1px solid rgba(55,65,81,0.9);
+    }
+    .order-scroll {
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 18px;
+      margin-right: 4px;
+    }
+    .order-scroll::-webkit-scrollbar {
+      width: 10px;
+    }
+    .order-scroll::-webkit-scrollbar-track {
+      background: rgba(15,23,42,0.96);
+      border-radius: 999px;
+    }
+    .order-scroll::-webkit-scrollbar-thumb {
+      background: rgba(248,250,252,0.96);
+      border-radius: 999px;
+    }
+    .progress-bar-track {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(30,64,175,0.85);
+      overflow: hidden;
+      min-width: 140px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(to right, #22c55e, #a3e635);
+    }
+    .pill-tag {
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.9);
+      background: rgba(15,23,42,0.9);
+      padding: 2px 8px;
+      font-size: 12px;
+      color: #e5e7eb;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen pb-10">
+
+   <div w3-include-html="nst-header.html"></div>
+
+  <!-- ========= 买方众筹大厅原有内容（保持不变） ========= -->
+  <main class="mx-auto mt-4 max-w-5xl px-3 lg:px-0">
+    <section class="card p-4 lg:p-6">
+      <!-- 标题 + 规则说明 -->
+      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-3 rounded-full bg-slate-900/85 px-5 py-2">
+            <span class="text-2xl font-extrabold tracking-wide text-slate-50 md:text-3xl">
+              买方众筹大厅
+            </span>
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="text-[12px] text-slate-400">
+            每个众筹订单统一拆分为 <span class="font-semibold text-slate-100">10 份</span>，
+            <span class="font-semibold text-slate-100">每份 = 名义本金的 1/10</span>；发起众筹最低达成
+            <span class="font-semibold text-slate-100">3 份</span>才生效。
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+          <span>单地址最多 1 份（10% 名义） · 不足 3 份自动退款</span>
+        </div>
+      </div>
+
+      <!-- 上方：主 Tab + 搜索 -->
+      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <!-- 主 Tab -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            id="tabOptionsCrowd"
+            class="tab-active rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors hover:bg-primary-600 hover:text-slate-50">
+            期权买方众筹
+          </button>
+          <button
+            id="tabCfdCrowd"
+            class="tab-inactive rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors hover:bg-slate-800 hover:text-slate-50">
+            CFD 买方众筹
+          </button>
+        </div>
+
+        <!-- 搜索框 -->
+        <div class="flex items-center gap-2">
+          <input
+            class="h-9 w-48 rounded-lg border border-slate-700 bg-slate-950 px-2.5 text-[12px] text-slate-100 placeholder:text-[12px] placeholder:text-slate-500 sm:w-64"
+            placeholder="搜索订单号 / 标的 / 代码 / 发起人地址" />
+          <button class="h-9 rounded-lg bg-slate-800 px-3 text-[12px] text-slate-100 hover:bg-slate-700">
+            搜索
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-3 text-[12px] text-slate-400">
+        右下角显示：<span class="font-semibold text-slate-100">已筹份数 + 进度条 + 最低 3 份提示 + 参与众筹按钮</span>。
+      </div>
+
+      <!-- ========== 期权买方众筹视图 ========== -->
+      <div id="view-options-crowd" class="order-scroll space-y-4 text-[14px] leading-relaxed">
+        <!-- OC-0001 -->
+        <article class="subcard p-3.5">
+          <!-- 第一行：地址 + 订单号 -->
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[13px]">
+            <span class="text-slate-400">发起人：</span>
+            <button
+              class="flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 font-mono text-[12px] text-slate-100"
+              onclick="copyAddress('0xB100000000000000000000000000000000000001')">
+              0xB100...0001
+              <span class="text-[10px] text-slate-300">复制</span>
+            </button>
+            <span class="pill-tag text-xs">订单号：OC-0001</span>
+          </div>
+
+          <!-- 标的信息 -->
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+            <span class="font-mono text-[13px] text-slate-200">中国平安 · 看涨 Call</span>
+            <span>代码 601318 · 中国 / A股</span>
+            <span class="pill-tag">买方众筹 · 期权</span>
+          </div>
+
+          <!-- 订单详情 + 右下角进度 -->
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div class="space-y-1.5 text-[14px] text-slate-200">
+              <div>
+                名义本金目标：<span class="font-semibold">500,000 CNY</span>
+                （<span class="font-semibold">10 份</span>，每份 50,000）
+              </div>
+              <div class="text-slate-300">
+                行权方向：看涨 · 预期费率区间：<span class="font-semibold">3% – 5%</span><br/>
+                众筹截止：<span class="font-semibold">2025-11-20 14:30</span> · 达成后进入期权买方建仓大厅。
+              </div>
+              <div class="text-[12px] text-slate-400">
+                规则：单地址最多 1 份（50,000），众筹至少完成 <span class="font-semibold text-slate-100">3 份</span> 才会生效。
+              </div>
+            </div>
+
+            <!-- 右下角 -->
+            <div class="mt-3 flex flex-col items-end gap-1 sm:mt-0">
+              <div class="text-[12px] text-slate-300">
+                进度：已筹 <span class="font-semibold text-emerald-300">4 / 10 份</span>
+                （200,000 / 500,000）
+              </div>
+              <div class="progress-bar-track w-40">
+                <div class="progress-bar-fill" style="width: 40%;"></div>
+              </div>
+              <div class="text-[11px] text-slate-500">
+                最低达成：3 / 10 份（150,000）
+              </div>
+              <button class="mt-1 rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-slate-50 hover:bg-primary-500">
+                参与众筹
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- OC-0002 -->
+        <article class="subcard p-3.5">
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[13px]">
+            <span class="text-slate-400">发起人：</span>
+            <button
+              class="flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 font-mono text-[12px] text-slate-100"
+              onclick="copyAddress('0xB200000000000000000000000000000000000002')">
+              0xB200...0002
+              <span class="text-[10px] text-slate-300">复制</span>
+            </button>
+            <span class="pill-tag text-xs">订单号：OC-0002</span>
+          </div>
+
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+            <span class="font-mono text-[13px] text-slate-200">上证50ETF · 看涨 Call</span>
+            <span>代码 510050 · 中国 / A股</span>
+            <span class="pill-tag">买方众筹 · 期权</span>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div class="space-y-1.5 text-[14px] text-slate-200">
+              <div>
+                名义本金目标：<span class="font-semibold">500,000 CNY</span>
+                （<span class="font-semibold">10 份</span>，每份 50,000）
+              </div>
+              <div class="text-slate-300">
+                行权方向：看涨 · 预期费率区间：<span class="font-semibold">2.5% – 4%</span><br/>
+                众筹截止：<span class="font-semibold">2025-11-20 15:00</span> · 达标即锁定，进入建仓撮合。
+              </div>
+              <div class="text-[12px] text-slate-400">
+                当前参与地址：<span class="font-semibold text-emerald-300">9</span> · 单地址最多 1 份（50,000）。
+              </div>
+            </div>
+
+            <div class="mt-3 flex flex-col items-end gap-1 sm:mt-0">
+              <div class="text-[12px] text-slate-300">
+                进度：已筹 <span class="font-semibold text-emerald-300">6 / 10 份</span>
+                （300,000 / 500,000）
+              </div>
+              <div class="progress-bar-track w-40">
+                <div class="progress-bar-fill" style="width: 60%;"></div>
+              </div>
+              <div class="text-[11px] text-slate-500">
+                最低达成：3 / 10 份（150,000）
+              </div>
+              <button class="mt-1 rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-slate-50 hover:bg-primary-500">
+                参与众筹
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- OC-0003 -->
+        <article class="subcard p-3.5">
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[13px]">
+            <span class="text-slate-400">发起人：</span>
+            <button
+              class="flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 font-mono text-[12px] text-slate-100"
+              onclick="copyAddress('0xB300000000000000000000000000000000000003')">
+              0xB300...0003
+              <span class="text-[10px] text-slate-300">复制</span>
+            </button>
+            <span class="pill-tag text-xs">订单号：OC-0003</span>
+          </div>
+
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+            <span class="font-mono text-[13px] text-slate-200">贵州茅台 · 看跌 Put</span>
+            <span>代码 600519 · 中国 / A股</span>
+            <span class="pill-tag">买方众筹 · 期权</span>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div class="space-y-1.5 text-[14px] text-slate-200">
+              <div>
+                名义本金目标：<span class="font-semibold">1,000,000 CNY</span>
+                （<span class="font-semibold">10 份</span>，每份 100,000）
+              </div>
+              <div class="text-slate-300">
+                行权方向：看跌 · 预期费率区间：<span class="font-semibold">4% – 6%</span><br/>
+                众筹截止：<span class="font-semibold">2025-11-21 10:30</span> · 未达 3 份则全额退回。
+              </div>
+              <div class="text-[12px] text-slate-400">
+                当前参与地址：<span class="font-semibold text-emerald-300">4</span> · 其中 1 地址已满 1 份。
+              </div>
+            </div>
+
+            <div class="mt-3 flex flex-col items-end gap-1 sm:mt-0">
+              <div class="text-[12px] text-slate-300">
+                进度：已筹 <span class="font-semibold text-emerald-300">3 / 10 份</span>
+                （300,000 / 1,000,000）
+              </div>
+              <div class="progress-bar-track w-40">
+                <div class="progress-bar-fill" style="width: 30%;"></div>
+              </div>
+              <div class="text-[11px] text-slate-500">
+                最低达成：3 / 10 份（300,000）
+              </div>
+              <button class="mt-1 rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-slate-50 hover:bg-primary-500">
+                参与众筹
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- OC-0004 -->
+        <article class="subcard p-3.5">
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[13px]">
+            <span class="text-slate-400">发起人：</span>
+            <button
+              class="flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 font-mono text-[12px] text-slate-100"
+              onclick="copyAddress('0xB400000000000000000000000000000000000004')">
+              0xB400...0004
+              <span class="text-[10px] text-slate-300">复制</span>
+            </button>
+            <span class="pill-tag text-xs">订单号：OC-0004</span>
+          </div>
+
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+            <span class="font-mono text-[13px] text-slate-200">沪深300ETF · 看涨 Call</span>
+            <span>代码 510300 · 中国 / A股</span>
+            <span class="pill-tag">买方众筹 · 期权</span>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div class="space-y-1.5 text-[14px] text-slate-200">
+              <div>
+                名义本金目标：<span class="font-semibold">500,000 CNY</span>
+                （<span class="font-semibold">10 份</span>，每份 50,000）
+              </div>
+              <div class="text-slate-300">
+                行权方向：看涨 · 预期费率区间：<span class="font-semibold">2% – 3%</span><br/>
+                众筹截止：<span class="font-semibold">2025-11-19 16:00</span> · 达 10 份立即锁定。
+              </div>
+              <div class="text-[12px] text-slate-400">
+                预计达成时间：<span class="font-semibold text-emerald-300">约 15 分钟</span>（按当前参与速度推算）。
+              </div>
+            </div>
+
+            <div class="mt-3 flex flex-col items-end gap-1 sm:mt-0">
+              <div class="text-[12px] text-slate-300">
+                进度：已筹 <span class="font-semibold text-emerald-300">9 / 10 份</span>
+                （450,000 / 500,000）
+              </div>
+              <div class="progress-bar-track w-40">
+                <div class="progress-bar-fill" style="width: 90%;"></div>
+              </div>
+              <div class="text-[11px] text-slate-500">
+                最低达成：3 / 10 份（150,000）
+              </div>
+              <button class="mt-1 rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-slate-50 hover:bg-primary-500">
+                参与众筹
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- OC-0005 -->
+        <article class="subcard p-3.5">
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[13px]">
+            <span class="text-slate-400">发起人：</span>
+            <button
+              class="flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 font-mono text-[12px] text-slate-100"
+              onclick="copyAddress('0xB500000000000000000000000000000000000005')">
+              0xB500...0005
+              <span class="text-[10px] text-slate-300">复制</span>
+            </button>
+            <span class="pill-tag text-xs">订单号：OC-0005</span>
+          </div>
+
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+            <span class="font-mono text-[13px] text-slate-200">恒生指数 · 看跌 Put</span>
+            <span>代码 HSI · 香港 / HKEX</span>
+            <span class="pill-tag">买方众筹 · 期权</span>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div class="space-y-1.5 text-[14px] text-slate-200">
+              <div>
+                名义本金目标：<span class="font-semibold">1,000,000 HKD</span>
+                （<span class="font-semibold">10 份</span>，每份 100,000）
+              </div>
+              <div class="text-slate-300">
+                行权方向：看跌 · 预期费率区间：<span class="font-semibold">5% – 7%</span><br/>
+                众筹截止：<span class="font-semibold">2025-11-22 15:30</span> · 未达 3 份全额退回。
+              </div>
+              <div class="text-[12px] text-slate-400">
+                当前阶段为早期试水 · 适合高风险偏好参与者。
+              </div>
+            </div>
+
+            <div class="mt-3 flex flex-col items-end gap-1 sm:mt-0">
+              <div class="text-[12px] text-slate-300">
+                进度：已筹 <span class="font-semibold text-emerald-300">2 / 10 份</span>
+                （200,000 / 1,000,000）
+              </div>
+              <div class="progress-bar-track w-40">
+                <div class="progress-bar-fill" style="width: 20%;"></div>
+              </div>
+              <div class="text-[11px] text-slate-500">
+                最低达成：3 / 10 份（300,000）
+              </div>
+              <button class="mt-1 rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-slate-50 hover:bg-primary-500">
+                参与众筹
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- ========== CFD 买方众筹视图 ========== -->
+      <div id="view-cfd-crowd" class="hidden order-scroll space-y-4 text-[14px] leading-relaxed">
+        <!-- CC-0001 -->
+        <article class="subcard p-3.5">
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[13px]">
+            <span class="text-slate-400">发起人：</span>
+            <button
+              class="flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 font-mono text-[12px] text-slate-100"
+              onclick="copyAddress('0xS100000000000000000000000000000000000001')">
+              0xS100...0001
+              <span class="text-[10px] text-slate-300">复制</span>
+            </button>
+            <span class="pill-tag text-xs">订单号：CC-0001</span>
+          </div>
+
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+            <span class="font-mono text-[13px] text-slate-200">沪深300指数 CFD · 做多 Long</span>
+            <span>IF 主力合约 · 中国 / 股指期货</span>
+            <span class="pill-tag">买方众筹 · CFD</span>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div class="space-y-1.5 text-[14px] text-slate-200">
+              <div>
+                目标名义：<span class="font-semibold">500,000 CNY</span>
+                （<span class="font-semibold">10 份</span>，每份 50,000）
+              </div>
+              <div class="text-slate-300">
+                持仓方向：做多沪深300 指数 CFD · 目标杠杆：
+                <span class="font-semibold">5×</span><br/>
+                众筹截止：<span class="font-semibold">2025-11-20 14:00</span> · 达成后统一在 CFD 买方建仓大厅开仓。
+              </div>
+              <div class="text-[12px] text-slate-400">
+                规则：单地址最多 1 份（50,000），众筹至少完成 3 份后才允许开仓建仓。
+              </div>
+            </div>
+
+            <div class="mt-3 flex flex-col items-end gap-1 sm:mt-0">
+              <div class="text-[12px] text-slate-300">
+                进度：已筹 <span class="font-semibold text-emerald-300">5 / 10 份</span>
+                （250,000 / 500,000）
+              </div>
+              <div class="progress-bar-track w-40">
+                <div class="progress-bar-fill" style="width: 50%;"></div>
+              </div>
+              <div class="text-[11px] text-slate-500">
+                最低达成：3 / 10 份（150,000）
+              </div>
+              <button class="mt-1 rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-slate-50 hover:bg-primary-500">
+                参与众筹
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- CC-0002 -->
+        <article class="subcard p-3.5">
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[13px]">
+            <span class="text-slate-400">发起人：</span>
+            <button
+              class="flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 font-mono text-[12px] text-slate-100"
+              onclick="copyAddress('0xS200000000000000000000000000000000000002')">
+              0xS200...0002
+              <span class="text-[10px] text-slate-300">复制</span>
+            </button>
+            <span class="pill-tag text-xs">订单号：CC-0002</span>
+          </div>
+
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+            <span class="font-mono text-[13px] text-slate-200">上证50ETF CFD · 做空 Short</span>
+            <span>代码 510050 · 中国 / A股</span>
+            <span class="pill-tag">买方众筹 · CFD</span>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div class="space-y-1.5 text-[14px] text-slate-200">
+              <div>
+                目标名义：<span class="font-semibold">500,000 CNY</span>
+                （<span class="font-semibold">10 份</span>，每份 50,000）
+              </div>
+              <div class="text-slate-300">
+                持仓方向：做空上证50ETF CFD · 目标杠杆：
+                <span class="font-semibold">4×</span><br/>
+                众筹截止：<span class="font-semibold">2025-11-19 15:30</span> · 达标后按仓位成比例分配盈亏。
+              </div>
+              <div class="text-[12px] text-slate-400">
+                当前参与地址：<span class="font-semibold text-emerald-300">11</span> 个 · 多个地址已满 1 份。
+              </div>
+            </div>
+
+            <div class="mt-3 flex flex-col items-end gap-1 sm:mt-0">
+              <div class="text-[12px] text-slate-300">
+                进度：已筹 <span class="font-semibold text-emerald-300">8 / 10 份</span>
+                （400,000 / 500,000）
+              </div>
+              <div class="progress-bar-track w-40">
+                <div class="progress-bar-fill" style="width: 80%;"></div>
+              </div>
+              <div class="text-[11px] text-slate-500">
+                最低达成：3 / 10 份（150,000）
+              </div>
+              <button class="mt-1 rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-slate-50 hover:bg-primary-500">
+                参与众筹
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- CC-0003 -->
+        <article class="subcard p-3.5">
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[13px]">
+            <span class="text-slate-400">发起人：</span>
+            <button
+              class="flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 font-mono text-[12px] text-slate-100"
+              onclick="copyAddress('0xS300000000000000000000000000000000000003')">
+              0xS300...0003
+              <span class="text-[10px] text-slate-300">复制</span>
+            </button>
+            <span class="pill-tag text-xs">订单号：CC-0003</span>
+          </div>
+
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+            <span class="font-mono text-[13px] text-slate-200">中国平安 CFD · 做空 Short</span>
+            <span>代码 601318 · 中国 / A股</span>
+            <span class="pill-tag">买方众筹 · CFD</span>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div class="space-y-1.5 text-[14px] text-slate-200">
+              <div>
+                目标名义：<span class="font-semibold">500,000 CNY</span>
+                （<span class="font-semibold">10 份</span>，每份 50,000）
+              </div>
+              <div class="text-slate-300">
+                持仓方向：做空中国平安 CFD · 目标杠杆：
+                <span class="font-semibold">3×</span><br/>
+                众筹截止：<span class="font-semibold">2025-11-21 11:00</span> · 达 3 份后允许部分建仓。
+              </div>
+              <div class="text-[12px] text-slate-400">
+                当前阶段：<span class="font-semibold text-amber-300">试水期</span>，适合熟悉个股波动的参与者。
+              </div>
+            </div>
+
+            <div class="mt-3 flex flex-col items-end gap-1 sm:mt-0">
+              <div class="text-[12px] text-slate-300">
+                进度：已筹 <span class="font-semibold text-emerald-300">3 / 10 份</span>
+                （150,000 / 500,000）
+              </div>
+              <div class="progress-bar-track w-40">
+                <div class="progress-bar-fill" style="width: 30%;"></div>
+              </div>
+              <div class="text-[11px] text-slate-500">
+                最低达成：3 / 10 份（150,000）
+              </div>
+              <button class="mt-1 rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-slate-50 hover:bg-primary-500">
+                参与众筹
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- CC-0004 -->
+        <article class="subcard p-3.5">
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[13px]">
+            <span class="text-slate-400">发起人：</span>
+            <button
+              class="flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 font-mono text-[12px] text-slate-100"
+              onclick="copyAddress('0xS400000000000000000000000000000000000004')">
+              0xS400...0004
+              <span class="text-[10px] text-slate-300">复制</span>
+            </button>
+            <span class="pill-tag text-xs">订单号：CC-0004</span>
+          </div>
+
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+            <span class="font-mono text-[13px] text-slate-200">恒生指数 CFD · 做多 Long</span>
+            <span>HSI · 香港 / HKEX</span>
+            <span class="pill-tag">买方众筹 · CFD</span>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div class="space-y-1.5 text-[14px] text-slate-200">
+              <div>
+                目标名义：<span class="font-semibold">500,000 HKD</span>
+                （<span class="font-semibold">10 份</span>，每份 50,000）
+              </div>
+              <div class="text-slate-300">
+                持仓方向：做多恒指 CFD · 目标杠杆：
+                <span class="font-semibold">4×</span><br/>
+                众筹截止：<span class="font-semibold">2025-11-19 16:15</span> · 达 10 份立即全部建仓。
+              </div>
+              <div class="text-[12px] text-slate-400">
+                后续可与平台做对冲与再平衡，买方按份额分享收益。
+              </div>
+            </div>
+
+            <div class="mt-3 flex flex-col items-end gap-1 sm:mt-0">
+              <div class="text-[12px] text-slate-300">
+                进度：已筹 <span class="font-semibold text-emerald-300">9 / 10 份</span>
+                （450,000 / 500,000）
+              </div>
+              <div class="progress-bar-track w-40">
+                <div class="progress-bar-fill" style="width: 90%;"></div>
+              </div>
+              <div class="text-[11px] text-slate-500">
+                最低达成：3 / 10 份（150,000）
+              </div>
+              <button class="mt-1 rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-slate-50 hover:bg-primary-500">
+                参与众筹
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- CC-0005 -->
+        <article class="subcard p-3.5">
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[13px]">
+            <span class="text-slate-400">发起人：</span>
+            <button
+              class="flex items-center gap-1 rounded-full bg-slate-800 px-3 py-1 font-mono text-[12px] text-slate-100"
+              onclick="copyAddress('0xS500000000000000000000000000000000000005')">
+              0xS500...0005
+              <span class="text-[10px] text-slate-300">复制</span>
+            </button>
+            <span class="pill-tag text-xs">订单号：CC-0005</span>
+          </div>
+
+          <div class="mb-2 flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+            <span class="font-mono text-[13px] text-slate-200">黄金 XAUUSD CFD · 做空 Short</span>
+            <span>国际黄金 · COMEX</span>
+            <span class="pill-tag">买方众筹 · CFD</span>
+          </div>
+
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div class="space-y-1.5 text-[14px] text-slate-200">
+              <div>
+                目标名义：<span class="font-semibold">500,000 USD 等值</span>
+                （<span class="font-semibold">10 份</span>，每份 50,000）
+              </div>
+              <div class="text-slate-300">
+                持仓方向：做空黄金 XAUUSD CFD · 目标杠杆：
+                <span class="font-semibold">6×</span><br/>
+                众筹截止：<span class="font-semibold">2025-11-23 22:00</span> · 未达 3 份全额退回。
+              </div>
+              <div class="text-[12px] text-slate-400">
+                适合看空黄金价格、希望通过杠杆 CFD 放大收益的买方。
+              </div>
+            </div>
+
+            <div class="mt-3 flex flex-col items-end gap-1 sm:mt-0">
+              <div class="text-[12px] text-slate-300">
+                进度：已筹 <span class="font-semibold text-emerald-300">2 / 10 份</span>
+                （100,000 / 500,000）
+              </div>
+              <div class="progress-bar-track w-40">
+                <div class="progress-bar-fill" style="width: 20%;"></div>
+              </div>
+              <div class="text-[11px] text-slate-500">
+                最低达成：3 / 10 份（150,000）
+              </div>
+              <button class="mt-1 rounded-full bg-primary-600 px-4 py-1.5 text-[13px] font-semibold text-slate-50 hover:bg-primary-500">
+                参与众筹
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- 底部操作按钮：一行铺满，随 Tab 切换文案 -->
+      <div class="mt-5 border-t border-slate-800 pt-4">
+  <div class="mb-2 text-[12px] text-slate-400">
+    操作说明：<span class="font-semibold text-slate-100">左侧按钮</span> 发起当前类型买方众筹，
+    <span class="font-semibold text-slate-100">右侧按钮</span> 从当前大厅选择订单参与众筹。
+  </div>
+
+  <div class="flex flex-col gap-2 sm:flex-row sm:gap-3">
+    <!-- 左：发起众筹（加跳转） -->
+    <button
+      id="btnMainAction"
+      onclick="window.location.href='buyer-crowd-build.html';"
+      class="flex-1 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600
+             py-2.5 text-[14px] font-semibold text-slate-950 shadow-lg shadow-blue-500/40
+             hover:brightness-110">
+      发起期权买方众筹
+    </button>
+
+    <!-- 右：参与众筹（加跳转） -->
+    <button
+      id="btnSubAction"
+      onclick="window.location.href='buyer-crowd-join.html';"
+      class="flex-1 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600
+             py-2.5 text-[14px] font-semibold text-slate-950 shadow-lg shadow-blue-500/40
+             hover:brightness-110">
+      参与期权买方众筹
+    </button>
+  </div>
+</div>
+
+    </section>
+  </main>
+
+  <script>
+    // 手机导航菜单切换
+    function toggleMobileMain() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      main.classList.toggle('hidden');
+      if (!lang.classList.contains('hidden')) lang.classList.add('hidden');
+    }
+
+    function toggleMobileLang() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      lang.classList.toggle('hidden');
+      if (!main.classList.contains('hidden')) main.classList.add('hidden');
+    }
+
+    // 众筹大厅 Tab 逻辑
+    const tabOptionsCrowd = document.getElementById('tabOptionsCrowd');
+    const tabCfdCrowd = document.getElementById('tabCfdCrowd');
+
+    const viewOptionsCrowd = document.getElementById('view-options-crowd');
+    const viewCfdCrowd = document.getElementById('view-cfd-crowd');
+
+    const btnMainAction = document.getElementById('btnMainAction');
+    const btnSubAction = document.getElementById('btnSubAction');
+
+    function switchToOptions() {
+      viewOptionsCrowd.classList.remove('hidden');
+      viewCfdCrowd.classList.add('hidden');
+
+      tabOptionsCrowd.classList.add('tab-active');
+      tabOptionsCrowd.classList.remove('tab-inactive');
+      tabCfdCrowd.classList.add('tab-inactive');
+      tabCfdCrowd.classList.remove('tab-active');
+
+      btnMainAction.textContent = '发起期权买方众筹';
+      btnSubAction.textContent = '参与期权买方众筹';
+    }
+
+    function switchToCfd() {
+      viewOptionsCrowd.classList.add('hidden');
+      viewCfdCrowd.classList.remove('hidden');
+
+      tabOptionsCrowd.classList.add('tab-inactive');
+      tabOptionsCrowd.classList.remove('tab-active');
+      tabCfdCrowd.classList.add('tab-active');
+      tabCfdCrowd.classList.remove('tab-inactive');
+
+      btnMainAction.textContent = '发起 CFD 买方众筹';
+      btnSubAction.textContent = '参与 CFD 买方众筹';
+    }
+
+    if (tabOptionsCrowd) tabOptionsCrowd.addEventListener('click', switchToOptions);
+    if (tabCfdCrowd) tabCfdCrowd.addEventListener('click', switchToCfd);
+
+    function copyAddress(addr) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(addr).catch(() => {});
+      }
+    }
+
+    // 默认打开期权买方众筹
+    switchToOptions();
+  function includeHTML() {
+  var z, i, elmnt, file, xhttp;
+  z = document.getElementsByTagName("*");
+  for (i = 0; i < z.length; i++) {
+    elmnt = z[i];
+    file = elmnt.getAttribute("w3-include-html");
+    if (file) {
+      xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4) {
+          if (this.status == 200 || this.status == 0) { // 本地file://时可能是0
+            elmnt.innerHTML = this.responseText;
+          }
+          if (this.status == 404) {
+            elmnt.innerHTML = "Page not found.";
+          }
+          elmnt.removeAttribute("w3-include-html");
+          includeHTML();
+        }
+      }
+      xhttp.open("GET", file, true);
+      xhttp.send();
+      return;
+    }
+  }
+}
+includeHTML();
+</script>
+</body>
+</html>

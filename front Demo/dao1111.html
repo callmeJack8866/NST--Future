@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NST Finance – 导航最终版</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top, rgba(56,189,248,0.18), transparent 55%),
+        radial-gradient(circle at bottom, rgba(129,140,248,0.18), transparent 55%),
+        #020617;
+      color: #e2e8f0;
+    }
+
+    /* 主按钮：桌面 & 手机共用 */
+    .main-pill {
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(37,99,235,0.9);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.28), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .main-pill:hover {
+      background: linear-gradient(to right, #22c55e, #0ea5e9, #6366f1);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9), 0 10px 25px rgba(15,23,42,0.85);
+    }
+
+    .top-pill {
+      flex: 0 0 auto;
+    }
+
+    .submenu-panel {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .submenu-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #22d3ee, #6366f1);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .submenu-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #38bdf8, #a855f7);
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9);
+    }
+
+    /* 语言主按钮：紫蓝系（桌面固定宽度防抖） */
+    .lang-pill-trigger {
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-width: 88px;
+      border-width: 2px;
+      border-color: rgba(147,51,234,0.85);
+      background:
+        radial-gradient(circle at top left, rgba(192,132,252,0.25), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .lang-pill-trigger:hover {
+      background: linear-gradient(to right, #6366f1, #a855f7);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(221,214,254,0.95), 0 10px 25px rgba(15,23,42,0.9);
+    }
+
+    .lang-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #a855f7, #38bdf8);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .lang-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #c4b5fd, #7dd3fc);
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(226,232,240,0.9);
+    }
+
+    /* 手机端更紧凑 + 不固定语言宽度 */
+    @media (max-width: 767px) {
+      .main-pill {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .lang-pill-trigger {
+        padding: 5px 10px;
+        font-size: 11px;
+        min-width: auto;
+      }
+      .submenu-item {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+      .lang-item {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen pb-10">
+
+  <!-- 顶部导航 -->
+  <header class="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-3 py-3 lg:px-0">
+      <!-- 左：LOGO + 说明 + 桌面主导航 -->
+      <div class="flex items-center gap-4 min-w-0">
+        <!-- LOGO -->
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <div class="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 shadow-lg shadow-blue-500/40">
+            <span class="text-base font-bold tracking-tight">N</span>
+          </div>
+          <div class="leading-tight">
+            <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
+              NST FINANCE
+            </div>
+            <div class="text-[11px] text-slate-200" data-i18n="brand.tagline">
+              非标未来 · 去中心化非标风险平台
+            </div>
+          </div>
+        </div>
+
+        <!-- 桌面主导航 -->
+        <nav class="hidden items-center gap-2 text-[12px] font-medium md:flex flex-nowrap">
+          <!-- 创世阶段 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.genesis">
+              创世阶段
+            </button>
+            <!-- mt-1 -> mt-0 -->
+            <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="genesis-donation.html" class="submenu-item" data-i18n="nav.genesis.donation">
+                  捐赠
+                </a>
+                <a href="genesis-node.html" class="submenu-item" data-i18n="nav.genesis.node">
+                  节点购买
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- NST资本生态 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.eco">
+              NST资本生态
+            </button>
+            <!-- mt-1 -> mt-0 -->
+            <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="eco-margin-pools.html" class="submenu-item" data-i18n="nav.eco.margin">
+                  买方 / 卖方保证金池
+                </a>
+                <a href="eco-crowd-free-pool.html" class="submenu-item" data-i18n="nav.eco.crowd">
+                  买方众筹 + 自由买方资金池
+                </a>
+                <a href="eco-rewards.html" class="submenu-item" data-i18n="nav.eco.rewards">
+                  NST 奖励计划 · 积分空投
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 交易大厅 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.trade">
+              交易大厅
+            </button>
+            <!-- mt-1 -> mt-0 -->
+            <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="options-hall.html" class="submenu-item" data-i18n="nav.trade.options">
+                  期权订单大厅
+                </a>
+                <a href="cfd-hall.html" class="submenu-item" data-i18n="nav.trade.cfd">
+                  CFD订单大厅
+                </a>
+                <a href="crowd-hall.html" class="submenu-item" data-i18n="nav.trade.crowd">
+                  众筹订单大厅
+                </a>
+                <a href="feeder-hall.html" class="submenu-item" data-i18n="nav.trade.feeder">
+                  白名单喂价大厅
+                </a>
+                <a href="arbitration-hall.html" class="submenu-item" data-i18n="nav.trade.arb">
+                  仲裁记录大厅
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- NST课堂 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.academy">
+              NST课堂
+            </button>
+            <!-- mt-1 -> mt-0 -->
+            <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="academy-how-to-trade.html" class="submenu-item" data-i18n="nav.academy.how">
+                  如何交易
+                </a>
+                <a href="academy-risk.html" class="submenu-item" data-i18n="nav.academy.risk">
+                  风险在哪
+                </a>
+                <a href="academy-faq.html" class="submenu-item" data-i18n="nav.academy.faq">
+                  常见问题
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 关于我们 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.about">
+              关于我们
+            </button>
+            <!-- mt-1 -> mt-0 -->
+            <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="about-dao.html" class="submenu-item" data-i18n="nav.about.dao">
+                  NST DAO
+                </a>
+                <a href="about-team.html" class="submenu-item" data-i18n="nav.about.team">
+                  团队介绍
+                </a>
+                <a href="about-roadmap.html" class="submenu-item" data-i18n="nav.about.roadmap">
+                  路线图
+                </a>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <!-- 右侧：桌面语言 + 钱包；手机 菜单/语言/钱包 -->
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <!-- 桌面：语言 + 钱包 -->
+        <div class="hidden items-center gap-3 md:flex">
+          <!-- 语言（桌面） -->
+          <div class="relative group inline-block">
+            <button class="lang-pill-trigger" type="button">
+              <span data-i18n="lang.label">语言</span>
+              <svg class="h-3 w-3 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.084l3.71-3.853a.75.75 0 111.08 1.04l-4.25 4.417a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div class="absolute right-0 top-full mt-1 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <button type="button" class="lang-item" onclick="setLanguage('zh-CN')">简体中文</button>
+                <button type="button" class="lang-item" onclick="setLanguage('zh-TW')">繁體中文</button>
+                <button type="button" class="lang-item" onclick="setLanguage('en')">English</button>
+                <button type="button" class="lang-item" onclick="setLanguage('ja')">日本語</button>
+                <button type="button" class="lang-item" onclick="setLanguage('ko')">한국어</button>
+                <button type="button" class="lang-item" onclick="setLanguage('th')">ภาษาไทย</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 钱包 -->
+          <button
+            class="rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 px-4 py-2 text-[12px] font-semibold text-slate-950 shadow-lg shadow-blue-500/50 hover:brightness-110"
+            data-i18n="btn.wallet"
+          >
+            连接钱包
+          </button>
+        </div>
+
+        <!-- 手机：菜单 / 语言 / 钱包 -->
+        <div class="flex items-center gap-2 md:hidden">
+          <!-- 菜单 + 下拉 -->
+          <div class="relative">
+            <button class="main-pill top-pill flex items-center gap-1" type="button" onclick="toggleMobileMain()">
+              <span data-i18n="btn.menu">菜单</span>
+              <svg class="h-3 w-3 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.084l3.71-3.853a.75.75 0 111.08 1.04l-4.25 4.417a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div
+              id="mobileMainNav"
+              class="absolute left-0 top-full mt-0 hidden z-40 min-w-[210px] rounded-2xl border border-slate-800 bg-slate-950/98 px-3 py-3 text-[12px] text-slate-200"
+            >
+              <!-- 创世阶段 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('genesis')"
+                >
+                  <span data-i18n="nav.genesis">创世阶段</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-genesis" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="genesis-donation.html" class="submenu-item bg-slate-900/80" data-i18n="nav.genesis.donation">
+                    捐赠
+                  </a>
+                  <a href="genesis-node.html" class="submenu-item bg-slate-900/80" data-i18n="nav.genesis.node">
+                    节点购买
+                  </a>
+                </div>
+              </div>
+
+              <!-- NST资本生态 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('eco')"
+                >
+                  <span data-i18n="nav.eco">NST资本生态</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-eco" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="eco-margin-pools.html" class="submenu-item bg-slate-900/80" data-i18n="nav.eco.margin">
+                    买方 / 卖方保证金池
+                  </a>
+                  <a href="eco-crowd-free-pool.html" class="submenu-item bg-slate-900/80" data-i18n="nav.eco.crowd">
+                    买方众筹 + 自由买方资金池
+                  </a>
+                  <a href="eco-rewards.html" class="submenu-item bg-slate-900/80" data-i18n="nav.eco.rewards">
+                    NST 奖励计划 · 积分空投
+                  </a>
+                </div>
+              </div>
+
+              <!-- 交易大厅 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('trade')"
+                >
+                  <span data-i18n="nav.trade">交易大厅</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-trade" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="options-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.options">
+                    期权订单大厅
+                  </a>
+                  <a href="cfd-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.cfd">
+                    CFD订单大厅
+                  </a>
+                  <a href="crowd-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.crowd">
+                    众筹订单大厅
+                  </a>
+                  <a href="feeder-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.feeder">
+                    白名单喂价大厅
+                  </a>
+                  <a href="arbitration-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.arb">
+                    仲裁记录大厅
+                  </a>
+                </div>
+              </div>
+
+              <!-- NST课堂 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('academy')"
+                >
+                  <span data-i18n="nav.academy">NST课堂</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-academy" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="academy-how-to-trade.html" class="submenu-item bg-slate-900/80" data-i18n="nav.academy.how">
+                    如何交易
+                  </a>
+                  <a href="academy-risk.html" class="submenu-item bg-slate-900/80" data-i18n="nav.academy.risk">
+                    风险在哪
+                  </a>
+                  <a href="academy-faq.html" class="submenu-item bg-slate-900/80" data-i18n="nav.academy.faq">
+                    常见问题
+                  </a>
+                </div>
+              </div>
+
+              <!-- 关于我们 -->
+              <div>
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('about')"
+                >
+                  <span data-i18n="nav.about">关于我们</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-about" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="about-dao.html" class="submenu-item bg-slate-900/80" data-i18n="nav.about.dao">
+                    NST DAO
+                  </a>
+                  <a href="about-team.html" class="submenu-item bg-slate-900/80" data-i18n="nav.about.team">
+                    官方团队
+                  </a>
+                  <a href="about-roadmap.html" class="submenu-item bg-slate-900/80" data-i18n="nav.about.roadmap">
+                    路线图
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 语言 + 下拉 -->
+          <div class="relative">
+            <button class="lang-pill-trigger top-pill flex items-center gap-1" type="button" onclick="toggleMobileLang()">
+              <span data-i18n="lang.label">语言</span>
+              <svg class="h-3 w-3 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.084l3.71-3.853a.75.75 0 111.08 1.04l-4.25 4.417a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div
+              id="mobileLangNav"
+              class="absolute right-0 top-full mt-0 hidden z-40 min-w-[150px] rounded-2xl border border-slate-800 bg-slate-950/98 px-3 py-3 text-[12px] text-slate-200"
+            >
+              <div class="flex flex-col gap-2">
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('zh-CN')">简体中文</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('zh-TW')">繁體中文</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('en')">English</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('ja')">日本語</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('ko')">한국어</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('th')">ภาษาไทย</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 钱包按钮 -->
+          <button
+            class="rounded-full top-pill bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 px-3 py-1.5 text-[11px] font-semibold text-slate-950 shadow-lg shadow-blue-500/50"
+            data-i18n="btn.wallet"
+          >
+            连接钱包
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 内容占位 -->
+  <main class="mx-auto mt-6 max-w-6xl px-3 lg:px-0">
+    <section class="rounded-2xl border border-slate-800/80 bg-slate-900/70 p-5 lg:p-7">
+      <h1 class="mb-3 text-2xl font-bold text-slate-50 lg:text-3xl" data-i18n="main.title">
+        示例页面内容
+      </h1>
+      <p class="text-sm text-slate-300" data-i18n="main.desc">
+        这是一个用于测试 NST Finance 导航栏和语言切换的示例页面。
+      </p>
+    </section>
+  </main>
+
+  <script>
+    // 手机：菜单 & 语言 下拉切换
+    function toggleMobileMain() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      main.classList.toggle('hidden');
+      if (!lang.classList.contains('hidden')) lang.classList.add('hidden');
+    }
+
+    function toggleMobileLang() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      lang.classList.toggle('hidden');
+      if (!main.classList.contains('hidden')) main.classList.add('hidden');
+    }
+
+    // 手机：展开/收起各个一级菜单的子按钮
+    function toggleMobileSection(section) {
+      const ids = [
+        'mobile-section-genesis',
+        'mobile-section-eco',
+        'mobile-section-trade',
+        'mobile-section-academy',
+        'mobile-section-about'
+      ];
+      const targetId = 'mobile-section-' + section;
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (id === targetId) {
+          el.classList.toggle('hidden');
+        } else {
+          if (!el.classList.contains('hidden')) el.classList.add('hidden');
+        }
+      });
+    }
+
+    // 多语言字典（原样保留）
+    const translations = {
+      'en': {
+        'brand.tagline': 'Non-Standard Future · Decentralized Non-Standard Risk Platform',
+        'nav.genesis': 'Genesis',
+        'nav.genesis.donation': 'Donation',
+        'nav.genesis.node': 'Node Purchase',
+        'nav.eco': 'NST Capital',
+        'nav.eco.margin': 'Buyer / Seller Margin Pools',
+        'nav.eco.crowd': 'Buyer Crowd & Free Pool',
+        'nav.eco.rewards': 'NST Rewards · Points Airdrop',
+        'nav.trade': 'Markets',
+        'nav.trade.options': 'Options Order Hall',
+        'nav.trade.cfd': 'CFD Order Hall',
+        'nav.trade.crowd': 'Crowd Order Hall',
+        'nav.trade.feeder': 'Whitelist Price Feed',
+        'nav.trade.arb': 'Arbitration Records',
+        'nav.academy': 'Academy',
+        'nav.academy.how': 'How to Trade',
+        'nav.academy.risk': 'Where is the Risk',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': 'About',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': 'Core Team',
+        'nav.about.roadmap': 'Roadmap',
+        'lang.label': 'Language',
+        'btn.wallet': 'Connect Wallet',
+        'btn.menu': 'Menu',
+        'main.title': 'Sample Page Content',
+        'main.desc': 'This is a demo page for testing NST Finance navigation and language switching.'
+      },
+      'zh-CN': {
+        'brand.tagline': '非标未来 · 去中心化非标风险平台',
+        'nav.genesis': '创世阶段',
+        'nav.genesis.donation': '捐赠',
+        'nav.genesis.node': '节点购买',
+        'nav.eco': 'NST资本生态',
+        'nav.eco.margin': '买方 / 卖方保证金池',
+        'nav.eco.crowd': '买方众筹 + 自由买方资金池',
+        'nav.eco.rewards': 'NST 奖励计划 · 积分空投',
+        'nav.trade': '交易大厅',
+        'nav.trade.options': '期权订单大厅',
+        'nav.trade.cfd': 'CFD订单大厅',
+        'nav.trade.crowd': '众筹订单大厅',
+        'nav.trade.feeder': '白名单喂价大厅',
+        'nav.trade.arb': '仲裁记录大厅',
+        'nav.academy': 'NST课堂',
+        'nav.academy.how': '如何交易',
+        'nav.academy.risk': '风险在哪',
+        'nav.academy.faq': '常见问题',
+        'nav.about': '关于我们',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': '官方团队',
+        'nav.about.roadmap': '路线图',
+        'lang.label': '语言',
+        'btn.wallet': '连接钱包',
+        'btn.menu': '菜单',
+        'main.title': '示例页面内容',
+        'main.desc': '这是一个用于测试 NST Finance 导航栏和语言切换的示例页面。'
+      },
+      'zh-TW': {
+        'brand.tagline': '非標未來 · 去中心化非標風險平台',
+        'nav.genesis': '創世階段',
+        'nav.genesis.donation': '捐贈',
+        'nav.genesis.node': '節點購買',
+        'nav.eco': 'NST資本生態',
+        'nav.eco.margin': '買方 / 賣方保證金池',
+        'nav.eco.crowd': '買方眾籌 + 自由買方資金池',
+        'nav.eco.rewards': 'NST 獎勵計劃 · 積分空投',
+        'nav.trade': '交易大廳',
+        'nav.trade.options': '期權訂單大廳',
+        'nav.trade.cfd': 'CFD訂單大廳',
+        'nav.trade.crowd': '眾籌訂單大廳',
+        'nav.trade.feeder': '白名單喂價大廳',
+        'nav.trade.arb': '仲裁記錄大廳',
+        'nav.academy': 'NST課堂',
+        'nav.academy.how': '如何交易',
+        'nav.academy.risk': '風險在哪裡',
+        'nav.academy.faq': '常見問題',
+        'nav.about': '關於我們',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': '官方團隊',
+        'nav.about.roadmap': '路線圖',
+        'lang.label': '語言',
+        'btn.wallet': '連接錢包',
+        'btn.menu': '選單',
+        'main.title': '示例頁面內容',
+        'main.desc': '這是一個用於測試 NST Finance 導航欄和語言切換的示例頁面。'
+      },
+      'ja': {
+        'brand.tagline': '非標準な未来 · 分散型ノンスタンダードリスクプラットフォーム',
+        'nav.genesis': 'ジェネシス',
+        'nav.genesis.donation': 'ドネーション',
+        'nav.genesis.node': 'ノード購入',
+        'nav.eco': 'NSTエコ',
+        'nav.eco.margin': '買い / 売り マージンプール',
+        'nav.eco.crowd': '買い手クラウド & 自由プール',
+        'nav.eco.rewards': 'NSTリワード · ポイント',
+        'nav.trade': 'マーケット',
+        'nav.trade.options': 'オプション注文ホール',
+        'nav.trade.cfd': 'CFD注文ホール',
+        'nav.trade.crowd': 'クラウド注文ホール',
+        'nav.trade.feeder': 'WL価格フィード',
+        'nav.trade.arb': '仲裁記録',
+        'nav.academy': 'アカデミー',
+        'nav.academy.how': '取引方法',
+        'nav.academy.risk': 'リスクはどこに',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': '概要',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': 'コアチーム',
+        'nav.about.roadmap': 'ロードマップ',
+        'lang.label': '言語',
+        'btn.wallet': 'ウォレット接続',
+        'btn.menu': 'メニュー',
+        'main.title': 'サンプルページ',
+        'main.desc': 'このページは NST Finance のナビゲーションと言語切替をテストするためのサンプルです。'
+      },
+      'ko': {
+        'brand.tagline': '비표준 미래 · 탈중앙화 비표준 리스크 플랫폼',
+        'nav.genesis': '제네시스',
+        'nav.genesis.donation': '기부',
+        'nav.genesis.node': '노드 구매',
+        'nav.eco': 'NST 생태계',
+        'nav.eco.margin': '매수 / 매도 마진 풀',
+        'nav.eco.crowd': '매수 크라우드 & 자유 풀',
+        'nav.eco.rewards': 'NST 리워드 · 포인트 에어드랍',
+        'nav.trade': '마켓',
+        'nav.trade.options': '옵션 주문 홀',
+        'nav.trade.cfd': 'CFD 주문 홀',
+        'nav.trade.crowd': '크라우드 주문 홀',
+        'nav.trade.feeder': 'WL 가격 피드',
+        'nav.trade.arb': '중재 기록',
+        'nav.academy': '아카데미',
+        'nav.academy.how': '거래 방법',
+        'nav.academy.risk': '리스크 위치',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': '소개',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': '코어 팀',
+        'nav.about.roadmap': '로드맵',
+        'lang.label': '언어',
+        'btn.wallet': '지갑 연결',
+        'btn.menu': '메뉴',
+        'main.title': '샘플 페이지',
+        'main.desc': '이 페이지는 NST Finance 내비게이션과 언어 전환을 테스트하기 위한 샘플입니다.'
+      },
+      'th': {
+        'brand.tagline': 'อนาคตสินทรัพย์นอกมาตรฐาน · แพลตฟอร์มความเสี่ยงแบบกระจายศูนย์',
+        'nav.genesis': 'Genesis',
+        'nav.genesis.donation': 'การบริจาค',
+        'nav.genesis.node': 'ซื้อโหนด',
+        'nav.eco': 'NST Eco',
+        'nav.eco.margin': 'พูลมาร์จิ้น ฝั่งซื้อ / ฝั่งขาย',
+        'nav.eco.crowd': 'ระดมทุนฝั่งซื้อ & พูลอิสระ',
+        'nav.eco.rewards': 'NST รางวัล · แอร์ดรอปแต้ม',
+        'nav.trade': 'ตลาด',
+        'nav.trade.options': 'ห้องคำสั่งออปชั่น',
+        'nav.trade.cfd': 'ห้องคำสั่ง CFD',
+        'nav.trade.crowd': 'ห้องคำสั่งระดมทุน',
+        'nav.trade.feeder': 'ห้องฟีดราคา Whitelist',
+        'nav.trade.arb': 'ห้องบันทึกการไกล่เกลี่ย',
+        'nav.academy': 'Academy',
+        'nav.academy.how': 'วิธีการเทรด',
+        'nav.academy.risk': 'ความเสี่ยงอยู่ที่ไหน',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': 'เกี่ยวกับ',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': 'ทีมหลัก',
+        'nav.about.roadmap': 'Roadmap',
+        'lang.label': 'ภาษา',
+        'btn.wallet': 'เชื่อมต่อกระเป๋า',
+        'btn.menu': 'เมนู',
+        'main.title': 'เนื้อหาหน้าตัวอย่าง',
+        'main.desc': 'หน้านี้ใช้สำหรับทดสอบเมนูนำทางและการสลับภาษาของ NST Finance.'
+      }
+    };
+
+    function applyTranslations(dict) {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const value = dict[key];
+        if (!value) return;
+        el.textContent = value;
+      });
+    }
+
+    function setLanguage(lang) {
+      const dict = translations[lang] || translations['en'];
+      document.documentElement.lang = lang;
+      applyTranslations(dict);
+
+      try {
+        localStorage.setItem('nst_lang', lang);
+      } catch (e) {}
+
+      const mobileLang = document.getElementById('mobileLangNav');
+      if (mobileLang && !mobileLang.classList.contains('hidden')) {
+        mobileLang.classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      let lang = 'en';
+      try {
+        const saved = localStorage.getItem('nst_lang');
+        if (saved && translations[saved]) lang = saved;
+      } catch (e) {}
+      setLanguage(lang);
+    });
+  </script>
+</body>
+</html>

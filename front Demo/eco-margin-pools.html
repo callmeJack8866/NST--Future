@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>NST 资本生态 – NST Capital Ecosystem</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              500: '#38bdf8',
+              600: '#0ea5e9',
+              700: '#0284c7'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 整体背景 + 玻璃卡片样式（保持你原来资本生态的风格） */
+    body {
+      background:
+        radial-gradient(circle at 0% 0%, rgba(56,189,248,0.30), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(129,140,248,0.30), transparent 55%),
+        radial-gradient(circle at 0% 100%, rgba(59,130,246,0.25), transparent 55%),
+        #020617;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .glass {
+      background: rgba(15,23,42,0.88);
+      border: 1px solid rgba(148,163,184,0.55);
+      backdrop-filter: blur(18px);
+      box-shadow:
+        0 22px 55px rgba(15,23,42,0.9),
+        0 0 90px rgba(56,189,248,0.16);
+    }
+
+    /* ======== 顶部导航相关样式（来自“导航最终版”） ======== */
+
+    /* 主按钮：桌面 & 手机共用 */
+    .main-pill {
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(37,99,235,0.9);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.28), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .main-pill:hover {
+      background: linear-gradient(to right, #22c55e, #0ea5e9, #6366f1);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9), 0 10px 25px rgba(15,23,42,0.85);
+    }
+
+    /* 顶部三颗按钮专用：严格按文字宽度，不拉伸 */
+    .top-pill {
+      flex: 0 0 auto;
+    }
+
+    /* 子菜单容器：透明，只保留内部胶囊 */
+    .submenu-panel {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* 子按钮：胶囊 + 渐变边框，宽度随文字 */
+    .submenu-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #22d3ee, #6366f1);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .submenu-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #38bdf8, #a855f7);
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9);
+    }
+
+    /* 语言主按钮：紫蓝系 */
+    .lang-pill-trigger {
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(147,51,234,0.85);
+      background:
+        radial-gradient(circle at top left, rgba(192,132,252,0.25), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .lang-pill-trigger:hover {
+      background: linear-gradient(to right, #6366f1, #a855f7);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(221,214,254,0.95), 0 10px 25px rgba(15,23,42,0.9);
+    }
+
+    /* 语言子按钮：胶囊 + 渐变边框 */
+    .lang-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #a855f7, #38bdf8);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .lang-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #c4b5fd, #7dd3fc);
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(226,232,240,0.9);
+    }
+
+    /* 手机端：更紧凑 */
+    @media (max-width: 767px) {
+      .main-pill {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .lang-pill-trigger {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .submenu-item {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+      .lang-item {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen pb-10 antialiased">
+
+  <div w3-include-html="nst-header.html"></div>
+
+  <!-- ========== 下面开始：保持你原来的资本生态内容（只删掉最后那些空白模块） ========== -->
+  <main class="mx-auto max-w-6xl px-4 pb-16 pt-6 text-[15px] leading-relaxed lg:px-0 lg:pt-10">
+
+    <!-- 模块 1：NST 的资本生态介绍 -->
+    <section id="nst-intro" class="mb-10">
+      <!-- （以下内容完全是你原来的，我没动文案和结构） -->
+      <div class="glass rounded-3xl px-6 py-7 sm:px-8 sm:py-8">
+        <!-- 顶部标题 + 总叙事 -->
+        <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <!-- 左：NST 资本生态总说明 -->
+          <div class="lg:max-w-xl">
+            <p class="mb-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+              NST CAPITAL ECOSYSTEM · 资本生态介绍
+            </p>
+            <h2 class="mb-3 text-[22px] font-semibold text-slate-50 sm:text-[24px]">
+              NST 的资本生态：从创世节点，到长期 Real Yield
+            </h2>
+            <p class="mb-2 text-[15px] text-slate-300">
+              整个 NST，就是把你的资金放进三个层次：
+              <span class="text-cyan-300">创世资本层</span>（捐赠 + 创世节点）、
+              <span class="text-sky-300">运营收益层</span>（交易、策略池、保险池产生 Real Yield）、
+              <span class="text-emerald-300">权益加速层</span>（NST 质押变 veNST + 积分 + 等级）。
+            </p>
+            <p class="text-[14px] text-slate-400">
+              这个「资本生态介绍」模块，只回答一个问题：
+              <span class="text-slate-100">你现在放进 NST 的每一分钱，在为你做什么？</span>
+              第一类是最核心的 <span class="text-cyan-300">创世节点</span>，第二类是
+              <span class="text-emerald-300">创世捐赠</span>。
+            </p>
+          </div>
+
+          <!-- 右：当前角色简要 -->
+          <div class="rounded-2xl border border-slate-600/70 bg-slate-950/80 px-4 py-4 text-[13px] lg:w-64">
+            <p class="mb-2 text-[12px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              示例 · 你的当前身份
+            </p>
+            <ul class="space-y-1.5 text-slate-200">
+              <li>· 钱包地址：<span class="text-cyan-300">0x3A...9F21</span></li>
+              <li>· 创世阶段：<span class="text-emerald-300">已参与捐赠 & 部分节点</span></li>
+              <li>· 上线阶段：<span class="text-sky-300">已接入策略池 / Real Yield</span></li>
+              <li>· 权益层级：<span class="text-amber-300">持有 veNST + 赛季积分</span></li>
+            </ul>
+            <button
+              onclick="location.hash='#capital-overview'"
+              class="mt-3 w-full rounded-full bg-primary-500 px-3 py-2 text-[13px] font-semibold text-slate-950 hover:bg-primary-600"
+            >
+              打开我的资本总览
+            </button>
+          </div>
+        </div>
+
+        <!-- 两大类：左创世节点 / 右捐赠介绍 -->
+        <div class="grid gap-5 lg:grid-cols-2">
+          <!-- 第一类：创世节点介绍 -->
+          <div class="rounded-2xl bg-slate-950/85 px-5 py-5">
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-[16px] font-semibold text-slate-50">
+                第一类 · 创世节点介绍
+              </h3>
+              <span class="rounded-full bg-slate-900/90 px-3 py-1 text-[12px] text-cyan-200">
+                Genesis Nodes
+              </span>
+            </div>
+
+            <!-- 文案说明 -->
+            <p class="mb-2 text-[14px] text-slate-300">
+              创世节点就是 NST 的「创始股东席位」。一共只发放
+              <span class="text-cyan-300 font-semibold">100 个创世节点</span>，
+              每个节点 2000 U，一个地址最多 5 个，卖完不再增发。
+            </p>
+            <ul class="mb-3 list-disc space-y-1.5 pl-5 text-[13px] text-slate-200">
+              <li>长期参与平台 Real Yield 分红的基础门票。</li>
+              <li>后续策略池 / 新产品空投 / 优先额度锁在节点手里。</li>
+              <li>和 veNST 叠加，决定你在 NST 的长期「话语权」。</li>
+            </ul>
+
+            <!-- 剩余个数 + 示例数据 -->
+            <div class="mb-3 rounded-2xl bg-slate-900/90 p-3 text-[13px]">
+              <div class="mb-2 flex items-baseline justify-between">
+                <div>
+                  <p class="text-slate-400">已售节点</p>
+                  <p class="text-lg font-semibold text-slate-50">
+                    72 <span class="text-sm text-slate-400">/ 100</span>
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="text-slate-400">剩余可认购</p>
+                  <p class="text-lg font-semibold text-cyan-300">
+                    28 <span class="text-sm text-slate-400">个</span>
+                  </p>
+                </div>
+              </div>
+              <div class="h-2 rounded-full bg-slate-800">
+                <div class="h-2 w-[72%] rounded-full bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-400"></div>
+              </div>
+              <p class="mt-2 text-[12px] text-slate-400">
+                示例：你当前持有 <span class="text-emerald-300">3 / 5</span> 个节点，还可以再认购 2 个。
+              </p>
+            </div>
+
+            <!-- 输入 2000 USDT 选择框 -->
+            <div class="mb-3 rounded-2xl bg-slate-900/90 p-3 text-[13px]">
+              <label class="mb-1 flex items-center justify-between text-slate-300">
+                <span>我要加入创世节点</span>
+                <span class="text-[11px] text-slate-400">单价 2000 USDT / 节点</span>
+              </label>
+              <div class="flex items-center gap-2">
+                <!-- 节点数量选择框 -->
+                <div class="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 text-[13px]">
+                      <span class="text-slate-400">数量</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max="5"
+                        value="1"
+                        class="w-16 border-none bg-transparent text-sm text-slate-100 outline-none"
+                      />
+                      <span class="text-xs text-slate-500">(1 ~ 5)</span>
+                    </div>
+                    <span class="text-[12px] text-slate-400">总额 ≈ 2000 USDT</span>
+                  </div>
+                </div>
+              </div>
+              <p class="mt-1 text-[11px] text-slate-500">
+                实际支付金额 = 数量 × 2000 USDT，工程师在前端实时计算并显示。
+              </p>
+            </div>
+
+            <!-- 加入创世节点按钮 -->
+            <button
+              onclick="location.hash='#genesis-stage'"
+              class="w-full rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-lg shadow-cyan-400/40 hover:from-cyan-300 hover:via-sky-400 hover:to-indigo-400"
+            >
+              加入创世节点（进入创世阶段操作）
+            </button>
+          </div>
+
+          <!-- 第二类：捐赠介绍 -->
+          <div class="rounded-2xl bg-slate-950/85 px-5 py-5">
+            <div class="mb-3 flex items-center justify-between">
+              <h3 class="text-[16px] font-semibold text-slate-50">
+                第二类 · 捐赠介绍
+              </h3>
+              <span class="rounded-full bg-slate-900/90 px-3 py-1 text-[12px] text-emerald-200">
+                Genesis Donation
+              </span>
+            </div>
+
+            <!-- 文案说明 -->
+            <p class="mb-2 text-[14px] text-slate-300">
+              捐赠是进入 NST 的「最低门槛」。从
+              <span class="text-emerald-300 font-semibold">100 USDT 起</span>，不限笔数、不限总额，
+              所有捐赠都会：
+            </p>
+            <ul class="mb-3 list-disc space-y-1.5 pl-5 text-[13px] text-slate-200">
+              <li>计入你的「创世贡献」，影响初始 NST 分配。</li>
+              <li>计入「累计捐赠」，<span class="text-cyan-300">达到 2000 U 可自动升级节点</span>（视剩余名额）。</li>
+              <li>喂给「推荐系统」，给你的推荐人触发推荐奖励 & 积分。</li>
+            </ul>
+
+            <!-- 当前累计捐赠提示 -->
+            <div class="mb-3 rounded-2xl bg-slate-900/90 p-3 text-[13px]">
+              <p class="mb-1 text-slate-300">你的捐赠进度（示例地址）：</p>
+              <p class="text-slate-200">
+                已累计捐赠：<span class="font-semibold text-emerald-300">$ 4,600</span>
+              </p>
+              <p class="text-[12px] text-slate-400">
+                · 已超过 2000 U，系统已为你分配 1 个节点。<br />
+                · 再继续捐赠，会继续增加创世积分 & 推荐奖励。
+              </p>
+            </div>
+
+            <!-- 捐赠输入框：100 USDT 起 -->
+            <div class="mb-3 rounded-2xl bg-slate-900/90 p-3 text-[13px]">
+              <label class="mb-1 flex items-center justify-between text-slate-300">
+                <span>我要捐赠（创世阶段）</span>
+                <span class="text-[11px] text-slate-400">最低 100 USDT / 笔</span>
+              </label>
+              <div class="flex items-center gap-2">
+                <!-- 金额输入框 -->
+                <div class="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                      <span class="text-[13px] text-slate-400">金额</span>
+                      <input
+                        type="number"
+                        min="100"
+                        step="10"
+                        value="100"
+                        class="w-24 border-none bg-transparent text-sm text-slate-100 outline-none"
+                      />
+                      <span class="text-[12px] text-slate-500">USDT</span>
+                    </div>
+                    <span class="text-[11px] text-slate-500">≥ 100 即视为有效捐赠</span>
+                  </div>
+                </div>
+              </div>
+              <p class="mt-1 text-[11px] text-slate-500">
+                工程师前端需要校验：小于 100 的金额禁止提交 / 合约直接 revert。
+              </p>
+            </div>
+
+            <!-- 捐赠按钮 -->
+            <button
+              onclick="location.hash='#genesis-stage'"
+              class="w-full rounded-2xl bg-gradient-to-r from-emerald-400 via-lime-400 to-amber-300 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-lg shadow-emerald-400/40 hover:from-emerald-300 hover:via-lime-300 hover:to-amber-200"
+            >
+              点击捐赠（进入创世捐赠操作）
+            </button>
+
+            <!-- 小提示：捐赠与节点的关系 -->
+            <p class="mt-2 text-[12px] text-slate-400">
+              小提示：当你通过捐赠累计 ≥ 2000 U，如果还有节点剩余，
+              系统会自动为你升级为节点用户；如果节点已经售罄，你仍然保留捐赠身份 & 积分权重。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section><section id="lp-stake" class="mb-10">
+  <div class="glass rounded-3xl px-6 py-7 sm:px-8 sm:py-8">
+    <!-- 标题 -->
+    <div class="mb-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+          LP Staking · LP 质押模块
+        </p>
+        <h2 class="text-[18px] font-semibold text-slate-50 sm:text-[20px]">
+          LP 质押 · 选择锁仓周期，让做市资金为你长期工作
+        </h2>
+      </div>
+      <p class="text-[12px] text-slate-400">
+        示例：质押 NST-USDT LP，锁仓天数越长，奖励系数越高。
+      </p>
+    </div>
+
+    <!-- 左右排版 -->
+    <div class="grid gap-5 lg:grid-cols-2">
+      <!-- 左侧：说明 + 当前质押概况 -->
+      <div class="rounded-2xl bg-slate-950/85 px-5 py-5">
+        <h3 class="mb-2 text-[15px] font-semibold text-slate-50">
+          我的 LP 质押概况（示例）
+        </h3>
+        <p class="mb-2 text-[14px] text-slate-300">
+          把 <span class="text-cyan-300">NST-USDT LP</span> 质押进来，你相当于用 LP 份额帮平台做市，
+          平台会把一部分交易手续费和 Real Yield 收入，以 NST / 稳定币的形式分给你。
+        </p>
+        <ul class="mb-3 space-y-1.5 text-[13px] text-slate-200">
+          <li>· 当前已质押 LP：<span class="text-emerald-300 font-semibold">1,250 LP</span></li>
+          <li>· 折算本金约：<span class="text-slate-100">$ 12,000</span></li>
+          <li>· 平均锁仓周期：<span class="text-cyan-300">120 天</span></li>
+          <li>· 已获得奖励：<span class="text-amber-300">680 NST + 210 USDT</span></li>
+        </ul>
+        <p class="text-[12px] text-slate-400">
+          工程师：这里的数据可以从合约直接读（当前质押、剩余天数、累计奖励），前端只负责展示和美化。
+        </p>
+      </div>
+
+      <!-- 右侧：LP 质押交互区（锁仓周期 + 质押 / 赎回） -->
+      <div class="rounded-2xl bg-slate-950/85 px-5 py-5">
+        <!-- 质押部分 -->
+        <h3 class="mb-2 text-[15px] font-semibold text-slate-50">
+          质押新的 LP
+        </h3>
+
+        <!-- 选择 LP 代币 -->
+        <div class="mb-3 text-[13px]">
+          <label class="mb-1 block text-slate-300">选择 LP 代币</label>
+          <div class="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+            <select class="w-full border-none bg-transparent text-sm text-slate-100 outline-none">
+              <option value="nst-usdt">NST-USDT LP</option>
+              <option value="nst-bnb">NST-BNB LP</option>
+              <option value="other">其他 LP（预留）</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 输入质押数量 -->
+        <div class="mb-3 text-[13px]">
+          <label class="mb-1 block text-slate-300">质押数量</label>
+          <div class="flex items-center gap-2">
+            <div class="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+              <div class="flex items-center justify-between gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value="100"
+                  class="w-24 border-none bg-transparent text-sm text-slate-100 outline-none"
+                />
+                <span class="text-[12px] text-slate-500">LP 份额</span>
+              </div>
+            </div>
+            <button class="rounded-xl bg-slate-800 px-3 py-2 text-[12px] text-slate-200 hover:bg-slate-700">
+              MAX
+            </button>
+          </div>
+        </div>
+
+        <!-- 锁仓周期选择：预设 + 自定义输入天数 -->
+        <div class="mb-3 text-[13px]">
+          <label class="mb-1 block text-slate-300">选择锁仓周期</label>
+          <!-- 预设选项 -->
+          <div class="mb-2 flex flex-wrap gap-2">
+            <button class="rounded-full bg-slate-900 px-3 py-1 text-[12px] text-slate-200 hover:bg-slate-800" data-lock="30">
+              30 天
+            </button>
+            <button class="rounded-full bg-slate-900 px-3 py-1 text-[12px] text-slate-200 hover:bg-slate-800" data-lock="90">
+              90 天
+            </button>
+            <button class="rounded-full bg-slate-900 px-3 py-1 text-[12px] text-slate-200 hover:bg-slate-800" data-lock="180">
+              180 天
+            </button>
+            <button class="rounded-full bg-slate-900 px-3 py-1 text-[12px] text-slate-200 hover:bg-slate-800" data-lock="365">
+              365 天
+            </button>
+          </div>
+          <!-- 自定义输入天数 -->
+          <div class="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-[13px] text-slate-400">自定义</span>
+                <input
+                  type="number"
+                  min="7"
+                  step="1"
+                  value="90"
+                  class="w-20 border-none bg-transparent text-sm text-slate-100 outline-none"
+                />
+                <span class="text-[12px] text-slate-500">天</span>
+              </div>
+              <span class="text-[11px] text-slate-500">建议 ≥ 30 天，奖励系数更高</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 质押按钮 -->
+        <button
+          class="mb-4 w-full rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-lg shadow-cyan-400/40 hover:from-cyan-300 hover:via-sky-400 hover:to-indigo-400"
+        >
+          质押 LP（锁仓并开始计息）
+        </button>
+
+        <!-- 赎回部分 -->
+        <div class="mt-3 border-t border-slate-800 pt-4 text-[13px]">
+          <h3 class="mb-2 text-[14px] font-semibold text-slate-50">
+            赎回 LP
+          </h3>
+          <p class="mb-2 text-[12px] text-slate-400">
+            已到期的 LP 可以随时赎回；未到期的 LP 如允许提前赎回，可以设置一定的惩罚比例（工程师在合约中配置）。
+          </p>
+
+          <!-- 选择要赎回的锁仓批次（简化为输入） -->
+          <div class="mb-2 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[13px] text-slate-300">可赎回 LP：750 LP</span>
+              <span class="text-[11px] text-emerald-300">已全部到期</span>
+            </div>
+          </div>
+
+          <!-- 输入赎回数量 -->
+          <div class="mb-3">
+            <div class="flex items-center gap-2">
+              <div class="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+                <div class="flex items-center justify-between gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="100"
+                    class="w-24 border-none bg-transparent text-sm text-slate-100 outline-none"
+                  />
+                  <span class="text-[12px] text-slate-500">LP</span>
+                </div>
+              </div>
+              <button class="rounded-xl bg-slate-800 px-3 py-2 text-[12px] text-slate-200 hover:bg-slate-700">
+                MAX
+              </button>
+            </div>
+          </div>
+
+          <!-- 赎回按钮（颜色跟上一个模块捐赠按钮一样） -->
+          <button
+            class="w-full rounded-2xl bg-gradient-to-r from-emerald-400 via-lime-400 to-amber-300 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-lg shadow-emerald-400/40 hover:from-emerald-300 hover:via-lime-300 hover:to-amber-200"
+          >
+            赎回 LP（提现到钱包）
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+     <section id="margin-pools" class="mb-10">
+  <div class="glass rounded-3xl px-6 py-7 sm:px-8 sm:py-8">
+    <!-- 标题区 -->
+    <div class="mb-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+          Margin Pools · 买方 / 卖方保证金池
+        </p>
+        <h2 class="text-[18px] font-semibold text-slate-50 sm:text-[20px]">
+          买方 / 卖方保证金池 · 只对成交收费的双边手续费模型
+        </h2>
+      </div>
+      <p class="text-[12px] text-slate-400">
+        只对「成交的名义本金」按 0.1% 收取手续费，未成交不收费，平台与生态 50 : 50 分成。
+      </p>
+    </div>
+
+    <!-- 总说明 -->
+    <div class="mb-5 rounded-2xl bg-slate-950/85 px-5 py-4 text-[14px]">
+      <p class="mb-2 text-slate-300">
+        买方保证金池 + 卖方保证金池，是 NST 期权 / CFD 交易的核心结算层。
+        所有订单在撮合成交后，才会对名义本金按 <span class="text-cyan-300 font-semibold">0.1% 的双边手续费</span> 收费，
+        未成交订单不收任何手续费。
+      </p>
+      <ul class="mb-2 list-disc space-y-1.5 pl-5 text-[13px] text-slate-200">
+        <li>成交时，按名义本金的 0.1% 收取手续费（示例：100,000 U 名义本金 → 手续费 100 U）。</li>
+        <li>买方侧 + 卖方侧手续费集中进入保证金池，用于平台可持续运营和生态激励。</li>
+        <li>手续费收入分配：<span class="text-emerald-300">50% 作为平台收入</span>，
+          <span class="text-amber-300">50% 进入生态奖励池</span>，给节点、veNST、LP 等做长期分红。</li>
+      </ul>
+      <p class="text-[12px] text-slate-400">
+        工程师：合约层只需要在成交时收取 0.1% 的 fee，并记录 fee 的去向（平台地址 + 生态地址），
+        保证未成交没有扣费逻辑；前端这个模块只做规则展示 + 引导按钮。
+      </p>
+    </div>
+
+    <!-- 中间：示例数据 + 手续费流向 -->
+    <div class="mb-6 grid gap-4 sm:grid-cols-3 text-[13px]">
+      <div class="rounded-2xl bg-slate-950/85 p-4">
+        <p class="text-slate-400">示例 · 单笔成交</p>
+        <p class="mt-2 text-slate-200">
+          名义本金：<span class="font-semibold text-slate-50">100,000 U</span><br />
+          手续费：<span class="font-semibold text-cyan-300">0.1% = 100 U</span>
+        </p>
+        <p class="mt-1 text-[11px] text-slate-500">
+          未成交的订单，手续费 = 0 U。
+        </p>
+      </div>
+      <div class="rounded-2xl bg-slate-950/85 p-4">
+        <p class="text-slate-400">手续费分配（50% / 50%）</p>
+        <p class="mt-2 text-slate-200">
+          平台收入：<span class="font-semibold text-emerald-300">50 U</span><br />
+          生态奖励：<span class="font-semibold text-amber-300">50 U</span>
+        </p>
+        <p class="mt-1 text-[11px] text-slate-500">
+          生态部分进入：节点分红池 / veNST / LP / 任务积分池等。
+        </p>
+      </div>
+      <div class="rounded-2xl bg-slate-950/85 p-4">
+        <p class="text-slate-400">当前示例统计</p>
+        <p class="mt-2 text-slate-200">
+          累计成交名义本金：<span class="font-semibold text-slate-50">$ 8,500,000</span><br />
+          累计手续费：<span class="font-semibold text-cyan-300">$ 8,500</span>
+        </p>
+        <p class="mt-1 text-[11px] text-slate-500">
+          其中约 4,250 U 已进入平台收入，4,250 U 用于生态长期分配。
+        </p>
+      </div>
+    </div>
+
+    <!-- 底部：买方 / 卖方操作入口（按钮建仓） -->
+    <div class="rounded-2xl bg-slate-950/90 px-5 py-5 text-[13px]">
+      <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h3 class="text-[15px] font-semibold text-slate-50">
+          进入保证金池 · 买方建仓 / 卖方建仓
+        </h3>
+        <p class="text-[12px] text-slate-400">
+          买方保证金用于支付权利金，卖方保证金用于承担履约责任；成交后统一从保证金池中结算。
+        </p>
+      </div>
+
+      <div class="mb-4 grid gap-4 lg:grid-cols-2">
+        <!-- 买方建仓说明 -->
+        <div class="rounded-2xl bg-slate-900/90 p-4">
+          <p class="mb-1 text-[13px] font-semibold text-cyan-300">
+            买方保证金池 · 买方建仓
+          </p>
+          <p class="mb-2 text-[13px] text-slate-200">
+            买方在下单 / 建仓时，只需要支付<span class="text-slate-100">权利金 + 必要保证金</span>。
+            订单只有在成交时才产生 0.1% 的手续费，未成交订单不收任何费用。
+          </p>
+          <ul class="mb-2 list-disc space-y-1 pl-5 text-[12px] text-slate-400">
+            <li>适合做「有限亏损、无限获利」的期权 / CFD 策略。</li>
+            <li>所有买方的手续费，会进入保证金池，用于平台 + 生态的长期分配。</li>
+          </ul>
+          <a href="buyer-build.html" class="block">
+  <button
+    class="mt-2 w-full rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-lg shadow-cyan-400/40 hover:from-cyan-300 hover:via-sky-400 hover:to-indigo-400"
+  >
+    买方建仓（进入买方建仓界面）
+  </button>
+</a>
+        </div>
+
+        <!-- 卖方建仓说明 -->
+        <div class="rounded-2xl bg-slate-900/90 p-4">
+          <p class="mb-1 text-[13px] font-semibold text-emerald-300">
+            卖方保证金池 · 卖方建仓
+          </p>
+          <p class="mb-2 text-[13px] text-slate-200">
+            卖方在接单 / 建仓时，需要按名义本金缴纳足够保证金，用于未来履约。
+            订单只有在成交时才扣 0.1% 手续费，未成交挂单不收费。
+          </p>
+          <ul class="mb-2 list-disc space-y-1 pl-5 text-[12px] text-slate-400">
+            <li>适合懂对冲 / 有风控能力的专业卖方，赚取权利金收益。</li>
+            <li>卖方成交产生的手续费，同样按 50% 平台 + 50% 生态的规则分配。</li>
+          </ul>
+          <a href="seller-build.html" class="block">
+  <button
+    class="mt-2 w-full rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-lg shadow-cyan-400/40 hover:from-cyan-300 hover:via-sky-400 hover:to-indigo-400"
+  >
+    卖方建仓（进入卖方建仓界面）
+  </button>
+</a>
+        </div>
+      </div>
+
+      <!-- 手续费分成小结 -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-950/90 p-3 text-[12px] text-slate-400">
+        <p class="mb-1 text-slate-300">
+          手续费三段式逻辑（工程师必读）：
+        </p>
+        <ol class="list-decimal space-y-1 pl-5">
+          <li>只在「成交时」扣除手续费 = 名义本金 × 0.1%，未成交不扣费。</li>
+          <li>扣到的手续费自动按 50% : 50% 划分为：平台收入地址 + 生态奖励地址。</li>
+          <li>生态奖励地址的资金，再根据规则分给节点 / veNST / LP / 任务积分池，全部上链可查。</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+     <section id="buyer-crowd-pool" class="mb-10">
+  <div class="glass rounded-3xl px-6 py-7 sm:px-8 sm:py-8">
+    <!-- 标题区 -->
+    <div class="mb-5 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+          Buyer Crowd Pool · 买方众筹 + 自由买方资金池
+        </p>
+        <h2 class="text-[18px] font-semibold text-slate-50 sm:text-[20px]">
+          买方众筹 + 自由买方资金池 · 把小资金拼成能对冲的大单
+        </h2>
+      </div>
+      <p class="text-[12px] text-slate-400">
+        逻辑同保证金池：只对成交名义本金收 0.1% 手续费，平台与生态 50 : 50 分成。
+      </p>
+    </div>
+
+    <!-- 上：三行快速说明 -->
+    <div class="mb-5 grid gap-3 text-[13px] sm:grid-cols-3">
+      <div class="rounded-2xl bg-slate-950/85 p-4">
+        <p class="text-slate-400">核心定位</p>
+        <p class="mt-2 text-slate-200">
+          为<span class="text-cyan-300">小额买方</span>设计的众筹+资金池通道，
+          把零散资金拼成可以在现实世界对冲的大名义本金订单。
+        </p>
+      </div>
+      <div class="rounded-2xl bg-slate-950/85 p-4">
+        <p class="text-slate-400">行权决策权</p>
+        <p class="mt-2 text-slate-200">
+          发起人须质押<span class="text-emerald-300">≥ 20 份</span>，
+          才有权决定行权窗口；参与者按份额比例分享行权结果。
+        </p>
+      </div>
+      <div class="rounded-2xl bg-slate-950/85 p-4">
+        <p class="text-slate-400">手续费分配</p>
+        <p class="mt-2 text-slate-200">
+          只对「成交名义本金」收 <span class="text-cyan-300">0.1%</span> 手续费，
+          <span class="text-emerald-300">50%</span> 归平台，
+          <span class="text-amber-300">50%</span> 进入生态奖励池。
+        </p>
+      </div>
+    </div>
+
+    <!-- 中：规则说明（灌满宽度） -->
+    <div class="mb-6 rounded-2xl bg-slate-950/90 px-5 py-4 text-[13px]">
+      <h3 class="mb-2 text-[15px] font-semibold text-slate-50">
+        规则 · 发起人与参与者各自的权利和收益
+      </h3>
+      <div class="grid gap-4 lg:grid-cols-2">
+        <!-- 左：发起人 -->
+        <div>
+          <p class="mb-1 text-[13px] font-semibold text-cyan-300">
+            发起人（Initiator）
+          </p>
+          <ul class="list-disc space-y-1.5 pl-5 text-slate-200">
+            <li>设定标的、方向、目标名义本金、众筹截止时间。</li>
+            <li>必须自己先质押 <span class="font-semibold text-cyan-300">≥ 20 份</span> 份额，才拥有行权时间的决定权。</li>
+            <li>众筹成功并成交后，按自身份额比例分享行权收益 / 风险。</li>
+            <li>可领取额外积分 / NST 奖励（由后台配置）。</li>
+          </ul>
+        </div>
+        <!-- 右：参与者 + 自由买方池 -->
+        <div>
+          <p class="mb-1 text-[13px] font-semibold text-emerald-300">
+            参与者 & 自由买方（Participant & Free Buyer）
+          </p>
+          <ul class="list-disc space-y-1.5 pl-5 text-slate-200">
+            <li>选择具体众筹项目，按份额参与，同享行权结果。</li>
+            <li>或者把资金直接注入 <span class="text-emerald-300">自由买方资金池</span>，由系统智能匹配标的。</li>
+            <li>未筹满 / 未成交部分，原路退回，不收任何手续费。</li>
+            <li>成交后按名义本金自动扣除 0.1% 手续费，50% 平台，50% 进入生态。</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 下：交互主区（大卡片 + 两个主按钮） -->
+    <div class="rounded-2xl bg-slate-950/95 px-5 py-5">
+      <!-- 上半：输入 + 预览 -->
+      <div class="mb-4 grid gap-4 lg:grid-cols-[1.2fr,1fr]">
+        <!-- 左：发起众筹设置 -->
+        <div>
+          <h3 class="mb-2 text-[15px] font-semibold text-slate-50">
+            发起众筹 · 创建一个买方合约众筹
+          </h3>
+
+          <!-- 目标名义本金 -->
+          <div class="mb-3">
+            <label class="mb-1 block text-slate-300">目标名义本金</label>
+            <div class="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+              <div class="flex items-center justify-between gap-2">
+                <input
+                  type="number"
+                  min="20000"
+                  step="1000"
+                  value="100000"
+                  class="w-28 border-none bg-transparent text-sm text-slate-100 outline-none"
+                />
+                <span class="text-[12px] text-slate-500">USDT / USDC</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 自己先质押的份额 -->
+          <div class="mb-3">
+            <label class="mb-1 block text-slate-300">我先质押的份额（必须 ≥ 20 份）</label>
+            <div class="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+              <div class="flex items-center justify-between gap-2">
+                <input
+                  type="number"
+                  min="20"
+                  step="1"
+                  value="20"
+                  class="w-20 border-none bg-transparent text-sm text-slate-100 outline-none"
+                />
+                <span class="text-[12px] text-slate-500">
+                  份（工程师前端 + 合约都要校验 ≥ 20）
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 行权窗口（示意） -->
+          <div class="mb-1">
+            <label class="mb-1 block text-slate-300">预计行权时间窗口（由发起人决定）</label>
+            <div class="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span>示例：</span>
+                <span class="rounded-full bg-slate-900 px-2 py-1">
+                  2026-03-01 ～ 2026-03-15
+                </span>
+                <span>（实际由你在发起界面精确选择）</span>
+              </div>
+            </div>
+          </div>
+          <p class="mt-1 text-[11px] text-slate-500">
+            众筹未筹满截止时，可选择取消众筹并原路退回；已成交则按照设定的行权窗口，由你发起行权请求。
+          </p>
+        </div>
+
+        <!-- 右：当前示例项目预览 -->
+        <div class="rounded-2xl bg-slate-900/90 p-4 text-[13px]">
+          <p class="mb-1 text-[13px] font-semibold text-slate-200">
+            示例 · 当前众筹项目预览
+          </p>
+          <p class="text-slate-200">
+            标的：<span class="text-sky-300">标的 A · 看涨合约</span><br />
+            目标名义本金：<span class="text-slate-100">$ 100,000</span><br />
+            已筹进度：<span class="text-emerald-300">72%</span>
+          </p>
+          <div class="mt-2 h-2 rounded-full bg-slate-800">
+            <div class="h-2 w-[72%] rounded-full bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-500"></div>
+          </div>
+          <p class="mt-2 text-[12px] text-slate-400">
+            成交时，只对<strong class="text-slate-100">成交名义本金</strong> 收
+            <span class="text-cyan-300">0.1%</span> 手续费；
+            其中 <span class="text-emerald-300">50%</span> 归平台，
+            <span class="text-amber-300">50%</span> 进入生态池，给节点 / veNST / LP 等做长期分红。
+          </p>
+        </div>
+      </div>
+
+      <!-- 按钮行：发起众筹 & 参与众筹（灌满整行） -->
+      <div class="grid gap-3 sm:grid-cols-2">
+        <!-- 发起众筹按钮 -->
+        <a href="buyer-crowd-build.html" class="block">
+       <button
+    class="w-full rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-500 px-4 py-2.5 text-[14px] font-semibold text-slate-950 shadow-lg shadow-cyan-400/40 hover:from-cyan-300 hover:via-sky-400 hover:to-indigo-400"
+  >
+    发起众筹（我是发起人）
+  </button>
+       </a>
+
+
+        <!-- 参与众筹按钮 -->
+        <a href="buyer-crowd-join.html" class="block">
+       <button
+    class="w-full rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-500 px-4 py-2.5 text-[14px] font-semibold text-slate-950 shadow-lg shadow-cyan-400/40 hover:from-cyan-300 hover:via-sky-400 hover:to-indigo-400"
+  >
+    发起众筹（我是发起人）
+  </button>
+       </a>
+      </div>
+
+      <!-- 底部小结 -->
+      <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-950/90 p-3 text-[12px] text-slate-400">
+        <p class="mb-1 text-slate-300">
+          手续费与生态分配（与保证金池完全同逻辑）：
+        </p>
+        <ol class="list-decimal space-y-1 pl-5">
+          <li>只在众筹或自由买方订单「成交时」收取手续费 = 名义本金 × 0.1%，未成交不收费。</li>
+          <li>手续费自动拆分：<span class="text-emerald-300">50% → 平台收入地址</span>，
+            <span class="text-amber-300">50% → 生态奖励地址</span>。</li>
+          <li>生态奖励再按规则分配给创世节点、veNST、LP、任务积分池等长期参与者。</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+    <!-- 模块 2：LP 质押 -->
+    <section id="rewards-plan" class="mb-10">
+  <div class="glass rounded-3xl px-6 py-7 sm:px-8 sm:py-8">
+    <!-- 标题区 -->
+    <div class="mb-5 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+          Rewards Plan · 奖励计划
+        </p>
+        <h2 class="text-[18px] font-semibold text-slate-50 sm:text-[20px]">
+          NST 奖励计划 · 积分空投 + 推荐激励的双引擎
+        </h2>
+      </div>
+      <p class="text-[12px] text-slate-400">
+        每月统计 2 次排行榜，前 20 名获得 NST 空投；积分从你的所有行为里自动累计。
+      </p>
+    </div>
+
+    <!-- 上：积分空投 / 推荐计划 两大卡片 -->
+    <div class="mb-6 grid gap-4 lg:grid-cols-2 text-[13px]">
+      <!-- 左：积分空投计划 -->
+      <div class="rounded-2xl bg-slate-950/90 p-5">
+        <div class="mb-2 flex items-center justify-between">
+          <h3 class="text-[15px] font-semibold text-slate-50">
+            一类 · 积分空投计划
+          </h3>
+          <span class="rounded-full bg-slate-900 px-3 py-1 text-[12px] text-cyan-200">
+            Points & Airdrop
+          </span>
+        </div>
+        <p class="mb-2 text-[13px] text-slate-200">
+          我们把你在生态里的所有动作，统一换算成<span class="text-cyan-300">积分</span>。
+          每月统计 <span class="text-emerald-300">2 次</span>：
+          <span class="text-slate-100">积分最高者</span> 和
+          <span class="text-slate-100">积分增长最快者</span>，前 20 名获得 NST 空投。
+        </p>
+
+        <!-- 积分获取规则表 -->
+        <div class="mb-3 rounded-2xl bg-slate-900/90 p-3">
+          <p class="mb-1 text-[13px] font-semibold text-slate-200">几种赚取积分的方式：</p>
+          <ul class="space-y-1.5 text-[12px] text-slate-300">
+            <li>· 节点相关行为：<span class="text-emerald-300 font-semibold">双倍积分（× 2）</span></li>
+            <li>· 捐赠行为：<span class="text-slate-100 font-semibold">一倍积分（× 1）</span></li>
+            <li>· 贡献手续费（成交产生的 fee）：<span class="text-cyan-300 font-semibold">0.5 倍（× 0.5）</span></li>
+            <li>· 推荐一个新使用地址：<span class="text-amber-300 font-semibold">每个地址 +100 分</span></li>
+          </ul>
+        </div>
+
+        <!-- 模拟：选择动作，查看能赚多少分 -->
+        <div class="mb-3 rounded-2xl bg-slate-900/90 p-3">
+          <p class="mb-2 text-[13px] font-semibold text-slate-200">
+            模拟：我现在可以赚多少积分？
+          </p>
+          <div class="mb-2">
+            <label class="mb-1 block text-slate-300">选择行为类型</label>
+            <div class="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+              <select class="w-full border-none bg-transparent text-sm text-slate-100 outline-none">
+                <option value="node">节点相关（质押 / 创世节点） · 双倍积分</option>
+                <option value="donation">捐赠 · 一倍积分</option>
+                <option value="fee">贡献手续费（成交订单） · 0.5 倍积分</option>
+                <option value="referral">推荐新地址使用 NST · 每个地址 100 分</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 金额 / 数量输入 -->
+          <div class="mb-2">
+            <label class="mb-1 block text-slate-300">输入金额 / 数量（示意）</label>
+            <div class="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+              <div class="flex items-center justify-between gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  step="10"
+                  value="1000"
+                  class="w-24 border-none bg-transparent text-sm text-slate-100 outline-none"
+                />
+                <span class="text-[12px] text-slate-500">
+                  节点 / 捐赠按 U 金额计算，推荐按地址数量
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-slate-500">
+            实际细节由合约 / 后端计算，前端只展示大致说明：你当前这一笔操作大概可以获得多少积分。
+          </p>
+        </div>
+
+        <!-- 按钮：赚取积分 -->
+        <button
+          onclick="location.hash='#my-capital-ecosystem'"
+          class="w-full rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-500 px-4 py-2.5 text-[14px] font-semibold text-slate-950 shadow-lg shadow-cyan-400/40 hover:from-cyan-300 hover:via-sky-400 hover:to-indigo-400"
+        >
+          去赚取积分（捐赠 / 节点 / 交易 / 推荐）
+        </button>
+
+        <!-- 排行说明 -->
+        <div class="mt-3 rounded-2xl border border-slate-800 bg-slate-950/90 p-3 text-[12px] text-slate-400">
+          <p class="mb-1 text-slate-300">每月积分空投节奏：</p>
+          <ul class="list-disc space-y-1 pl-5">
+            <li>每月第 1 次快照：统计积分总量 Top 20，空投 NST。</li>
+            <li>每月第 2 次快照：统计本月积分增长 Top 20，再空投 NST。</li>
+            <li>具体空投数量 & 条件由后台配置，可随时调整。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 右：推荐计划 -->
+      <div class="rounded-2xl bg-slate-950/90 p-5">
+        <div class="mb-2 flex items-center justify-between">
+          <h3 class="text-[15px] font-semibold text-slate-50">
+            二类 · 推荐计划
+          </h3>
+          <span class="rounded-full bg-slate-900 px-3 py-1 text-[12px] text-emerald-200">
+            Referral Program
+          </span>
+        </div>
+        <p class="mb-2 text-[13px] text-slate-200">
+          推荐计划不是简单拉人头，而是围绕「人数 / 质押金额 / 贡献利润」三维度做空投。
+          你推荐的用户越「深度使用生态」，你的 NST 空投越可观。
+        </p>
+
+        <!-- 推荐链接展示 -->
+        <div class="mb-3 rounded-2xl bg-slate-900/90 p-3">
+          <p class="mb-1 text-[13px] font-semibold text-slate-200">我的推荐链接</p>
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div class="flex-1 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+              <p class="truncate text-[12px] text-cyan-300">
+                https://nst.finance?ref=0x3A9f...21bF
+              </p>
+            </div>
+            <button class="rounded-xl bg-slate-800 px-3 py-2 text-[12px] text-slate-200 hover:bg-slate-700">
+              复制链接
+            </button>
+          </div>
+          <p class="mt-1 text-[11px] text-slate-500">
+            每个新地址通过你的链接首次使用本生态（捐赠 / 节点 / 质押 / 交易）时，自动绑定推荐关系。
+          </p>
+        </div>
+
+        <!-- 推荐空投逻辑简介 -->
+        <div class="mb-3 rounded-2xl bg-slate-900/90 p-3 text-[12px] text-slate-300">
+          <p class="mb-1 text-[13px] font-semibold text-slate-200">
+            三种推荐空投来源：
+          </p>
+          <ul class="list-disc space-y-1 pl-5">
+            <li>推荐使用人数：达成一定人数档位，获得一笔空投（例如每 10 人一档）。</li>
+            <li>推荐质押金额：你推荐的用户在 LP / 对冲池 / 节点的<span class="text-emerald-300">累计质押金额</span>达到档位，送空投。</li>
+            <li>推荐贡献利润：你推荐的用户带来的<span class="text-amber-300">实际利润 / 手续费收入</span>达到档位，再送空投。</li>
+          </ul>
+          <p class="mt-1 text-[11px] text-slate-500">
+            实际档位（例如 10 人 / 50 人 / 100 人，或 5 万 / 10 万 U 质押）由后台配置，方便后期调节。
+          </p>
+        </div>
+
+        <!-- 按钮：推荐人数 / 查看我的推荐 -->
+        <div class="mb-3 grid gap-3 sm:grid-cols-2">
+          <button
+            onclick="location.hash='#my-capital-ecosystem'"
+            class="w-full rounded-2xl bg-gradient-to-r from-emerald-400 via-lime-400 to-amber-300 px-4 py-2.5 text-[14px] font-semibold text-slate-950 shadow-lg shadow-emerald-400/40 hover:from-emerald-300 hover:via-lime-300 hover:to-amber-200"
+          >
+            查看我的推荐人数 / 空投进度
+          </button>
+          <button
+            onclick="location.hash='#my-capital-ecosystem'"
+            class="w-full rounded-2xl bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-500 px-4 py-2.5 text-[14px] font-semibold text-slate-950 shadow-lg shadow-cyan-400/40 hover:from-cyan-300 hover:via-sky-400 hover:to-indigo-400"
+          >
+            推荐人数（去邀请更多人使用 NST）
+          </button>
+        </div>
+
+        <!-- 我的推荐数据概览 -->
+        <div class="rounded-2xl border border-slate-800 bg-slate-950/90 p-3 text-[12px] text-slate-300">
+          <p class="mb-1 text-[13px] font-semibold text-slate-200">
+            示例 · 我的推荐数据
+          </p>
+          <div class="mb-2 grid gap-3 sm:grid-cols-3">
+            <div>
+              <p class="text-slate-400">我推荐的地址数</p>
+              <p class="mt-1 text-[13px] font-semibold text-emerald-300">18 个地址</p>
+            </div>
+            <div>
+              <p class="text-slate-400">他们的累计质押金额</p>
+              <p class="mt-1 text-[13px] font-semibold text-slate-100">$ 86,000</p>
+            </div>
+            <div>
+              <p class="text-slate-400">他们贡献的总手续费</p>
+              <p class="mt-1 text-[13px] font-semibold text-cyan-300">$ 2,150</p>
+            </div>
+          </div>
+
+          <!-- 手续费分配：这个池多少，那个池多少，总计多少 -->
+          <p class="mt-1 text-slate-400">其中手续费 2,150 U 的去向（示例拆分）：</p>
+          <div class="mt-2 grid gap-2 sm:grid-cols-3">
+            <div class="rounded-2xl bg-slate-900/90 p-2">
+              <p class="text-[11px] text-slate-400">卖方对冲池利润分红</p>
+              <p class="text-[13px] font-semibold text-emerald-300">$ 860</p>
+            </div>
+            <div class="rounded-2xl bg-slate-900/90 p-2">
+              <p class="text-[11px] text-slate-400">LP / veNST 生态池</p>
+              <p class="text-[13px] font-semibold text-cyan-300">$ 860</p>
+            </div>
+            <div class="rounded-2xl bg-slate-900/90 p-2">
+              <p class="text-[11px] text-slate-400">任务 / 活动奖励池</p>
+              <p class="text-[13px] font-semibold text-amber-300">$ 430</p>
+            </div>
+          </div>
+          <p class="mt-2 text-[11px] text-slate-500">
+            总计：2,150 U 手续费 → 平台 + 多个生态池；你的空投和积分，会根据这些真实数据动态计算。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部一句话收尾 -->
+    <p class="text-center text-[12px] text-slate-500">
+      你做的每一笔捐赠、质押、交易、推荐，都会变成积分和可查的贡献记录，月度空投和长期分红会在这里与你对齐。
+    </p>
+  </div>
+</section>
+    <!-- 注意：这里已经把你原来最后那几个空白预留模块删掉了：
+         · #genesis-stage
+         · #live-stage
+         · #capital-overview
+         · #periodic-events
+         · #my-capital-ecosystem
+    -->
+
+  </main>
+
+  <script>
+    // 手机菜单切换（不影响桌面）
+    function toggleMobileMain() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      main.classList.toggle('hidden');
+      if (!lang.classList.contains('hidden')) lang.classList.add('hidden');
+    }
+
+    function toggleMobileLang() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      lang.classList.toggle('hidden');
+      if (!main.classList.contains('hidden')) main.classList.add('hidden');
+    }
+  function includeHTML() {
+  var z, i, elmnt, file, xhttp;
+  z = document.getElementsByTagName("*");
+  for (i = 0; i < z.length; i++) {
+    elmnt = z[i];
+    file = elmnt.getAttribute("w3-include-html");
+    if (file) {
+      xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4) {
+          if (this.status == 200 || this.status == 0) { // 本地file://时可能是0
+            elmnt.innerHTML = this.responseText;
+          }
+          if (this.status == 404) {
+            elmnt.innerHTML = "Page not found.";
+          }
+          elmnt.removeAttribute("w3-include-html");
+          includeHTML();
+        }
+      }
+      xhttp.open("GET", file, true);
+      xhttp.send();
+      return;
+    }
+  }
+}
+includeHTML();
+</script>
+</body>
+</html>

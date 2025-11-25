@@ -1,0 +1,1120 @@
+<!-- index.html  首页 + 导航最终版 -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>NST Finance – 非标未来 · 去中心化非标风险平台</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top, rgba(56,189,248,0.18), transparent 55%),
+        radial-gradient(circle at bottom, rgba(129,140,248,0.18), transparent 55%),
+        #020617;
+      color: #e2e8f0;
+    }
+
+    /* 主按钮：桌面 & 手机共用，宽度跟文字走 */
+    .main-pill {
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(37,99,235,0.9);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.28), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+
+    .main-pill:hover {
+      background: linear-gradient(to right, #22c55e, #0ea5e9, #6366f1);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9), 0 10px 25px rgba(15,23,42,0.85);
+    }
+
+    .top-pill {
+      flex: 0 0 auto;
+    }
+
+    .submenu-panel {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* 子按钮：渐变边框胶囊，宽度 = 文字宽度 */
+    .submenu-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #22d3ee, #6366f1);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .submenu-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #38bdf8, #a855f7);
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9);
+    }
+
+    /* 语言主按钮：紫蓝系胶囊，宽度自适应文字 */
+    .lang-pill-trigger {
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(147,51,234,0.85);
+      background:
+        radial-gradient(circle at top left, rgba(192,132,252,0.25), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+
+    .lang-pill-trigger:hover {
+      background: linear-gradient(to right, #6366f1, #a855f7);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(221,214,254,0.95), 0 10px 25px rgba(15,23,42,0.9);
+    }
+
+    /* 语言子按钮：渐变边框胶囊 */
+    .lang-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #a855f7, #38bdf8);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .lang-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #c4b5fd, #7dd3fc);
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(226,232,240,0.9);
+    }
+
+    /* 手机端：更紧凑 */
+    @media (max-width: 767px) {
+      .main-pill {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+
+      .lang-pill-trigger {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+
+      .submenu-item {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+
+      .lang-item {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen pb-10">
+  <!-- 顶部导航 -->
+  
+  <div w3-include-html="nst-header.html"></div>
+
+  <!-- 首页主内容（暂时占位） -->
+ <script>
+    // 手机菜单切换
+    function toggleMobileMain() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      main.classList.toggle('hidden');
+      if (!lang.classList.contains('hidden')) lang.classList.add('hidden');
+    }
+
+    function toggleMobileLang() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      lang.classList.toggle('hidden');
+      if (!main.classList.contains('hidden')) main.classList.add('hidden');
+    }
+  </script>
+
+  <!-- 主体 -->
+  <main class="mx-auto max-w-6xl px-4 pt-0 pb-10 lg:px-0 lg:pt-0 lg:pb-14" style="margin-top:0;">
+
+
+    <!-- 捐 HERO 区（保持不变） -->
+    <section class="relative hero-grid mt-16 overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-950/70 px-6 py-10 shadow-2xl shadow-blue-900/60 lg:flex lg:items-center lg:gap-10 lg:px-10 lg:py-14">
+      <!-- 左 -->
+      <div class="relative z-10 max-w-xl space-y-6">
+        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-200">
+          <span class="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 badge-dot"></span>
+          已部署于 BNB Chain · 合约审计中 / 可扩展至多链
+        </div>
+
+        <h1 class="text-balance text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
+          非标风险的新一代基础设施
+          <span class="block bg-gradient-to-r from-cyan-300 via-sky-400 to-indigo-400 bg-clip-text text-transparent">
+            买方自定义 · 卖方竞价 · 全链上结算
+          </span>
+        </h1>
+
+        <p class="max-w-lg text-sm leading-relaxed text-slate-300 sm:text-base">
+          NST Finance 让场外期权、私募股权、房地产收益权等「非标资产」可以被自定义、撮合和清算。
+          全流程上链，保证金、订单、结算逻辑全部公开透明，让买卖双方在规则清晰的环境下公平博弈。
+        </p>
+
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <a href="options-hall.html" class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-blue-500/40">
+            立即查看订单大厅
+          </a>
+          <a href="#donate" class="inline-flex items-center justify-center rounded-full border border-slate-600/80 px-5 py-2.5 text-sm font-medium text-slate-200 hover:border-slate-400 hover:text-white">
+            支持项目 · Genesis 捐赠
+          </a>
+        </div>
+
+        <div class="flex flex-wrap gap-6 pt-2 text-xs text-slate-400 sm:text-sm">
+          <div>
+            <div class="text-slate-200">100% 链上可验证</div>
+            <div>保证金、订单、结算路径全部可查</div>
+          </div>
+          <div>
+            <div class="text-slate-200">询价零 Gas</div>
+            <div>仅在成交时支付链上费用</div>
+          </div>
+          <div>
+            <div class="text-slate-200">NST 代币深度绑定</div>
+            <div>质押提升收益与排序权</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右：发光卡片/仪表盘示意 -->
+      <div class="relative mt-10 flex-1 lg:mt-0">
+        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-cyan-400/20 blur-3xl"></div>
+        <div class="absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-indigo-500/30 blur-3xl"></div>
+
+        <div class="relative glass gradient-border mx-auto max-w-md rounded-3xl border border-slate-700/80 p-4">
+          <div class="mb-3 flex items-center justify-between text-xs text-slate-400">
+            <div class="inline-flex items-center gap-1 rounded-full bg-slate-900/80 px-1 py-1">
+              <button class="rounded-full bg-slate-800 px-3 py-1 text-[11px] text-slate-100">
+                覆盖池概览
+              </button>
+              <button class="rounded-full px-3 py-1 text-[11px]">
+                我的仓位
+              </button>
+            </div>
+            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] text-emerald-300">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+              资金健康 · 无穿仓
+            </span>
+          </div>
+
+          <div class="mb-4 grid grid-cols-3 gap-3 text-xs">
+            <div class="rounded-2xl bg-slate-900/80 p-3">
+              <div class="text-slate-400">池子总规模</div>
+              <div class="mt-1 text-sm font-semibold text-white">$42.6M</div>
+              <div class="mt-1 text-[11px] text-emerald-300">本月 +4.3%</div>
+            </div>
+            <div class="rounded-2xl bg-slate-900/80 p-3">
+              <div class="text-slate-400">在险订单数</div>
+              <div class="mt-1 text-sm font-semibold text-white">1,284</div>
+              <div class="mt-1 text-[11px] text-slate-400">平均期限 37 天</div>
+            </div>
+            <div class="rounded-2xl bg-slate-900/80 p-3">
+              <div class="text-slate-400">已质押 NST</div>
+              <div class="mt-1 text-sm font-semibold text-white">18.3M</div>
+              <div class="mt-1 text-[11px] text-cyan-300">当前 APY 23.7%</div>
+            </div>
+          </div>
+
+          <div class="mb-3 flex items-center justify-between text-xs text-slate-400">
+            <span>正在撮合的非标订单示例</span>
+            <span class="rounded-full bg-slate-900/80 px-2 py-0.5 text-[10px] text-slate-300">
+              报价实时刷新 · 3s
+            </span>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center justify-between rounded-2xl bg-slate-900/80 px-3 py-2.5">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] uppercase tracking-wider text-cyan-300">私募股权</span>
+                  <span class="rounded-full bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300">
+                    OTC 看跌期权
+                  </span>
+                </div>
+                <div class="mt-0.5 text-[11px] text-slate-400">
+                  B 轮股份 12 个月清算底价保护
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-semibold text-slate-50">权利金 7.4%</div>
+                <div class="text-[10px] text-slate-400">LTV 62% · A- 评级</div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between rounded-2xl bg-slate-900/80 px-3 py-2.5">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] uppercase tracking-wider text-indigo-300">房地产</span>
+                  <span class="rounded-full bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300">
+                    租金保底
+                  </span>
+                </div>
+                <div class="mt-0.5 text-[11px] text-slate-400">
+                  曼谷联排 18 个月租金收入下限
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-semibold text-slate-50">权利金 4.1%</div>
+                <div class="text-[10px] text-slate-400">最大赔付 30% · BBB+</div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between rounded-2xl bg-slate-900/80 px-3 py-2.5">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] uppercase tracking-wider text-fuchsia-300">结构性</span>
+                  <span class="rounded-full bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300">
+                    区间策略
+                  </span>
+                </div>
+                <div class="mt-0.5 text-[11px] text-slate-400">
+                  DeFi TVL 指数 6 个月波动区间
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-semibold text-slate-50">权利金 9.8%</div>
+                <div class="text-[10px] text-slate-400">Delta 对冲 · A 级</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 flex items-center justify-between text-[11px] text-slate-300">
+            <span>3 步完成一张非标合约。</span>
+            <a href="#order-hall" class="inline-flex items-center gap-1 rounded-full bg-slate-50/90 px-3 py-1 text-[11px] font-semibold text-slate-900">
+              创建我的第一单
+              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="donate" class="mt-10">
+      <div class="gradient-border glass relative overflow-hidden rounded-3xl border border-cyan-500/40 px-6 py-6 lg:px-10 lg:py-8">
+        <!-- 顶部标题 -->
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 px-3 py-1 text-[11px] text-cyan-300 mb-3">
+              <span class="h-1.5 w-1.5 rounded-full bg-cyan-400 badge-dot"></span>
+              Genesis 支持轮 · 早期贡献者将作为空投与 veNST 分配的重要参考
+            </div>
+            <h2 class="text-xl font-semibold text-white sm:text-2xl">
+              捐赠 · 一起把 NST 的非标基础设施搭起来
+            </h2>
+            <p class="mt-2 max-w-xl text-sm text-slate-300">
+              你的每一笔捐赠，都将用于 NST 协议的开发、风控基础设施、合约审计以及社区建设。
+              未来的空投、Genesis 席位、veNST 初始额度，将优先考虑早期捐赠者。
+            </p>
+          </div>
+          <div class="mt-2 text-xs text-slate-400 lg:text-right">
+            <div>当前阶段：Genesis 支持轮</div>
+            <div>目标：用于完成 Demo DApp + 安全审计的第一笔资金</div>
+            <div class="mt-3 w-full max-w-xs lg:ml-auto">
+              <div class="mb-1 flex items-center justify-between text-[11px]">
+                <span>已筹：12,300 USDT（示例）</span>
+                <span>目标：50,000 USDT</span>
+              </div>
+              <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                <div class="h-full w-[24%] rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 中间：捐赠表单 + 档位说明 -->
+        <div class="mt-6 grid gap-6 lg:grid-cols-2">
+          <!-- 左侧：捐赠表单 -->
+          <div class="glass rounded-2xl border border-slate-800/80 p-4">
+            <div class="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
+              DONATE
+            </div>
+<h3 class="mt-2 text-sm font-semibold text-white">
+  输入你想捐赠的金额（当前 Demo 支持使用 BSC 链上的 USDT 捐赠）
+</h3>
+
+
+            <!-- 金额输入 -->
+            <div class="mt-4 space-y-2 text-sm">
+              <label class="flex items-center justify-between text-xs text-slate-300">
+                <span>捐赠金额</span>
+                <span class="text-slate-500 text-[11px]">（示例：0.1、0.5、1）</span>
+              </label>
+              <div class="flex items-center gap-2">
+                <input
+                  id="donateAmount"
+                  type="number"
+                  step="0.0001"
+                  min="0"
+                  placeholder="例如：0.1"
+                  class="w-full rounded-2xl border border-slate-700/80 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
+                />
+<select
+  id="donateToken"
+  class="rounded-2xl border border-slate-700/80 bg-slate-900/80 px-3 py-2 text-xs text-slate-100 focus:border-cyan-400 focus:outline-none"
+>
+  <option value="USDT">USDT（BSC）</option>
+  <option value="NATIVE" disabled>当前网络主币（预留）</option>
+  <option value="NST" disabled>NST（预留）</option>
+</select>
+
+              </div>
+
+              <!-- 快捷档位 -->
+              <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                <button type="button" data-amount="50" class="quick-amount rounded-full border border-slate-700/80 px-3 py-1 hover:border-cyan-400 hover:text-cyan-300">
+                  50
+                </button>
+                <button type="button" data-amount="500" class="quick-amount rounded-full border border-slate-700/80 px-3 py-1 hover:border-cyan-400 hover:text-cyan-300">
+                  500
+                </button>
+                <button type="button" data-amount="1000" class="quick-amount rounded-full border border-slate-700/80 px-3 py-1 hover:border-cyan-400 hover:text-cyan-300">
+                  1000
+                </button>
+                <button type="button" data-amount="2000" class="quick-amount rounded-full border border-slate-700/80 px-3 py-1 hover:border-cyan-400 hover:text-cyan-300">
+                  2000
+                </button>
+              </div>
+            </div>
+
+            <!-- 连接钱包 + 提交按钮 -->
+            <div class="mt-5 space-y-2 text-xs">
+              <button
+                id="donateConnectBtn"
+                type="button"
+                class="w-full rounded-full border border-slate-600/80 px-4 py-2 text-xs font-medium text-slate-200 hover:border-slate-300 hover:text-white"
+              >
+                连接钱包
+              </button>
+              <button
+                id="donateSubmitBtn"
+                type="button"
+                class="w-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-lg shadow-blue-500/40"
+              >
+                确认捐赠（真实发起链上交易）
+              </button>
+<p class="text-[11px] text-slate-500">
+  当前版本已支持使用 BSC 上的 USDT（BEP20）向指定地址发起捐赠交易，
+  钱包中需保留少量 BNB 作为 Gas 费用。
+</p>
+
+            </div>
+          </div>
+
+          <!-- 右侧：档位说明 + 捐赠记录占位 -->
+          <div class="space-y-4">
+            <!-- 捐赠档位 -->
+            <div class="glass rounded-2xl border border-slate-800/80 p-4">
+              <h3 class="text-sm font-semibold text-white">捐赠档位 & 预期权益（示例）</h3>
+              <ul class="mt-3 space-y-2 text-xs text-slate-300">
+                <li>
+                  <span class="font-semibold text-cyan-300">Supporter · 支持者</span>
+                  <span class="text-slate-400"> · 累计捐赠 &gt;= 50 USDT 等值</span>
+                  <div class="text-[11px] text-slate-400">
+                    进入支持者名单，在后续空投中获得基础倍率（例如 1.2 倍）。
+                  </div>
+                </li>
+                <li>
+                  <span class="font-semibold text-indigo-300">Builder · 共建者</span>
+                  <span class="text-slate-400"> · 累计捐赠 &gt;= 500 USDT 等值</span>
+                  <div class="text-[11px] text-slate-400">
+                    参与内测群、优先体验 DApp 新功能，空投倍率进一步提升（例如 1.5 倍）。
+                  </div>
+                </li>
+                <li>
+                  <span class="font-semibold text-emerald-300">Genesis Seat · 创世席位</span>
+                  <span class="text-slate-400"> · 累计捐赠 &gt;= 2000 USDT 等值</span>
+                  <div class="text-[11px] text-slate-400">
+                    有机会获得 Genesis veNST / 节点 NFT，享受手续费分成与治理优先权。
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- 捐赠记录占位（后面可以接链上数据） -->
+            <div class="glass rounded-2xl border border-slate-800/80 p-4">
+              <div class="flex items-center justify-between text-xs text-slate-400">
+                <span>近期捐赠（示例数据）</span>
+                <span class="text-[11px]">后续将从链上自动读取</span>
+              </div>
+              <div class="mt-3 space-y-2 text-xs">
+                <div class="flex items-center justify-between rounded-xl bg-slate-900/80 px-3 py-2">
+                  <span class="text-slate-300">0x12...ab9f</span>
+                  <span class="text-slate-400">捐赠 0.5 BNB · Supporter</span>
+                </div>
+                <div class="flex items-center justify-between rounded-xl bg-slate-900/80 px-3 py-2">
+                  <span class="text-slate-300">0x9c...73e2</span>
+                  <span class="text-slate-400">捐赠 1.2 BNB · Builder</span>
+                </div>
+                <div class="flex items-center justify-between rounded-xl bg-slate-900/80 px-3 py-2">
+                  <span class="text-slate-300">0xa7...ff01</span>
+                  <span class="text-slate-400">捐赠 3.0 BNB · Genesis Seat</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部说明 -->
+        <div class="mt-5 border-t border-slate-800/80 pt-3 text-[11px] text-slate-500">
+<p>
+  说明：捐赠是一种对 NST 叙事与协议构建的自愿支持行为，不构成任何形式的收益承诺。
+  未来的空投、veNST、节点资格分配方案，将在社区公开讨论与确认后执行。
+</p>
+
+        </div>
+      </div>
+    </section>
+     
+
+
+        
+  <!-- 下面的 How / Products / Rewards / Why / Community / FAQ / 底部 CTA 同你原来一致，我就不注释了 -->
+    <!-- 为了完整复制，我保留原结构不改动 -->
+
+    <!-- 合作/背书 -->
+    <section class="mt-10">
+      <div class="text-center text-xs uppercase tracking-[0.2em] text-slate-500">
+        构建于 / 集成生态
+      </div>
+      <div class="mt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
+        <span class="rounded-full border border-slate-800 px-3 py-1.5">BNB Chain</span>
+        <span class="rounded-full border border-slate-800 px-3 py-1.5">Chainlink 预言机</span>
+        <span class="rounded-full border border-slate-800 px-3 py-1.5">OpenZeppelin 标准库</span>
+        <span class="rounded-full border border-slate-800 px-3 py-1.5">第三方安全审计</span>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how" class="mt-16">
+      <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <h2 class="text-xl font-semibold text-white sm:text-2xl">
+            NST 是如何运作的？
+          </h2>
+          <p class="mt-2 max-w-xl text-sm text-slate-300">
+            一套通用的非标风险基础设施，拆解成三个简单流程：买方定义、卖方竞价、链上结算，中间所有状态都可验证。
+          </p>
+        </div>
+        <div class="text-xs text-slate-400">
+          全程非托管 · 资金始终在链上可视 · 支持机构级风控逻辑
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-6 md:grid-cols-3">
+        <div class="glass rounded-2xl border border-slate-800/80 p-4">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-cyan-500/10 px-2 py-1 text-[11px] text-cyan-300">
+            <span class="flex h-4 w-4 items-center justify-center rounded-full bg-cyan-500 text-[10px] text-slate-950">1</span>
+            买方流程
+          </div>
+          <h3 class="text-sm font-semibold text-white">用自然语言定义任何「非标」</h3>
+          <p class="mt-2 text-xs text-slate-300">
+            买方只需要写清楚标的、触发条件、期限和赔付逻辑，NST 会把它结构化为链上的条款与参数。
+          </p>
+          <ul class="mt-3 space-y-1.5 text-[11px] text-slate-400">
+            <li>• 支持股权、房地产、收入分成、应收账款等多种资产</li>
+            <li>• 可选择预言机 + 价格员委员会的混合模式</li>
+            <li>• 权利金先锁在合约里，卖方一目了然</li>
+          </ul>
+        </div>
+
+        <div class="glass rounded-2xl border border-slate-800/80 p-4">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-2 py-1 text-[11px] text-indigo-300">
+            <span class="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-500 text-[10px] text-slate-950">2</span>
+            卖方流程
+          </div>
+          <h3 class="text-sm font-semibold text-white">已质押的卖方进入区间内竞价</h3>
+          <p class="mt-2 text-xs text-slate-300">
+            通过资格筛选的卖方，将保证金注入池子，在买方可接受的区间内报出自己的权利金要求。
+          </p>
+          <ul class="mt-3 space-y-1.5 text-[11px] text-slate-400">
+            <li>• 多个卖方可以拆分同一笔订单，按份额分摊风险</li>
+            <li>• 每个仓位都有实时保证金健康度监控</li>
+            <li>• 未被占用的保证金可以通过策略获得链上收益</li>
+          </ul>
+        </div>
+
+        <div class="glass rounded-2xl border border-slate-800/80 p-4">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] text-emerald-300">
+            <span class="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] text-slate-950">3</span>
+            结算流程
+          </div>
+          <h3 class="text-sm font-semibold text-white">链上自动结算 · 争议过程透明</h3>
+          <p class="mt-2 text-xs text-slate-300">
+            预言机与价格员在到期时喂价或判定事件是否发生，所有投票与结算结果都记录在链上。
+          </p>
+          <ul class="mt-3 space-y-1.5 text-[11px] text-slate-400">
+            <li>• 争议通过多价格员投票解决，全部可追踪</li>
+            <li>• 赔付从锁定保证金中自动划转，避免赖账风险</li>
+            <li>• NST 质押者按规则分享协议手续费</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Products / Cards -->
+    <section id="products" class="mt-16">
+      <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <h2 class="text-xl font-semibold text-white sm:text-2xl">
+            用 NST 可以做什么？
+          </h2>
+          <p class="mt-2 max-w-xl text-sm text-slate-300">
+            一套协议，多条产品线。你可以把它当作自己的场外衍生品桌面、风险对冲工具箱，或白标化给你的客户。
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-6 md:grid-cols-3">
+        <div class="glass rounded-2xl border border-slate-800/80 p-4">
+          <div class="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
+            OTC OPTIONS
+          </div>
+          <h3 class="mt-2 text-sm font-semibold text-white">
+            针对非上市 / 非流动资产的场外期权
+          </h3>
+          <p class="mt-2 text-xs text-slate-300">
+            看涨、看跌、区间、路径依赖等结构，都可以通过参数组合出来，并配合价格员与预言机完成结算。
+          </p>
+          <div class="mt-4 grid grid-cols-2 gap-3 text-[11px] text-slate-400">
+            <div>
+              <div class="text-slate-300">最长期限</div>
+              <div class="text-sm font-semibold text-white">36 个月</div>
+            </div>
+            <div>
+              <div class="text-slate-300">最低名义本金</div>
+              <div class="text-sm font-semibold text-white">$100,000</div>
+            </div>
+          </div>
+          <button class="mt-4 w-full rounded-full border border-slate-700 py-1.5 text-xs text-slate-200 hover:border-slate-400 hover:text-white">
+            浏览期权模板
+          </button>
+        </div>
+
+        <div class="glass rounded-2xl border border-slate-800/80 p-4">
+          <div class="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">
+            NAV &amp; REVENUE FLOORS
+          </div>
+          <h3 class="mt-2 text-sm font-semibold text-white">
+            私募组合 / 房地产资产净值与收入底线
+          </h3>
+          <p class="mt-2 text-xs text-slate-300">
+            为 PE/VC 组合、房产出租、应收账款包等设计净值或现金流下限，让 LP 与出资人对风险更有信心。
+          </p>
+          <div class="mt-4 grid grid-cols-2 gap-3 text-[11px] text-slate-400">
+            <div>
+              <div class="text-slate-300">已保护资产规模</div>
+              <div class="text-sm font-semibold text-white">$8.3M+</div>
+            </div>
+            <div>
+              <div class="text-slate-300">历史违约率</div>
+              <div class="text-sm font-semibold text-emerald-300">&lt; 0.3%</div>
+            </div>
+          </div>
+          <button class="mt-4 w-full rounded-full border border-slate-700 py-1.5 text-xs text-slate-200 hover:border-slate-400 hover:text-white">
+            查看案例示例
+          </button>
+        </div>
+
+        <div class="glass rounded-2xl border border-slate-800/80 p-4">
+          <div class="text-xs font-semibold uppercase tracking-[0.2em] text-fuchsia-300">
+            DAO &amp; TREASURY
+          </div>
+          <h3 class="mt-2 text-sm font-semibold text-white">
+            为协议金库与流动性仓位对冲风险
+          </h3>
+          <p class="mt-2 text-xs text-slate-300">
+            DAO 可以用 NST 为金库、LP 仓位、关键对手方设计自定义风险对冲结构，让社区决策更有底气。
+          </p>
+          <div class="mt-4 grid grid-cols-2 gap-3 text-[11px] text-slate-400">
+            <div>
+              <div class="text-slate-300">服务 DAO 数量</div>
+              <div class="text-sm font-semibold text-white">12+</div>
+            </div>
+            <div>
+              <div class="text-slate-300">可用覆盖容量</div>
+              <div class="text-sm font-semibold text-white">$25M</div>
+            </div>
+          </div>
+          <button class="mt-4 w-full rounded-full border border-slate-700 py-1.5 text-xs text-slate-200 hover:border-slate-400 hover:text-white">
+            与团队预约沟通
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 代币奖励占位模块 -->
+    <section id="rewards" class="mt-16">
+      <div class="glass rounded-3xl border border-slate-800/80 p-6">
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <h2 class="text-xl font-semibold text-white sm:text-2xl">
+              代币奖励 &amp; 激励（规划中）
+            </h2>
+            <p class="mt-2 max-w-xl text-sm text-slate-300">
+              后续会把「捐赠、下单、撮合、价格员、推荐」统一接到 NST 代币奖励模型里，
+              这里将展示空投规则、veNST 锁仓、节点奖励等详细说明。
+            </p>
+          </div>
+          <div class="text-xs text-slate-400">
+            当前状态：设计中 · 仅展示占位模块
+          </div>
+        </div>
+        <div class="mt-4 grid gap-4 text-xs text-slate-300 md:grid-cols-3">
+          <div class="rounded-2xl bg-slate-900/70 p-4">
+            <div class="text-[11px] uppercase tracking-[0.2em] text-cyan-300">AIRDROP</div>
+            <h3 class="mt-2 text-sm font-semibold text-white">早期捐赠 &amp; 贡献空投</h3>
+            <p class="mt-2 text-[11px] text-slate-400">
+              根据捐赠金额、参与测试、提交反馈、推荐有效用户等行为，
+              对应不同的空投权重与倍数。
+            </p>
+          </div>
+          <div class="rounded-2xl bg-slate-900/70 p-4">
+            <div class="text-[11px] uppercase tracking-[0.2em] text-indigo-300">TRADING</div>
+            <h3 class="mt-2 text-sm font-semibold text-white">下单 / 做市挖矿</h3>
+            <p class="mt-2 text-[11px] text-slate-400">
+              将来订单大厅中的有效名义本金、成交量、承担风险的保证金，
+              都会折算为 NST 激励积分。
+            </p>
+          </div>
+          <div class="rounded-2xl bg-slate-900/70 p-4">
+            <div class="text-[11px] uppercase tracking-[0.2em] text-emerald-300">GOVERNANCE</div>
+            <h3 class="mt-2 text-sm font-semibold text-white">veNST 锁仓治理</h3>
+            <p class="mt-2 text-[11px] text-slate-400">
+              锁仓 veNST 可提升手续费分成比例、排序权权重，
+              同时参与协议关键参数治理投票。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why NST -->
+    <section id="why" class="mt-16">
+      <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <h2 class="text-xl font-semibold text-white sm:text-2xl">
+            为什么选择 NST？
+          </h2>
+          <p class="mt-2 max-w-xl text-sm text-slate-300">
+            不做「黑盒保险」，只做规则写在链上的非标风险基础设施。对买方、卖方、质押者都更公平，对监管与 LP 更透明。
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-6 md:grid-cols-3">
+        <div class="glass rounded-2xl border border-slate-800/80 p-4">
+          <h3 class="text-sm font-semibold text-white">激励高度对齐</h3>
+          <p class="mt-2 text-xs text-slate-300">
+            NST 质押者、买方与卖方的收益，都建立在系统长期健康、真实赔付、资金高效使用的前提之上，而不是「多拒赔多赚钱」。
+          </p>
+          <ul class="mt-3 space-y-1.5 text-[11px] text-slate-400">
+            <li>• 手续费分配在链上可查</li>
+            <li>• 没有多层不透明再保险结构</li>
+            <li>• veNST 治理决定参数与风控</li>
+          </ul>
+        </div>
+        <div class="glass rounded-2xl border border-slate-800/80 p-4">
+          <h3 class="text-sm font-semibold text-white">为机构与监管而设计</h3>
+          <p class="mt-2 text-xs text-slate-300">
+            每一笔订单都有清晰的链上记录和结算轨迹，方便对接审计、合规团队以及传统金融合作方。
+          </p>
+          <ul class="mt-3 space-y-1.5 text-[11px] text-slate-400">
+            <li>• 支持导出账本与报表</li>
+            <li>• 对接可选的 KYC / KYB 流程</li>
+            <li>• 线下协议可哈希上链，防篡改</li>
+          </ul>
+        </div>
+        <div class="glass rounded-2xl border border-slate-800/80 p-4">
+          <h3 class="text-sm font-semibold text-white">模块化 · 可白标</h3>
+          <p class="mt-2 text-xs text-slate-300">
+            预言机、价格员、评分逻辑、前端样式都可以替换，你可以把 NST 当成底层引擎，在自己品牌下对外服务。
+          </p>
+          <ul class="mt-3 space-y-1.5 text-[11px] text-slate-400">
+            <li>• 价格员 / 喂价人模块分离</li>
+            <li>• veNST 驱动的治理与参数配置</li>
+            <li>• 支持白标 UI 与 API 集成</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Community -->
+    <section id="community" class="mt-16">
+      <div class="glass rounded-3xl border border-slate-800/80 p-6 lg:flex lg:items-center lg:justify-between lg:gap-8">
+        <div class="max-w-md">
+          <h2 class="text-xl font-semibold text-white sm:text-2xl">
+            与真正懂风险的人一起共建 NST
+          </h2>
+          <p class="mt-2 text-sm text-slate-300">
+            NST 社区聚集了场外期权交易员、结构化产品团队、地产投资人以及 Web3 创始人。
+            如果你也在做「非标」，欢迎来一起打磨下一代基础设施。
+          </p>
+          <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-400">
+            <span class="rounded-full bg-slate-900/80 px-3 py-1">Telegram 社群</span>
+            <span class="rounded-full bg-slate-900/80 px-3 py-1">Discord 社群</span>
+            <span class="rounded-full bg-slate-900/80 px-3 py-1">Twitter / X 官方账号</span>
+          </div>
+          <button class="mt-5 rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 px-5 py-2 text-xs font-semibold text-slate-950">
+            加入 NST 社区
+          </button>
+        </div>
+
+        <div class="mt-6 max-w-sm lg:mt-0">
+          <div class="glass rounded-2xl border border-slate-700/80 p-4">
+            <div class="text-xs text-slate-400">来自一线从业者的反馈</div>
+            <p class="mt-3 text-sm text-slate-100">
+              “传统保险和投行不愿意做的小单非标，NST 帮我们把条款参数化、资金上链化。
+              LP 能看见每一笔风险和赔付逻辑，我们也敢做以前不敢做的结构。”
+            </p>
+            <div class="mt-4 text-xs text-slate-400">
+              <div class="font-semibold text-slate-200">Aria · OTC 结构化负责人</div>
+              <div>Non-Standard Markets Desk</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="mt-16">
+      <h2 class="text-xl font-semibold text-white sm:text-2xl">
+        常见问题（FAQ）
+      </h2>
+      <div class="mt-6 space-y-3">
+        <details class="glass rounded-2xl border border-slate-800/80 px-4 py-3 text-sm">
+          <summary class="cursor-pointer list-none text-slate-100">
+            NST 是一家什么公司吗？
+          </summary>
+          <p class="mt-2 text-xs text-slate-300">
+            不是。NST 是一套用于非标风险分担的智能合约协议，本身不托管客户资金，也不承诺特定收益。
+            买方与卖方在协议之上点对点签署合约，规则写在代码里，任何人都可以审计。
+          </p>
+        </details>
+        <details class="glass rounded-2xl border border-slate-800/80 px-4 py-3 text-sm">
+          <summary class="cursor-pointer list-none text-slate-100">
+            赔付结果由谁来决定？会不会「说了不算」？
+          </summary>
+          <p class="mt-2 text-xs text-slate-300">
+            每一笔订单在创建时就确定好预言机和价格员委员会。
+            当触发条件发生时，这些喂价人会投票或提供价格，智能合约根据事先写死的规则自动结算，
+            没有人可以单方面更改结果。
+          </p>
+        </details>
+        <details class="glass rounded-2xl border border-slate-800/80 px-4 py-3 text-sm">
+          <summary class="cursor-pointer list-none text-slate-100">
+            质押 NST 有什么风险？
+          </summary>
+          <p class="mt-2 text-xs text-slate-300">
+            NST 质押者会与协议绑定，对某些极端风险承担兜底责任，同时获得协议手续费与部分权利金分成。
+            具体参数由 veNST 治理决定，任何质押之前都应该认真阅读风险披露文件。
+          </p>
+        </details>
+        <details class="glass rounded-2xl border border-slate-800/80 px-4 py-3 text-sm">
+          <summary class="cursor-pointer list-none text-slate-100">
+            我可以把 NST 白标给自己的客户用吗？
+          </summary>
+          <p class="mt-2 text-xs text-slate-300">
+            可以。协议本身是模块化的，你可以接自己的前端、风控逻辑和合规流程，
+            在你的品牌之下向客户提供非标风险管理服务，同时共享底层流动性。
+          </p>
+        </details>
+      </div>
+    </section>
+
+    <!-- 底部 CTA -->
+    <section class="mt-16">
+      <div class="glass rounded-3xl border border-slate-800/80 px-6 py-6 text-center">
+        <h2 class="text-xl font-semibold text-white sm:text-2xl">
+          准备好，用一笔真实的非标订单来测试 NST 吗？
+        </h2>
+        <p class="mt-2 text-sm text-slate-300">
+          先在测试网完整跑一遍流程：发起需求、卖方竞价、锁定保证金、喂价结算。再决定是否把真实资产搬上来。
+        </p>
+        <div class="mt-4 flex flex-wrap justify-center gap-3">
+          <a href="buyer-build.html" class="rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 px-6 py-2 text-xs font-semibold text-slate-950">
+            买方申请体验测试建仓
+          </a>
+          <a href="#faq" class="rounded-full border border-slate-700 px-6 py-2 text-xs text-slate-200 hover:border-slate-400 hover:text-white">
+            查看文档 / 常见问题
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-950/80">
+    <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-5 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-0">
+      <div class="flex items-center gap-2">
+        <span class="text-slate-300">© 2025 NST Finance.</span>
+        <span>非标未来 · All rights reserved.</span>
+      </div>
+      <div class="flex flex-wrap gap-4">
+        <a href="#" class="hover:text-slate-300">隐私政策</a>
+        <a href="#" class="hover:text-slate-300">条款与条件</a>
+        <a href="#faq" class="hover:text-slate-300">文档</a>
+        <a href="#" class="hover:text-slate-300">安全说明</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 右下角悬浮捐赠按钮 -->
+  <a href="#donate" class="fixed bottom-5 right-5 z-40 rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 px-4 py-2 text-[11px] font-semibold text-slate-950 shadow-lg shadow-blue-500/40">
+    支持 NST · 捐赠
+  </a>
+
+  <!-- 简单交互脚本：移动端菜单 / 连接钱包 / 捐赠交易 -->
+  <script>
+    // ====== 移动端菜单 ======
+    const btn = document.getElementById('mobileMenuBtn');
+    const menu = document.getElementById('mobileMenu');
+    if (btn && menu) {
+      btn.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+      });
+    }
+
+    // ====== 钱包连接 & 状态 ======
+    let currentAccount = null;
+
+    function shortAddress(addr) {
+      if (!addr) return '连接钱包';
+      return addr.slice(0, 6) + '...' + addr.slice(-4);
+    }
+
+    function updateWalletButtons() {
+      const text = shortAddress(currentAccount);
+      const ids = ['connectWalletBtn', 'connectWalletBtnMobile', 'donateConnectBtn'];
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      });
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert('未检测到钱包，请先安装 MetaMask / TokenPocket / OKX 等钱包扩展。');
+        return;
+      }
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts.length > 0) {
+          currentAccount = accounts[0];
+          updateWalletButtons();
+        }
+      } catch (err) {
+        console.error(err);
+        alert('连接钱包失败：' + (err.message || err));
+      }
+    }
+
+    ['connectWalletBtn', 'connectWalletBtnMobile', 'donateConnectBtn'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('click', connectWallet);
+      }
+    });
+
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', (accounts) => {
+        currentAccount = accounts[0] || null;
+        updateWalletButtons();
+      });
+    }
+
+    // BSC 上的 USDT（Binance-Peg USDT）
+const USDT_BSC_ADDRESS = '0x55d398326f99059ff775485246999027b3197955';
+// 精简版 ERC20 ABI，只保留 transfer
+const ERC20_ABI = [
+  "function transfer(address to, uint256 amount) public returns (bool)"
+];
+
+    // ====== 捐赠逻辑（使用当前网络主币，如 BNB） ======
+    const DONATION_ADDRESS = '0xd140287e013df5c1eb2996661a86d2e6169b9467'; // TODO: 在这里填你的收款地址
+
+async function donate() {
+  const amountInput = document.getElementById('donateAmount');
+  const tokenSelect = document.getElementById('donateToken');
+
+  if (!amountInput || !tokenSelect) return;
+
+  const raw = (amountInput.value || '').trim();
+  const token = tokenSelect.value;
+
+  if (!raw || Number(raw) <= 0) {
+    alert('请输入正确的捐赠金额');
+    return;
+  }
+
+  if (!window.ethereum) {
+    alert('请先安装钱包（MetaMask / TP / OKX 等），再进行捐赠。');
+    return;
+  }
+  if (!currentAccount) {
+    alert('请先连接钱包，再进行捐赠。');
+    return;
+  }
+
+  try {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+
+    if (token === 'USDT') {
+      // 使用 USDT（BEP20）捐赠
+      const usdt = new ethers.Contract(USDT_BSC_ADDRESS, ERC20_ABI, signer);
+      // USDT 在 BSC 上是 18 位小数
+      const amount = ethers.utils.parseUnits(raw, 18);
+
+      const tx = await usdt.transfer(DONATION_ADDRESS, amount);
+      alert('USDT 捐赠交易已发送，Tx Hash：\n' + tx.hash);
+    } else if (token === 'NATIVE') {
+      // 预留逻辑：如果以后想开放 BNB 捐赠，可以用这个分支
+      const tx = await signer.sendTransaction({
+        to: DONATION_ADDRESS,
+        value: ethers.utils.parseEther(raw)
+      });
+      alert('主币捐赠交易已发送，Tx Hash：\n' + tx.hash);
+    } else {
+      alert('当前仅开放 USDT（BSC）捐赠，其他资产类型为预留选项。');
+    }
+
+  } catch (err) {
+    console.error(err);
+    const msg = err && (err.data && err.data.message ? err.data.message : err.message || String(err));
+    alert('捐赠失败：' + msg);
+  }
+}
+
+
+    const donateBtn = document.getElementById('donateSubmitBtn');
+    if (donateBtn) {
+      donateBtn.addEventListener('click', donate);
+    }
+
+    // ====== 捐赠快捷金额填充 ======
+    const amountInput = document.getElementById('donateAmount');
+    const quickButtons = document.querySelectorAll('.quick-amount');
+    if (amountInput && quickButtons.length) {
+      quickButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const value = btn.getAttribute('data-amount');
+          amountInput.value = value || '';
+        });
+      });
+    }
+  function includeHTML() {
+  var z, i, elmnt, file, xhttp;
+  z = document.getElementsByTagName("*");
+  for (i = 0; i < z.length; i++) {
+    elmnt = z[i];
+    file = elmnt.getAttribute("w3-include-html");
+    if (file) {
+      xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4) {
+          if (this.status == 200 || this.status == 0) { // 本地file://时可能是0
+            elmnt.innerHTML = this.responseText;
+          }
+          if (this.status == 404) {
+            elmnt.innerHTML = "Page not found.";
+          }
+          elmnt.removeAttribute("w3-include-html");
+          includeHTML();
+        }
+      }
+      xhttp.open("GET", file, true);
+      xhttp.send();
+      return;
+    }
+  }
+}
+includeHTML();
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>NST – 期权订单大厅 · 导航最终版</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top, rgba(56,189,248,0.18), transparent 55%),
+        radial-gradient(circle at bottom, rgba(129,140,248,0.18), transparent 55%),
+        #020617;
+      color: #e2e8f0;
+    }
+
+    /* 主按钮：桌面 & 手机共用 */
+    .main-pill {
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(37,99,235,0.9);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.28), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .main-pill:hover {
+      background: linear-gradient(to right, #22c55e, #0ea5e9, #6366f1);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9), 0 10px 25px rgba(15,23,42,0.85);
+    }
+
+    /* 顶部三颗按钮专用：严格按文字宽度，不拉伸 */
+    .top-pill {
+      flex: 0 0 auto;
+    }
+
+    /* 子菜单容器：透明，只保留内部胶囊 */
+    .submenu-panel {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* 子按钮：胶囊 + 渐变边框，宽度随文字 */
+    .submenu-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #22d3ee, #6366f1);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .submenu-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #38bdf8, #a855f7);
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9);
+    }
+
+    /* 语言主按钮：紫蓝系 */
+    .lang-pill-trigger {
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(147,51,234,0.85);
+      background:
+        radial-gradient(circle at top left, rgba(192,132,252,0.25), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .lang-pill-trigger:hover {
+      background: linear-gradient(to right, #6366f1, #a855f7);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(221,214,254,0.95), 0 10px 25px rgba(15,23,42,0.9);
+    }
+
+    /* 语言子按钮：胶囊 + 渐变边框 */
+    .lang-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #a855f7, #38bdf8);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .lang-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #c4b5fd, #7dd3fc);
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(226,232,240,0.9);
+    }
+
+    /* 手机端：更紧凑 */
+    @media (max-width: 767px) {
+      .main-pill {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .lang-pill-trigger {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .submenu-item {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+      .lang-item {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+    }
+
+    /* ====== 下面是期权订单大厅自己的样式 ====== */
+    .card {
+      background: rgba(15,23,42,0.95);
+      border-radius: 1.25rem;
+      border: 1px solid rgba(148,163,184,0.35);
+    }
+    .subcard {
+      background: rgba(15,23,42,0.92);
+      border-radius: 0.9rem;
+      border: 1px solid rgba(71,85,105,0.9);
+    }
+    .tab-active {
+      background: #1d4ed8;
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(129,140,248,0.9);
+    }
+    .tab-inactive {
+      background: #020617;
+      color: #94a3b8;
+      border: 1px solid rgba(51,65,85,0.9);
+    }
+    .order-scroll {
+      max-height: 480px;
+      overflow-y: auto;
+      padding-right: 12px;
+      margin-right: 2px;
+    }
+    .order-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .order-scroll::-webkit-scrollbar-track {
+      background: rgba(15,23,42,0.95);
+      border-radius: 999px;
+    }
+    .order-scroll::-webkit-scrollbar-thumb {
+      background: rgba(248,250,252,0.85);
+      border-radius: 999px;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen pb-10">
+
+  <!-- 顶部导航（外部文件） -->
+  <div w3-include-html="nst-header.html"></div>
+
+  <!-- ====== 这里开始是“期权订单大厅”的内容 ====== -->
+  <main class="mx-auto mt-6 max-w-6xl px-3 lg:px-0">
+    <section class="card p-4 lg:p-5">
+      <!-- 胶囊标题 -->
+      <div class="mb-4 flex items-center justify-between">
+        <div class="inline-flex items-center gap-3 rounded-full bg-slate-900/85 px-5 py-2">
+          <span class="text-xl font-bold tracking-wide text-slate-50 md:text-2xl">
+            期权订单大厅
+          </span>
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          <span class="hidden text-[11px] text-slate-400 sm:inline">
+            Options Order Hall · NST
+          </span>
+        </div>
+      </div>
+
+      <!-- 顶部：订单视角 + 搜索 -->
+      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <!-- 订单视角按钮 -->
+        <div class="flex flex-1 items-center">
+          <div class="w-full rounded-xl bg-slate-100/5 px-3 py-2.5 shadow-inner shadow-slate-900/60">
+            <div class="px-1 pb-1 text-[11px] text-slate-400">订单视角</div>
+            <div class="flex gap-2">
+              <button
+                id="buyerTab"
+                class="tab-active flex-1 rounded-lg px-4 py-1.5 text-center text-[13px] font-semibold transition-colors hover:bg-primary-600 hover:text-slate-50">
+                买方订单
+              </button>
+              <button
+                id="sellerTab"
+                class="tab-inactive flex-1 rounded-lg px-4 py-1.5 text-center text-[13px] font-semibold transition-colors hover:bg-slate-900 hover:text-slate-100">
+                卖方订单
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 搜索 + 筛选 -->
+        <div class="mt-1 flex flex-1 flex-col items-stretch gap-2 text-[12px] sm:mt-0 sm:flex-row sm:items-center sm:justify-end">
+          <div class="flex items-center gap-2">
+            <input
+              class="h-9 w-44 rounded-lg border border-slate-700 bg-slate-950 px-2 text-[12px] placeholder:text-[12px] placeholder:text-slate-500"
+              placeholder="标的 / 代码 / 市场" />
+            <button class="h-9 rounded-lg bg-slate-800 px-3 text-[12px] text-slate-200 hover:bg-slate-700">
+              搜索
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-slate-500">筛选：</span>
+            <div class="flex flex-wrap gap-1">
+              <button class="rounded-full bg-slate-800 px-2.5 py-1 text-[11px] text-slate-200 hover:bg-slate-700">
+                接单比优先
+              </button>
+              <button class="rounded-full bg-slate-800 px-2.5 py-1 text-[11px] text-slate-200 hover:bg-slate-700">
+                接单数量最少优先
+              </button>
+              <button class="rounded-full bg-slate-800 px-2.5 py-1 text-[11px] text-slate-300 hover:bg-slate-700">
+                看涨
+              </button>
+              <button class="rounded-full bg-slate-800 px-2.5 py-1 text-[11px] text-slate-300 hover:bg-slate-700">
+                看跌
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 买方订单视角 -->
+      <div id="buyerView" class="space-y-4 text-[13px] leading-relaxed">
+        <div class="order-scroll space-y-4">
+          <!-- B000555 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">B000555</span>
+                  <span>2025-11-18 13:20:15</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  中国平安
+                  <span class="text-slate-400">
+                    · 代码 380582 · 中国 / A股 · 看涨 Call · 校验价 23.80
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">3,000,000 CNY</span> · 币种 CNY ·
+                  费率：<span class="font-semibold">2.5% – 4%</span><br/>
+                  折算：约 10,700 – 17,100 USDT · 期限：2025-11-22 → 2025-12-22
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                  自由
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    倒计时 00:26:01
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-1/5 bg-emerald-400"></div>
+                  </div>
+                  <span>已接 1 / 5</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+                我要接单
+              </button>
+            </div>
+          </article>
+
+          <!-- B000103 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">B000103</span>
+                  <span>2025-11-18 14:30:02</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  中国平安
+                  <span class="text-slate-400">
+                    · 代码 380582 · 中国 / A股 · 看涨 Call · 校验价 21.50
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">1,000,000 CNY</span> · 费率：<span class="font-semibold">5% – 8%</span><br/>
+                  折算：约 7,000 – 11,200 USDT · 期限：2025-12-01 → 2025-12-31
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="rounded-full bg-sky-500/10 px-2.5 py-0.5 text-[11px] font-medium text-sky-300">
+                  自由 + 平台
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    倒计时 00:29:32
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-3/5 bg-emerald-400"></div>
+                  </div>
+                  <span>已接 3 / 5</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+                我要接单
+              </button>
+            </div>
+          </article>
+
+          <!-- B000211 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">B000211</span>
+                  <span>2025-11-18 13:55:40</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  中国平安
+                  <span class="text-slate-400">
+                    · 代码 380582 · 中国 / A股 · 看跌 Put · 校验价 18.80
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">800,000 CNY</span> · 费率：<span class="font-semibold">4% – 7%</span><br/>
+                  折算：约 4,600 – 8,000 USDT · 期限：2025-11-20 → 2025-12-20
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                  自由
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    倒计时 00:08:12
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-4/5 bg-emerald-400"></div>
+                  </div>
+                  <span>已接 4 / 5</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+                我要接单
+              </button>
+            </div>
+          </article>
+
+          <!-- B000312 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">B000312</span>
+                  <span>2025-11-18 15:10:09</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  上证50ETF
+                  <span class="text-slate-400">
+                    · 代码 510050 · 中国 / A股 · 看涨 Call · 校验价 3.21
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">500,000 CNY</span> · 费率：<span class="font-semibold">3% – 6%</span><br/>
+                  期限：2025-11-25 → 2025-12-25
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="rounded-full bg-sky-500/10 px-2.5 py-0.5 text-[11px] font-medium text-sky-300">
+                  自由 + 平台
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    倒计时 00:19:45
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-2/5 bg-emerald-400"></div>
+                  </div>
+                  <span>已接 2 / 5</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+                我要接单
+              </button>
+            </div>
+          </article>
+
+          <!-- B000420 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">B000420</span>
+                  <span>2025-11-18 15:40:28</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  恒生指数
+                  <span class="text-slate-400">
+                    · 代码 HSI · 香港 / HKEX · 看涨 Call · 校验价 18,320
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">1,000,000 HKD</span> · 费率：<span class="font-semibold">3% – 5%</span><br/>
+                  期限：2025-11-21 → 2025-12-21
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                  自由
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    倒计时 00:24:03
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-1/5 bg-emerald-400"></div>
+                  </div>
+                  <span>已接 1 / 5</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+                我要接单
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <!-- 底部：买方建仓 -->
+        <div class="mt-4 border-t border-slate-800 pt-4">
+          <a href="buyer-build.html">
+            <button
+              class="w-full rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 py-2.5 text-[14px] font-semibold text-slate-950 shadow-lg shadow-blue-500/40 hover:brightness-110">
+              买方建仓 · 创建期权订单
+            </button>
+          </a>
+        </div>
+      </div>
+
+      <!-- 卖方订单视角（现在不再 hidden，和买方并列展示） -->
+      <div id="sellerView" class="mt-6 space-y-4 text-[13px] leading-relaxed">
+        <div class="order-scroll space-y-4">
+          <!-- S000201 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">S000201</span>
+                  <span>2025-11-18 14:05:10</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  中国平安
+                  <span class="text-slate-400">
+                    · 380582 · 中国 / A股 · 看涨 Call · 卖方报价 4.2%
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">3,000,000 CNY</span> · 固定费率：<span class="font-semibold">4.2%</span><br/>
+                  建仓费：<span class="font-semibold">150 USDT</span> · 挂单有效期：1 小时
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="flex items-center gap-2">
+                  <span class="max-w-[170px] truncate rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-mono text-slate-200">
+                    0xA1b2c3D4e5F6a7B8c9D0e1F2a3B4c5D6e7F8A9B0
+                  </span>
+                  <button
+                    class="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] text-slate-50 hover:bg-slate-600"
+                    onclick="copyAddress('0xA1b2c3D4e5F6a7B8c9D0e1F2a3B4c5D6e7F8A9B0')">
+                    复制
+                  </button>
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    剩余 00:32:18
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-full bg-emerald-400"></div>
+                  </div>
+                  <span>可接 1 / 1</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-primary-600 px-4 py-2 text-[13px] font-semibold text-slate-50 shadow-md shadow-blue-500/30 hover:bg-primary-500 sm:w-auto">
+                买入
+              </button>
+            </div>
+          </article>
+
+          <!-- S000202 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">S000202</span>
+                  <span>2025-11-18 14:35:02</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  上证50ETF
+                  <span class="text-slate-400">
+                    · 510050 · 中国 / A股 · 看涨 Call · 卖方报价 3.8%
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">500,000 CNY</span> · 固定费率：<span class="font-semibold">3.8%</span><br/>
+                  建仓费：<span class="font-semibold">80 USDT</span> · 挂单有效期：1 小时
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="flex items-center gap-2">
+                  <span class="max-w-[170px] truncate rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-mono text-slate-200">
+                    0xB2c3D4e5F6a7B8c9D0e1F2a3B4c5D6e7F8A9B0C1
+                  </span>
+                  <button
+                    class="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] text-slate-50 hover:bg-slate-600"
+                    onclick="copyAddress('0xB2c3D4e5F6a7B8c9D0e1F2a3B4c5D6e7F8A9B0C1')">
+                    复制
+                  </button>
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    剩余 00:45:27
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-full bg-emerald-400"></div>
+                  </div>
+                  <span>可接 1 / 1</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-primary-600 px-4 py-2 text-[13px] font-semibold text-slate-50 shadow-md shadow-blue-500/30 hover:bg-primary-500 sm:w-auto">
+                买入
+              </button>
+            </div>
+          </article>
+
+          <!-- S000203 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">S000203</span>
+                  <span>2025-11-18 15:05:30</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  恒生指数
+                  <span class="text-slate-400">
+                    · HSI · 香港 / HKEX · 看跌 Put · 卖方报价 5.0%
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">1,200,000 HKD</span> · 固定费率：<span class="font-semibold">5.0%</span><br/>
+                  建仓费：<span class="font-semibold">180 USDT</span> · 挂单有效期：1 小时
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="flex items-center gap-2">
+                  <span class="max-w-[170px] truncate rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-mono text-slate-200">
+                    0xC3D4e5F6a7B8c9D0e1F2a3B4c5D6e7F8A9B0C1D2
+                  </span>
+                  <button
+                    class="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] text-slate-50 hover:bg-slate-600"
+                    onclick="copyAddress('0xC3D4e5F6a7B8c9D0e1F2a3B4c5D6e7F8A9B0C1D2')">
+                    复制
+                  </button>
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    剩余 00:28:11
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-full bg-emerald-400"></div>
+                  </div>
+                  <span>可接 1 / 1</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-primary-600 px-4 py-2 text-[13px] font-semibold text-slate-50 shadow-md shadow-blue-500/30 hover:bg-primary-500 sm:w-auto">
+                买入
+              </button>
+            </div>
+          </article>
+
+          <!-- S000204 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">S000204</span>
+                  <span>2025-11-18 15:20:45</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  上证50ETF
+                  <span class="text-slate-400">
+                    · 510050 · 中国 / A股 · 看跌 Put · 卖方报价 4.5%
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">600,000 CNY</span> · 固定费率：<span class="font-semibold">4.5%</span><br/>
+                  建仓费：<span class="font-semibold">90 USDT</span> · 挂单有效期：1 小时
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="flex items-center gap-2">
+                  <span class="max-w-[170px] truncate rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-mono text-slate-200">
+                    0xD4e5F6a7B8c9D0e1F2a3B4c5D6e7F8A9B0C1D2E3
+                  </span>
+                  <button
+                    class="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] text-slate-50 hover:bg-slate-600"
+                    onclick="copyAddress('0xD4e5F6a7B8c9D0e1F2a3B4c5D6e7F8A9B0C1D2E3')">
+                    复制
+                  </button>
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    剩余 00:37:50
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-full bg-emerald-400"></div>
+                  </div>
+                  <span>可接 1 / 1</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-primary-600 px-4 py-2 text-[13px] font-semibold text-slate-50 shadow-md shadow-blue-500/30 hover:bg-primary-500 sm:w-auto">
+                买入
+              </button>
+            </div>
+          </article>
+
+          <!-- S000205 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">S000205</span>
+                  <span>2025-11-18 15:50:12</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  中国平安
+                  <span class="text-slate-400">
+                    · 380582 · 中国 / A股 · 看涨 Call · 卖方报价 3.9%
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">1,500,000 CNY</span> · 固定费率：<span class="font-semibold">3.9%</span><br/>
+                  建仓费：<span class="font-semibold">180 USDT</span> · 挂单有效期：1 小时
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="flex items-center gap-2">
+                  <span class="max-w-[170px] truncate rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-mono text-slate-200">
+                    0xE5F6a7B8c9D0e1F2a3B4c5D6e7F8A9B0C1D2E3F4
+                  </span>
+                  <button
+                    class="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] text-slate-50 hover:bg-slate-600"
+                    onclick="copyAddress('0xE5F6a7B8c9D0e1F2a3B4c5D6e7F8A9B0C1D2E3F4')">
+                    复制
+                  </button>
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    剩余 00:50:05
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-full bg-emerald-400"></div>
+                  </div>
+                  <span>可接 1 / 1</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-primary-600 px-4 py-2 text-[13px] font-semibold text-slate-50 shadow-md shadow-blue-500/30 hover:bg-primary-500 sm:w-auto">
+                买入
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <!-- 底部：卖方建仓 -->
+        <div class="mt-4 border-t border-slate-800 pt-4">
+          <a href="seller-build.html">
+          <button class="w-full rounded-xl bg-gradient-to-r from-emerald-400 via-blue-500 to-indigo-600 py-2.5 text-[14px] font-semibold text-slate-950 shadow-lg shadow-emerald-400/30 hover:brightness-110">
+            卖方建仓 · 发布卖方订单
+          </button>
+          </a> 
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // 手机菜单切换（你的导航原逻辑）
+    function toggleMobileMain() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      main.classList.toggle('hidden');
+      if (!lang.classList.contains('hidden')) lang.classList.add('hidden');
+    }
+
+    function toggleMobileLang() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      lang.classList.toggle('hidden');
+      if (!main.classList.contains('hidden')) main.classList.add('hidden');
+    }
+
+    // 期权大厅：买方 / 卖方 tab 切换（现在只切换高亮 + 滚动，不隐藏内容）
+    const buyerTab = document.getElementById('buyerTab');
+    const sellerTab = document.getElementById('sellerTab');
+    const buyerView = document.getElementById('buyerView');
+    const sellerView = document.getElementById('sellerView');
+
+    function setActive(view) {
+      if (!buyerTab || !sellerTab || !buyerView || !sellerView) return;
+
+      if (view === 'buyer') {
+        buyerTab.classList.add('tab-active');
+        buyerTab.classList.remove('tab-inactive');
+        sellerTab.classList.add('tab-inactive');
+        sellerTab.classList.remove('tab-active');
+        buyerView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        sellerTab.classList.add('tab-active');
+        sellerTab.classList.remove('tab-inactive');
+        buyerTab.classList.add('tab-inactive');
+        buyerTab.classList.remove('tab-active');
+        sellerView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    if (buyerTab && sellerTab) {
+      buyerTab.addEventListener('click', () => setActive('buyer'));
+      sellerTab.addEventListener('click', () => setActive('seller'));
+    }
+
+    // 卖方订单复制地址
+    function copyAddress(addr) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(addr).catch(() => {});
+      }
+    }
+
+    // 头部 include
+    function includeHTML() {
+      var z, i, elmnt, file, xhttp;
+      z = document.getElementsByTagName("*");
+      for (i = 0; i < z.length; i++) {
+        elmnt = z[i];
+        file = elmnt.getAttribute("w3-include-html");
+        if (file) {
+          xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function () {
+            if (this.readyState == 4) {
+              if (this.status == 200 || this.status == 0) { // 本地 file:// 时可能是 0
+                elmnt.innerHTML = this.responseText;
+              }
+              if (this.status == 404) {
+                elmnt.innerHTML = "Page not found.";
+              }
+              elmnt.removeAttribute("w3-include-html");
+              includeHTML();
+            }
+          }
+          xhttp.open("GET", file, true);
+          xhttp.send();
+          return;
+        }
+      }
+    }
+    includeHTML();
+  </script>
+</body>
+</html>

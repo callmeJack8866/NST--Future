@@ -1,0 +1,333 @@
+<!-- 顶部导航 -->
+  <header class="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-3 py-3 lg:px-0">
+      <!-- 左：LOGO + 说明 + 桌面主导航 -->
+      <div class="flex items-center gap-4 min-w-0">
+        <!-- LOGO -->
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <div class="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 shadow-lg shadow-blue-500/40">
+            <span class="text-base font-bold tracking-tight">N</span>
+          </div>
+          <div class="leading-tight">
+            <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
+              NST FINANCE
+            </div>
+            <div class="text-[11px] text-slate-200" data-i18n="brand.tagline">
+              非标未来 · 去中心化非标风险平台
+            </div>
+          </div>
+        </div>
+
+        <!-- 桌面主导航 -->
+        <nav class="hidden items-center gap-2 text-[12px] font-medium md:flex flex-nowrap">
+          <!-- 创世阶段 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.genesis">
+              创世阶段
+            </button>
+            <!-- mt-1 -> mt-0 -->
+            <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="genesis-donation.html" class="submenu-item" data-i18n="nav.genesis.donation">
+                  捐赠
+                </a>
+                <a href="genesis-node.html" class="submenu-item" data-i18n="nav.genesis.node">
+                  节点抢购
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- NST资本生态 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.eco">
+              NST资本生态
+            </button>
+            <!-- mt-1 -> mt-0 -->
+            <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="eco-margin-pools.html" class="submenu-item" data-i18n="nav.eco.margin">
+                  做市收益
+                </a>
+                <a href="eco-crowd-free-pool.html" class="submenu-item" data-i18n="nav.eco.crowd">
+                 固化保本收益
+                </a>
+                <a href="eco-rewards.html" class="submenu-item" data-i18n="nav.eco.rewards">
+                  NST 奖励· 空投
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 交易大厅 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.trade">
+              交易大厅
+            </button>
+            <!-- mt-1 -> mt-0 -->
+            <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="options-hall.html" class="submenu-item" data-i18n="nav.trade.options">
+                  期权订单大厅
+                </a>
+                <a href="cfd-hall.html" class="submenu-item" data-i18n="nav.trade.cfd">
+                  CFD订单大厅
+                </a>
+                <a href="crowd-hall.html" class="submenu-item" data-i18n="nav.trade.crowd">
+                  众筹订单大厅
+                </a>
+                <a href="feeder-hall.html" class="submenu-item" data-i18n="nav.trade.feeder">
+                  共识喂价大厅
+                </a>
+                <a href="arbitration-hall.html" class="submenu-item" data-i18n="nav.trade.arb">
+                  仲裁记录大厅
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- NST课堂 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.academy">
+              NST课堂
+            </button>
+            <!-- mt-1 -> mt-0 -->
+            <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="academy-how-to-trade.html" class="submenu-item" data-i18n="nav.academy.how">
+                  如何交易
+                </a>
+                <a href="academy-risk.html" class="submenu-item" data-i18n="nav.academy.risk">
+                  风险在哪
+                </a>
+                <a href="academy-faq.html" class="submenu-item" data-i18n="nav.academy.faq">
+                  常见问题
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 关于我们 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.about">
+              关于我们
+            </button>
+            <!-- mt-1 -> mt-0 -->
+            <div class="absolute left-0 top-full mt-0 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="about-dao.html" class="submenu-item" data-i18n="nav.about.dao">
+                  NST DAO
+                </a>
+                <a href="about-team.html" class="submenu-item" data-i18n="nav.about.team">
+                  基金会
+                </a>
+                <a href="about-roadmap.html" class="submenu-item" data-i18n="nav.about.roadmap">
+                  社区
+                </a>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <!-- 右侧：桌面语言 + 钱包；手机 菜单/语言/钱包 -->
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <!-- 桌面：语言 + 钱包 -->
+        <div class="hidden items-center gap-3 md:flex">
+          <!-- 语言（桌面） -->
+          <div class="relative group inline-block">
+            <button class="lang-pill-trigger" type="button">
+              <span data-i18n="lang.label">语言</span>
+              <svg class="h-3 w-3 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.084l3.71-3.853a.75.75 0 111.08 1.04l-4.25 4.417a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div class="absolute right-0 top-full mt-1 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <button type="button" class="lang-item" onclick="setLanguage('zh-CN')">简体中文</button>
+                <button type="button" class="lang-item" onclick="setLanguage('zh-TW')">繁體中文</button>
+                <button type="button" class="lang-item" onclick="setLanguage('en')">English</button>
+                <button type="button" class="lang-item" onclick="setLanguage('ja')">日本語</button>
+                <button type="button" class="lang-item" onclick="setLanguage('ko')">한국어</button>
+                <button type="button" class="lang-item" onclick="setLanguage('th')">ภาษาไทย</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 钱包 -->
+          <button
+            class="rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 px-4 py-2 text-[12px] font-semibold text-slate-950 shadow-lg shadow-blue-500/50 hover:brightness-110"
+            data-i18n="btn.wallet"
+          >
+            连接钱包
+          </button>
+        </div>
+
+        <!-- 手机：菜单 / 语言 / 钱包 -->
+        <div class="flex items-center gap-2 md:hidden">
+          <!-- 菜单 + 下拉 -->
+          <div class="relative">
+            <button class="main-pill top-pill flex items-center gap-1" type="button" onclick="toggleMobileMain()">
+              <span data-i18n="btn.menu">菜单</span>
+              <svg class="h-3 w-3 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.084l3.71-3.853a.75.75 0 111.08 1.04l-4.25 4.417a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div
+              id="mobileMainNav"
+              class="absolute left-0 top-full mt-0 hidden z-40 min-w-[210px] rounded-2xl border border-slate-800 bg-slate-950/98 px-3 py-3 text-[12px] text-slate-200"
+            >
+              <!-- 创世阶段 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('genesis')"
+                >
+                  <span data-i18n="nav.genesis">创世阶段</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-genesis" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="genesis-donation.html" class="submenu-item bg-slate-900/80" data-i18n="nav.genesis.donation">
+                    捐赠
+                  </a>
+                  <a href="genesis-node.html" class="submenu-item bg-slate-900/80" data-i18n="nav.genesis.node">
+                    节点购买
+                  </a>
+                </div>
+              </div>
+
+              <!-- NST资本生态 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('eco')"
+                >
+                  <span data-i18n="nav.eco">NST资本生态</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-eco" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="eco-margin-pools.html" class="submenu-item bg-slate-900/80" data-i18n="nav.eco.margin">
+                  做市收益
+                  </a>
+                  <a href="eco-crowd-free-pool.html" class="submenu-item bg-slate-900/80" data-i18n="nav.eco.crowd">
+                 固化保本
+                  </a>
+                  <a href="eco-rewards.html" class="submenu-item bg-slate-900/80" data-i18n="nav.eco.rewards">
+                    NST 奖励 · 空投
+                  </a>
+                </div>
+              </div>
+
+              <!-- 交易大厅 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('trade')"
+                >
+                  <span data-i18n="nav.trade">交易大厅</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-trade" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="options-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.options">
+                    期权订单大厅
+                  </a>
+                  <a href="cfd-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.cfd">
+                    CFD订单大厅
+                  </a>
+                  <a href="crowd-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.crowd">
+                    众筹订单大厅
+                  </a>
+                  <a href="feeder-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.feeder">
+                    共识喂价大厅
+                  </a>
+                  <a href="arbitration-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.arb">
+                    仲裁记录大厅
+                  </a>
+                </div>
+              </div>
+
+              <!-- NST课堂 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('academy')"
+                >
+                  <span data-i18n="nav.academy">NST课堂</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-academy" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="academy-how-to-trade.html" class="submenu-item bg-slate-900/80" data-i18n="nav.academy.how">
+                    如何交易
+                  </a>
+                  <a href="academy-risk.html" class="submenu-item bg-slate-900/80" data-i18n="nav.academy.risk">
+                    风险在哪
+                  </a>
+                  <a href="academy-faq.html" class="submenu-item bg-slate-900/80" data-i18n="nav.academy.faq">
+                    常见问题
+                  </a>
+                </div>
+              </div>
+
+              <!-- 关于我们 -->
+              <div>
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('about')"
+                >
+                  <span data-i18n="nav.about">关于我们</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-about" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="about-dao.html" class="submenu-item bg-slate-900/80" data-i18n="nav.about.dao">
+                    NST DAO
+                  </a>
+                  <a href="about-team.html" class="submenu-item bg-slate-900/80" data-i18n="nav.about.team">
+                   基金会
+                  </a>
+                  <a href="about-roadmap.html" class="submenu-item bg-slate-900/80" data-i18n="nav.about.roadmap">
+                   社区
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 语言 + 下拉 -->
+          <div class="relative">
+            <button class="lang-pill-trigger top-pill flex items-center gap-1" type="button" onclick="toggleMobileLang()">
+              <span data-i18n="lang.label">语言</span>
+              <svg class="h-3 w-3 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.084l3.71-3.853a.75.75 0 111.08 1.04l-4.25 4.417a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div
+              id="mobileLangNav"
+              class="absolute right-0 top-full mt-0 hidden z-40 min-w-[150px] rounded-2xl border border-slate-800 bg-slate-950/98 px-3 py-3 text-[12px] text-slate-200"
+            >
+              <div class="flex flex-col gap-2">
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('zh-CN')">简体中文</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('zh-TW')">繁體中文</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('en')">English</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('ja')">日本語</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('ko')">한국어</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('th')">ภาษาไทย</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 钱包按钮 -->
+          <button
+            class="rounded-full top-pill bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 px-3 py-1.5 text-[11px] font-semibold text-slate-950 shadow-lg shadow-blue-500/50"
+            data-i18n="btn.wallet"
+          >
+            连接钱包
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>

@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>NST – 买方众筹 · 发起众筹</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top, rgba(56,189,248,0.18), transparent 55%),
+        radial-gradient(circle at bottom, rgba(129,140,248,0.18), transparent 55%),
+        #020617;
+      color: #e2e8f0;
+      font-size: 15px;
+    }
+
+    /* ===== 顶部导航样式（与你其它页面保持一致） ===== */
+
+    .main-pill {
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(37,99,235,0.9);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.28), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .main-pill:hover {
+      background: linear-gradient(to right, #22c55e, #0ea5e9, #6366f1);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9), 0 10px 25px rgba(15,23,42,0.85);
+    }
+    .top-pill {
+      flex: 0 0 auto;
+    }
+
+    .submenu-panel {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .submenu-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #22d3ee, #6366f1);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .submenu-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #38bdf8, #a855f7);
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9);
+    }
+
+    .lang-pill-trigger {
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(147,51,234,0.85);
+      background:
+        radial-gradient(circle at top left, rgba(192,132,252,0.25), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .lang-pill-trigger:hover {
+      background: linear-gradient(to right, #6366f1, #a855f7);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(221,214,254,0.95), 0 10px 25px rgba(15,23,42,0.9);
+    }
+
+    .lang-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #a855f7, #38bdf8);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .lang-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #c4b5fd, #7dd3fc);
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(226,232,240,0.9);
+    }
+
+    @media (max-width: 767px) {
+      .main-pill {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .lang-pill-trigger {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .submenu-item {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+      .lang-item {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+    }
+
+    /* ===== 卡片样式 ===== */
+
+    .card {
+      background: rgba(15,23,42,0.96);
+      border-radius: 1.25rem;
+      border: 1px solid rgba(148,163,184,0.45);
+    }
+    .subcard {
+      background: rgba(15,23,42,0.94);
+      border-radius: 0.9rem;
+      border: 1px solid rgba(71,85,105,0.9);
+    }
+
+    .field-label {
+      font-size: 0.9rem;
+      color: #e5e9ff;
+      font-weight: 500;
+    }
+    .field-hint {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .field-input {
+      border-radius: 0.9rem;
+      border: 1px solid rgba(51,65,85,0.9);
+      background: rgba(15,23,42,0.96);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      width: 100%;
+      max-width: 260px;
+    }
+    .field-input:focus {
+      outline: none;
+      border-color: #22d3ee;
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.6);
+    }
+
+    .field-input-top {
+      max-width: 100%;
+      font-size: 1rem;
+      padding: 0.6rem 0.85rem;
+    }
+
+    .pill-option {
+      border-radius: 999px;
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      border: 1px solid rgba(71,85,105,0.95);
+      background: rgba(15,23,42,0.95);
+      color: #e5e7eb;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .pill-option-active {
+      border-color: rgba(45,212,191,0.9);
+      background:
+        radial-gradient(circle at top left, rgba(16,185,129,0.25), transparent 60%),
+        rgba(6,95,70,0.9);
+      color: #ecfeff;
+      box-shadow: 0 0 0 1px rgba(34,197,235,0.5);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen pb-10">
+
+  <!-- 顶部导航 -->
+  <header class="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-3 py-3 lg:px-0">
+      <!-- 左：LOGO + 说明 + 桌面主导航 -->
+      <div class="flex items-center gap-4 min-w-0">
+        <!-- LOGO -->
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <div class="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600 shadow-lg shadow-blue-500/40">
+            <span class="text-base font-bold tracking-tight">N</span>
+          </div>
+          <div class="leading-tight">
+            <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300">
+              NST FINANCE
+            </div>
+            <div class="text-[11px] text-slate-200" data-i18n="brand.tagline">
+              非标未来 · 去中心化非标风险平台
+            </div>
+          </div>
+        </div>
+
+        <!-- 桌面主导航 -->
+        <nav class="hidden items-center gap-2 text-[12px] font-medium md:flex flex-nowrap">
+          <!-- 创世阶段 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.genesis">
+              创世阶段
+            </button>
+            <div class="absolute left-0 top-full mt-1 hidden group-hover:block group-focus-within:block">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="genesis-donation.html" class="submenu-item" data-i18n="nav.genesis.donation">
+                  捐赠
+                </a>
+                <a href="genesis-node.html" class="submenu-item" data-i18n="nav.genesis.node">
+                  节点购买
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- NST资本生态 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.eco">
+              NST资本生态
+            </button>
+            <div class="absolute left-0 top-full mt-1 hidden group-hover:block group-focus-within:block">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="eco-margin-pools.html" class="submenu-item" data-i18n="nav.eco.margin">
+                  买方 / 卖方保证金池
+                </a>
+                <a href="eco-crowd-free-pool.html" class="submenu-item" data-i18n="nav.eco.crowd">
+                  买方众筹 + 自由买方资金池
+                </a>
+                <a href="eco-rewards.html" class="submenu-item" data-i18n="nav.eco.rewards">
+                  NST 奖励计划 · 积分空投
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 交易大厅 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.trade">
+              交易大厅
+            </button>
+            <div class="absolute left-0 top-full mt-1 hidden group-hover:block group-focus-within:block">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="options-hall.html" class="submenu-item" data-i18n="nav.trade.options">
+                  期权订单大厅
+                </a>
+                <a href="cfd-hall.html" class="submenu-item" data-i18n="nav.trade.cfd">
+                  CFD订单大厅
+                </a>
+                <a href="crowd-hall.html" class="submenu-item" data-i18n="nav.trade.crowd">
+                  众筹订单大厅
+                </a>
+                <a href="feeder-hall.html" class="submenu-item" data-i18n="nav.trade.feeder">
+                  白名单喂价大厅
+                </a>
+                <a href="arbitration-hall.html" class="submenu-item" data-i18n="nav.trade.arb">
+                  仲裁记录大厅
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- NST课堂 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.academy">
+              NST课堂
+            </button>
+            <div class="absolute left-0 top-full mt-1 hidden group-hover:block group-focus-within:block">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="academy-how-to-trade.html" class="submenu-item" data-i18n="nav.academy.how">
+                  如何交易
+                </a>
+                <a href="academy-risk.html" class="submenu-item" data-i18n="nav.academy.risk">
+                  风险在哪
+                </a>
+                <a href="academy-faq.html" class="submenu-item" data-i18n="nav.academy.faq">
+                  常见问题
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 关于我们 -->
+          <div class="relative group">
+            <button class="main-pill" data-i18n="nav.about">
+              关于我们
+            </button>
+            <div class="absolute left-0 top-full mt-1 hidden group-hover:block group-focus-within:block">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <a href="about-dao.html" class="submenu-item" data-i18n="nav.about.dao">
+                  NST DAO
+                </a>
+                <a href="about-team.html" class="submenu-item" data-i18n="nav.about.team">
+                  官方团队
+                </a>
+                <a href="about-roadmap.html" class="submenu-item" data-i18n="nav.about.roadmap">
+                  路线图
+                </a>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <!-- 右：语言 + 钱包 / 手机菜单 -->
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <!-- 桌面语言+钱包 -->
+        <div class="hidden items-center gap-3 md:flex">
+          <div class="relative group inline-block">
+            <button class="lang-pill-trigger" type="button">
+              <span data-i18n="lang.label">语言</span>
+              <svg class="h-3 w-3 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.084l3.71-3.853a.75.75 0 111.08 1.04l-4.25 4.417a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div class="absolute right-0 top-full mt-1 hidden group-hover:block group-focus-within:block z-40">
+              <div class="submenu-panel p-1 text-[12px] text-slate-50 flex flex-col gap-1">
+                <button type="button" class="lang-item" onclick="setLanguage('zh-CN')">简体中文</button>
+                <button type="button" class="lang-item" onclick="setLanguage('zh-TW')">繁體中文</button>
+                <button type="button" class="lang-item" onclick="setLanguage('en')">English</button>
+                <button type="button" class="lang-item" onclick="setLanguage('ja')">日本語</button>
+                <button type="button" class="lang-item" onclick="setLanguage('ko')">한국어</button>
+                <button type="button" class="lang-item" onclick="setLanguage('th')">ภาษาไทย</button>
+              </div>
+            </div>
+          </div>
+
+          <button
+            class="rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 px-4 py-2 text-[12px] font-semibold text-slate-950 shadow-lg shadow-blue-500/50 hover:brightness-110"
+            data-i18n="btn.wallet"
+          >
+            连接钱包
+          </button>
+        </div>
+
+        <!-- 手机菜单 / 语言 / 钱包 -->
+        <div class="flex items-center gap-2 md:hidden">
+          <!-- 菜单 -->
+          <div class="relative">
+            <button class="main-pill top-pill flex items-center gap-1" type="button" onclick="toggleMobileMain()">
+              <span data-i18n="btn.menu">菜单</span>
+              <svg class="h-3 w-3 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.084l3.71-3.853a.75.75 0 111.08 1.04l-4.25 4.417a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                      clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div
+              id="mobileMainNav"
+              class="absolute left-0 top-full mt-0 hidden z-40 min-w-[210px] rounded-2xl border border-slate-800 bg-slate-950/98 px-3 py-3 text-[12px] text-slate-200"
+            >
+              <!-- 创世阶段 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('genesis')"
+                >
+                  <span data-i18n="nav.genesis">创世阶段</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-genesis" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="genesis-donation.html" class="submenu-item bg-slate-900/80" data-i18n="nav.genesis.donation">
+                    捐赠
+                  </a>
+                  <a href="genesis-node.html" class="submenu-item bg-slate-900/80" data-i18n="nav.genesis.node">
+                    节点购买
+                  </a>
+                </div>
+              </div>
+
+              <!-- NST资本生态 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('eco')"
+                >
+                  <span data-i18n="nav.eco">NST资本生态</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-eco" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="eco-margin-pools.html" class="submenu-item bg-slate-900/80" data-i18n="nav.eco.margin">
+                    买方 / 卖方保证金池
+                  </a>
+                  <a href="eco-crowd-free-pool.html" class="submenu-item bg-slate-900/80" data-i18n="nav.eco.crowd">
+                    买方众筹 + 自由买方资金池
+                  </a>
+                  <a href="eco-rewards.html" class="submenu-item bg-slate-900/80" data-i18n="nav.eco.rewards">
+                    NST 奖励计划 · 积分空投
+                  </a>
+                </div>
+              </div>
+
+              <!-- 交易大厅 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('trade')"
+                >
+                  <span data-i18n="nav.trade">交易大厅</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-trade" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="options-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.options">
+                    期权订单大厅
+                  </a>
+                  <a href="cfd-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.cfd">
+                    CFD订单大厅
+                  </a>
+                  <a href="crowd-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.crowd">
+                    众筹订单大厅
+                  </a>
+                  <a href="feeder-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.feeder">
+                    白名单喂价大厅
+                  </a>
+                  <a href="arbitration-hall.html" class="submenu-item bg-slate-900/80" data-i18n="nav.trade.arb">
+                    仲裁记录大厅
+                  </a>
+                </div>
+              </div>
+
+              <!-- NST课堂 -->
+              <div class="mb-2">
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('academy')"
+                >
+                  <span data-i18n="nav.academy">NST课堂</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-academy" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="academy-how-to-trade.html" class="submenu-item bg-slate-900/80" data-i18n="nav.academy.how">
+                    如何交易
+                  </a>
+                  <a href="academy-risk.html" class="submenu-item bg-slate-900/80" data-i18n="nav.academy.risk">
+                    风险在哪
+                  </a>
+                  <a href="academy-faq.html" class="submenu-item bg-slate-900/80" data-i18n="nav.academy.faq">
+                    常见问题
+                  </a>
+                </div>
+              </div>
+
+              <!-- 关于我们 -->
+              <div>
+                <button
+                  type="button"
+                  class="main-pill top-pill flex items-center gap-1 w-full justify-between"
+                  onclick="toggleMobileSection('about')"
+                >
+                  <span data-i18n="nav.about">关于我们</span>
+                  <span>▾</span>
+                </button>
+                <div id="mobile-section-about" class="mt-2 pl-2 hidden flex-col gap-2">
+                  <a href="about-dao.html" class="submenu-item bg-slate-900/80" data-i18n="nav.about.dao">
+                    NST DAO
+                  </a>
+                  <a href="about-team.html" class="submenu-item bg-slate-900/80" data-i18n="nav.about.team">
+                    官方团队
+                  </a>
+                  <a href="about-roadmap.html" class="submenu-item bg-slate-900/80" data-i18n="nav.about.roadmap">
+                    路线图
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 手机语言 -->
+          <div class="relative">
+            <button class="lang-pill-trigger top-pill flex items-center gap-1" type="button" onclick="toggleMobileLang()">
+              <span data-i18n="lang.label">语言</span>
+              <svg class="h-3 w-3 text-slate-300" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.084l3.71-3.853a.75.75 0 111.08 1.04l-4.25 4.417a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                      clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div
+              id="mobileLangNav"
+              class="absolute right-0 top-full mt-0 hidden z-40 min-w-[150px] rounded-2xl border border-slate-800 bg-slate-950/98 px-3 py-3 text-[12px] text-slate-200"
+            >
+              <div class="flex flex-col gap-2">
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('zh-CN')">简体中文</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('zh-TW')">繁體中文</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('en')">English</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('ja')">日本語</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('ko')">한국어</button>
+                <button type="button" class="lang-item bg-slate-900/80" onclick="setLanguage('th')">ภาษาไทย</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 手机钱包 -->
+          <button
+            class="rounded-full top-pill bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 px-3 py-1.5 text-[11px] font-semibold text-slate-950 shadow-lg shadow-blue-500/50"
+            data-i18n="btn.wallet"
+          >
+            连接钱包
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主体内容：买方众筹 · 发起众筹 -->
+  <main class="mx-auto mt-6 max-w-6xl px-3 lg:px-0">
+
+    <section class="card p-5 sm:p-6 lg:p-7">
+      <!-- 标题区 -->
+      <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+            BUYER CROWD · LAUNCH
+          </div>
+          <h1 class="mt-1 text-2xl font-semibold text-slate-50 sm:text-3xl">
+            买方众筹 · 发起一笔期权众筹合约
+          </h1>
+          <p class="mt-2 text-sm text-slate-300 max-w-2xl">
+            由你作为买方发起人，先确定标的、方向、名义本金、期权费率上限与合约期限，
+            再将一整笔合约拆分成若干「众筹份额」，你可以先自认购一部分，剩余部分开放给其他买方跟投。
+          </p>
+        </div>
+        <div class="rounded-full border border-cyan-400/60 bg-cyan-500/10 px-3 py-1 text-[12px] text-cyan-100">
+          众筹合约期限为<span class="font-semibold text-cyan-200">固定期限</span> · 仅到期日统一结算
+        </div>
+      </div>
+
+      <!-- 左右两列 -->
+      <div class="grid gap-6 lg:grid-cols-2 items-start">
+
+        <!-- 左侧：表单 -->
+        <div class="subcard p-4 sm:p-5 space-y-4">
+
+          <!-- 标的 + 市场 + 方向 + 效验价格 -->
+          <div class="space-y-4">
+            <!-- 顶部两格：标的名称/代码 + 标的市场 -->
+            <div>
+              <div class="flex flex-col gap-3 sm:flex-row sm:gap-6">
+                <!-- 左：标的名称 / 代码 -->
+                <div class="flex-1">
+                  <div class="field-label mb-1">标的名称 / 代码</div>
+                  <input
+                    type="text"
+                    class="field-input field-input-top"
+                    placeholder="例如：中国平安 / 601318.SH / 0386.HK / 380582"
+                  />
+                  <div class="field-hint mt-1">
+                    支持股票、指数、基金、非标资产内部编码等，例如：中国平安 / 601318.SH / 700.HK。
+                  </div>
+                </div>
+                <!-- 右：标的市场 -->
+                <div class="flex-1">
+                  <div class="field-label mb-1">标的市场</div>
+                  <input
+                    type="text"
+                    class="field-input field-input-top"
+                    placeholder="例如：沪深A股 / 港股 / 美股 / 场外非标"
+                  />
+                  <div class="field-hint mt-1">
+                    用于标记交易所或市场类型，方便后续风控与定价逻辑调用。
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 方向：买方视角（跟普通买方建仓一样） -->
+            <div>
+              <div class="field-label mb-1">方向（买方）</div>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" class="pill-option pill-option-active" data-group="direction">
+                  看涨
+                </button>
+                <button type="button" class="pill-option" data-group="direction">
+                  看跌
+                </button>
+              </div>
+              <div class="field-hint mt-1">
+                看涨：你和参与众筹的买方一起押注标的价格上涨；看跌：一起押注标的价格下跌。
+              </div>
+            </div>
+
+            <!-- 效验价格 -->
+            <div>
+              <div class="field-label mb-1">效验价格（参考价）</div>
+              <input
+                type="number"
+                step="0.01"
+                class="field-input"
+                placeholder="例如：23.30"
+              />
+              <div class="field-hint mt-1">
+                一般为当前或约定的参考价，到期时将与实际标的价格对比，决定众筹合约是否获利。
+              </div>
+            </div>
+          </div>
+
+          <!-- 名义本金 & 期权费率（接受最高费率） -->
+          <div class="pt-4 border-t border-slate-700/70 space-y-3">
+            <div class="field-label">目标名义本金</div>
+            <div class="grid grid-cols-[1.2fr,1fr] gap-4 items-end">
+              <div>
+                <div class="field-hint mb-1">金额（单位：万）</div>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  id="input-notional"
+                  class="field-input"
+                  placeholder="例如：100（代表 100 万）"
+                />
+              </div>
+              <div>
+                <div class="field-hint mb-1">币种</div>
+                <div class="flex flex-wrap gap-2">
+                  <button type="button" class="pill-option pill-option-active" data-group="notional-currency">
+                    美金
+                  </button>
+                  <button type="button" class="pill-option" data-group="notional-currency">
+                    港币
+                  </button>
+                  <button type="button" class="pill-option" data-group="notional-currency">
+                    人民币
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="field-hint">
+              示例：100 万美金 / 港币 / 人民币。众筹合约整体以该名义本金为基础，之后按你设置的拆分份数平分。
+            </div>
+
+            <div class="mt-3">
+              <div class="field-label mb-1">接受最高期权费率（年化）</div>
+              <div class="grid grid-cols-[1.2fr,1fr] gap-4 items-end">
+                <div>
+                  <div class="field-hint mb-1">费率上限（% / 年）</div>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    id="input-rate"
+                    class="field-input"
+                    placeholder="例如：6.5"
+                  />
+                </div>
+                <div>
+                  <div class="field-hint mb-1">结算币种</div>
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" class="pill-option pill-option-active" data-group="fee-currency">
+                      美金
+                    </button>
+                    <button type="button" class="pill-option" data-group="fee-currency">
+                      港币
+                    </button>
+                    <button type="button" class="pill-option" data-group="fee-currency">
+                      人民币
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="field-hint mt-1">
+                这是全体众筹买方愿意接受的最高费率上限，卖方报价需在此之内才有机会被撮合成交。
+              </div>
+            </div>
+          </div>
+
+          <!-- 合约期限（按月固定，到期一次性结算） -->
+          <div class="pt-4 border-t border-slate-700/70 space-y-3">
+            <div class="field-label">合约期限（按月固定）</div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="pill-option pill-option-active" data-group="tenor-months" data-months="1">
+                1 个月
+              </button>
+              <button type="button" class="pill-option" data-group="tenor-months" data-months="2">
+                2 个月
+              </button>
+              <button type="button" class="pill-option" data-group="tenor-months" data-months="3">
+                3 个月
+              </button>
+              <button type="button" class="pill-option" data-group="tenor-months" data-months="6">
+                6 个月
+              </button>
+              <button type="button" class="pill-option" data-group="tenor-months" data-months="12">
+                12 个月
+              </button>
+            </div>
+            <div class="field-hint">
+              众筹合约 <span class="text-amber-300">不能中途随意平仓</span>，
+              约定多久就是多久，到期日依据标的价格一次性统一结算。
+            </div>
+          </div>
+
+          <!-- 卖方类型 + 保证金类型（结构和前面一样） -->
+          <div class="pt-4 border-t border-slate-700/70 space-y-3">
+            <div class="field-label">预期卖方类型</div>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2 text-xs text-slate-200">
+                <input type="radio" name="sellerType" value="free"
+                       class="h-3 w-3 text-cyan-400 border-slate-600 bg-slate-900" checked />
+                <span>自由卖方（任何通过 KYC / 白名单的卖方都可参与报价）</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs text-slate-200">
+                <input type="radio" name="sellerType" value="free-plus-platform"
+                       class="h-3 w-3 text-cyan-400 border-slate-600 bg-slate-900" />
+                <span>自由卖方 + 平台卖方（平台做市账户可参与承接）</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs text-slate-200">
+                <input type="radio" name="sellerType" value="designated"
+                       class="h-3 w-3 text-cyan-400 border-slate-600 bg-slate-900" />
+                <span>指定卖方（只允许你指定的钱包地址报价）</span>
+              </label>
+            </div>
+            <div class="mt-2">
+              <div class="field-hint mb-1">若选择「指定卖方」，请填写卖方地址（可留空）</div>
+              <input
+                type="text"
+                class="field-input font-mono text-[0.8rem]"
+                placeholder="例如：0xSeller...9f23（卖方钱包地址 / 机构账户地址）"
+              />
+            </div>
+          </div>
+
+          <!-- 保证金类型（卖方侧，但买方在这里预先约定模式） -->
+          <div class="pt-4 border-t border-slate-700/70 space-y-3">
+            <div class="field-label">卖方保证金类型</div>
+            <div class="grid gap-3 md:grid-cols-[1.3fr,1.1fr] items-start">
+              <!-- 左：按钮 -->
+              <div class="flex flex-wrap gap-2">
+                <button type="button" class="pill-option pill-option-active" data-group="margin-type">
+                  封顶保证金
+                </button>
+                <button type="button" class="pill-option" data-group="margin-type">
+                  动态保证金
+                </button>
+              </div>
+              <!-- 右：解释 -->
+              <div class="rounded-lg border border-slate-700/70 bg-slate-950/60 px-3 py-2 text-[11px] leading-relaxed">
+                <div class="text-slate-200 mb-1">由协议要求卖方采用的保证金模式：</div>
+                <ul class="list-disc pl-4 space-y-0.5 text-slate-400">
+                  <li>
+                    封顶保证金：按最极端行情预估最大亏损，卖方需一次性锁定较高保证金，众筹买方安全性最高。
+                  </li>
+                  <li>
+                    动态保证金：保证金随行情波动动态调整，卖方占用资金更少，但中途可能出现追加保证金。
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="field-hint">
+              这里只是预设规则：未来所有愿意接单的卖方必须满足对应保证金要求，才能承接该众筹订单。
+            </div>
+          </div>
+
+          <!-- 众筹拆分：每笔合约拆分 20 份 + 发起人自认购 -->
+          <div class="pt-4 border-t border-slate-700/70 space-y-3">
+            <div class="field-label">众筹拆分与自认购</div>
+
+            <div class="grid gap-4 md:grid-cols-2 items-start">
+              <!-- 左边：输入 -->
+              <div class="space-y-3">
+                <div>
+                  <div class="field-hint mb-1">单笔合约最多可拆分份数</div>
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    id="input-total-parts"
+                    class="field-input"
+                    value="20"
+                  />
+                  <div class="field-hint mt-1">
+                    默认每笔合约拆分为 <span class="text-emerald-300">20 份</span>，也可根据实际需要适当减少。
+                  </div>
+                </div>
+
+                <div>
+                  <div class="field-hint mb-1">发起人自认购份数</div>
+                  <input
+                    type="number"
+                    min="0"
+                    max="20"
+                    id="input-self-parts"
+                    class="field-input"
+                    value="4"
+                  />
+                  <div class="field-hint mt-1">
+                    你作为发起人先锁定其中几份，剩余份额由其他买方一起众筹完成。
+                  </div>
+                </div>
+              </div>
+
+              <!-- 右边：计算结果展示 -->
+              <div class="rounded-lg border border-slate-700/70 bg-slate-950/60 px-3 py-2 text-[12px] leading-relaxed space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400">合约总份数</span>
+                  <span class="font-semibold text-slate-100"><span id="crowd-total">20</span> 份</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400">发起人已认购</span>
+                  <span class="font-semibold text-emerald-300"><span id="crowd-self">4</span> 份</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400">剩余可众筹</span>
+                  <span class="font-semibold text-cyan-300"><span id="crowd-remaining">16</span> 份</span>
+                </div>
+                <div class="border-t border-slate-700/70 my-1"></div>
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="text-slate-400">每份对应名义本金（约）</span>
+                  <span class="font-semibold text-amber-300" id="crowd-share-notional">
+                    -
+                  </span>
+                </div>
+                <p class="mt-1 text-[11px] text-slate-500">
+                  实际链上实现时，发起人自认购部分会直接从你的保证金 / 权利金账户中锁定，剩余部分开放给其他地址认购。
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 右侧：预览卡片 + 手续费 -->
+        <div class="space-y-4">
+          <!-- 预览卡片 -->
+          <div class="subcard p-4 sm:p-5 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <div class="text-xs font-semibold text-slate-300">
+                  众筹合约要素 · 预览确认
+                </div>
+                <div class="text-[11px] text-slate-500">
+                  用于在众筹大厅中展示给其他买方和潜在卖方查看。
+                </div>
+              </div>
+              <div class="rounded-full border border-amber-400/60 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-200">
+                当前为示例展示 · 后续由脚本自动填充
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-2 text-[12px] sm:grid-cols-2">
+              <div>
+                <div class="text-slate-500">标的名称 / 代码</div>
+                <div class="font-medium text-slate-100">
+                  中国平安 · 601318.SH
+                </div>
+              </div>
+              <div>
+                <div class="text-slate-500">方向</div>
+                <div class="font-medium text-emerald-300">
+                  看涨
+                </div>
+              </div>
+              <div>
+                <div class="text-slate-500">效验价格</div>
+                <div class="font-medium text-slate-100">
+                  23.30
+                </div>
+              </div>
+              <div>
+                <div class="text-slate-500">目标名义本金</div>
+                <div class="font-medium text-slate-100">
+                  100 万 · 美金
+                </div>
+              </div>
+              <div>
+                <div class="text-slate-500">接受最高期权费率</div>
+                <div class="font-medium text-slate-100">
+                  6.5% / 年 · 美金计价
+                </div>
+              </div>
+              <div>
+                <div class="text-slate-500">预期最大权利金</div>
+                <div class="font-medium text-slate-100">
+                  约 65,000 USDT（参考值）
+                </div>
+              </div>
+              <div>
+                <div class="text-slate-500">合约期限</div>
+                <div class="font-medium text-slate-100">
+                  固定 2 个月 · 到期统一结算
+                </div>
+              </div>
+              <div>
+                <div class="text-slate-500">卖方类型</div>
+                <div class="font-medium text-slate-100">
+                  自由卖方 + 平台卖方
+                </div>
+              </div>
+              <div>
+                <div class="text-slate-500">保证金类型</div>
+                <div class="font-medium text-slate-100">
+                  封顶保证金
+                </div>
+              </div>
+              <div>
+                <div class="text-slate-500">众筹拆分情况</div>
+                <div class="font-medium text-slate-100">
+                  总计 20 份 · 发起人自认购 4 份 · 剩余 16 份
+                </div>
+              </div>
+              <div>
+                <div class="text-slate-500">每份名义本金（示例）</div>
+                <div class="font-medium text-slate-100">
+                  约 5 万美金 / 份
+                </div>
+              </div>
+              <div>
+                <div class="text-slate-500">指定卖方 / 买方地址</div>
+                <div class="font-mono text-slate-100">
+                  0xSeller...9f23（如选择指定）
+                </div>
+              </div>
+            </div>
+
+            <p class="mt-2 text-[11px] text-slate-500">
+              众筹成功后，该笔合约将进入「众筹订单大厅」的进行中状态，卖方在约定期限内参与报价，
+              达到众筹目标并撮合成功后，合约正式生效。
+            </p>
+          </div>
+
+          <!-- 手续费 -->
+          <div class="subcard p-4 sm:p-5 space-y-3">
+            <div class="text-xs font-semibold text-slate-300">
+              发起众筹 · 手续费与说明
+            </div>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2 text-[12px] text-slate-200">
+                <input
+                  type="radio"
+                  name="feeMode"
+                  value="usdt"
+                  class="h-3 w-3 text-cyan-400 border-slate-600 bg-slate-900"
+                  checked
+                />
+                <span>
+                  使用稳定币支付发起众筹手续费
+                  <span class="font-semibold text-cyan-300">1.0 USDT</span>
+                </span>
+              </label>
+              <label class="flex items-center gap-2 text-[12px] text-slate-200">
+                <input
+                  type="radio"
+                  name="feeMode"
+                  value="nst"
+                  class="h-3 w-3 text-indigo-400 border-slate-600 bg-slate-900"
+                />
+                <span>
+                  使用 <span class="font-semibold text-indigo-300">NST</span> 支付，
+                  按当前汇率折算
+                  <span class="font-semibold text-emerald-300">等值 0.8 USDT</span>，
+                  享受手续费 8 折激励。
+                </span>
+              </label>
+            </div>
+            <p class="field-hint">
+              手续费随发起众筹交易一同锁定：一部分用于奖励参与撮合与节点，一部分用于协议维护与审计成本。
+              众筹未成功时可按协议规则退还给发起人或转为下次发起抵扣。
+            </p>
+
+            <div class="mt-3">
+              <button
+                type="button"
+                class="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-blue-500/40 hover:brightness-110 transition"
+              >
+                确认以上要素 · 发起众筹合约
+              </button>
+              <p class="mt-2 text-[11px] text-slate-500">
+                当前为前端示意：与智能合约对接后，将在点击时创建「众筹单」，
+                并记录发起人自认购份数、剩余可认购份数及合约要素，返回众筹编号与交易哈希。
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 底部脚本：按钮高亮 + 导航交互 + 多语言 + 众筹计算 -->
+  <script>
+    // 胶囊按钮按组点亮
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.pill-option[data-group]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var group = btn.getAttribute('data-group');
+          document.querySelectorAll('.pill-option[data-group="' + group + '"]').forEach(function (b) {
+            b.classList.remove('pill-option-active');
+          });
+          btn.classList.add('pill-option-active');
+        });
+      });
+
+      // 众筹拆分计算
+      const inputTotal = document.getElementById('input-total-parts');
+      const inputSelf = document.getElementById('input-self-parts');
+      const totalSpan = document.getElementById('crowd-total');
+      const selfSpan = document.getElementById('crowd-self');
+      const remainSpan = document.getElementById('crowd-remaining');
+      const notionalInput = document.getElementById('input-notional');
+      const shareNotional = document.getElementById('crowd-share-notional');
+
+      function updateCrowdInfo() {
+        let total = parseInt(inputTotal.value || '0', 10);
+        let self = parseInt(inputSelf.value || '0', 10);
+        if (total < 1) total = 1;
+        if (total > 20) total = 20;
+        if (self < 0) self = 0;
+        if (self > total) self = total;
+        inputTotal.value = total;
+        inputSelf.value = self;
+
+        const remain = total - self;
+        totalSpan.textContent = total;
+        selfSpan.textContent = self;
+        remainSpan.textContent = remain;
+
+        const notional = parseFloat(notionalInput.value || '0');
+        if (notional > 0 && total > 0) {
+          const per = notional / total;
+          shareNotional.textContent = '约 ' + per.toFixed(2) + ' 万 / 份';
+        } else {
+          shareNotional.textContent = '-';
+        }
+      }
+
+      inputTotal && inputTotal.addEventListener('input', updateCrowdInfo);
+      inputSelf && inputSelf.addEventListener('input', updateCrowdInfo);
+      notionalInput && notionalInput.addEventListener('input', updateCrowdInfo);
+
+      updateCrowdInfo();
+    });
+
+    // 手机菜单 / 语言
+    function toggleMobileMain() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      main.classList.toggle('hidden');
+      if (!lang.classList.contains('hidden')) lang.classList.add('hidden');
+    }
+
+    function toggleMobileLang() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      lang.classList.toggle('hidden');
+      if (!main.classList.contains('hidden')) main.classList.add('hidden');
+    }
+
+    function toggleMobileSection(section) {
+      const ids = [
+        'mobile-section-genesis',
+        'mobile-section-eco',
+        'mobile-section-trade',
+        'mobile-section-academy',
+        'mobile-section-about'
+      ];
+      const targetId = 'mobile-section-' + section;
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (id === targetId) {
+          el.classList.toggle('hidden');
+        } else {
+          if (!el.classList.contains('hidden')) el.classList.add('hidden');
+        }
+      });
+    }
+
+    // 多语言字典（保持与你其它页面一致的 key）
+    const translations = {
+      'en': {
+        'brand.tagline': 'Non-Standard Future · Decentralized Non-Standard Risk Platform',
+        'nav.genesis': 'Genesis',
+        'nav.genesis.donation': 'Donation',
+        'nav.genesis.node': 'Node Purchase',
+        'nav.eco': 'NST Capital',
+        'nav.eco.margin': 'Buyer / Seller Margin Pools',
+        'nav.eco.crowd': 'Buyer Crowd & Free Pool',
+        'nav.eco.rewards': 'NST Rewards · Points Airdrop',
+        'nav.trade': 'Markets',
+        'nav.trade.options': 'Options Order Hall',
+        'nav.trade.cfd': 'CFD Order Hall',
+        'nav.trade.crowd': 'Crowd Order Hall',
+        'nav.trade.feeder': 'Whitelist Price Feed',
+        'nav.trade.arb': 'Arbitration Records',
+        'nav.academy': 'Academy',
+        'nav.academy.how': 'How to Trade',
+        'nav.academy.risk': 'Where is the Risk',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': 'About',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': 'Core Team',
+        'nav.about.roadmap': 'Roadmap',
+        'lang.label': 'Language',
+        'btn.wallet': 'Connect Wallet',
+        'btn.menu': 'Menu'
+      },
+      'zh-CN': {
+        'brand.tagline': '非标未来 · 去中心化非标风险平台',
+        'nav.genesis': '创世阶段',
+        'nav.genesis.donation': '捐赠',
+        'nav.genesis.node': '节点购买',
+        'nav.eco': 'NST资本生态',
+        'nav.eco.margin': '买方 / 卖方保证金池',
+        'nav.eco.crowd': '买方众筹 + 自由买方资金池',
+        'nav.eco.rewards': 'NST 奖励计划 · 积分空投',
+        'nav.trade': '交易大厅',
+        'nav.trade.options': '期权订单大厅',
+        'nav.trade.cfd': 'CFD订单大厅',
+        'nav.trade.crowd': '众筹订单大厅',
+        'nav.trade.feeder': '白名单喂价大厅',
+        'nav.trade.arb': '仲裁记录大厅',
+        'nav.academy': 'NST课堂',
+        'nav.academy.how': '如何交易',
+        'nav.academy.risk': '风险在哪',
+        'nav.academy.faq': '常见问题',
+        'nav.about': '关于我们',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': '官方团队',
+        'nav.about.roadmap': '路线图',
+        'lang.label': '语言',
+        'btn.wallet': '连接钱包',
+        'btn.menu': '菜单'
+      },
+      'zh-TW': {
+        'brand.tagline': '非標未來 · 去中心化非標風險平台',
+        'nav.genesis': '創世階段',
+        'nav.genesis.donation': '捐贈',
+        'nav.genesis.node': '節點購買',
+        'nav.eco': 'NST資本生態',
+        'nav.eco.margin': '買方 / 賣方保證金池',
+        'nav.eco.crowd': '買方眾籌 + 自由買方資金池',
+        'nav.eco.rewards': 'NST 獎勵計劃 · 積分空投',
+        'nav.trade': '交易大廳',
+        'nav.trade.options': '期權訂單大廳',
+        'nav.trade.cfd': 'CFD訂單大廳',
+        'nav.trade.crowd': '眾籌訂單大廳',
+        'nav.trade.feeder': '白名單喂價大廳',
+        'nav.trade.arb': '仲裁記錄大廳',
+        'nav.academy': 'NST課堂',
+        'nav.academy.how': '如何交易',
+        'nav.academy.risk': '風險在哪裡',
+        'nav.academy.faq': '常見問題',
+        'nav.about': '關於我們',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': '官方團隊',
+        'nav.about.roadmap': '路線圖',
+        'lang.label': '語言',
+        'btn.wallet': '連接錢包',
+        'btn.menu': '選單'
+      },
+      'ja': {
+        'brand.tagline': '非標準な未来 · 分散型ノンスタンダードリスクプラットフォーム',
+        'nav.genesis': 'ジェネシス',
+        'nav.genesis.donation': 'ドネーション',
+        'nav.genesis.node': 'ノード購入',
+        'nav.eco': 'NSTエコ',
+        'nav.eco.margin': '買い / 売り マージンプール',
+        'nav.eco.crowd': '買い手クラウド & 自由プール',
+        'nav.eco.rewards': 'NSTリワード · ポイント',
+        'nav.trade': 'マーケット',
+        'nav.trade.options': 'オプション注文ホール',
+        'nav.trade.cfd': 'CFD注文ホール',
+        'nav.trade.crowd': 'クラウド注文ホール',
+        'nav.trade.feeder': 'WL価格フィード',
+        'nav.trade.arb': '仲裁記録',
+        'nav.academy': 'アカデミー',
+        'nav.academy.how': '取引方法',
+        'nav.academy.risk': 'リスクはどこに',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': '概要',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': 'コアチーム',
+        'nav.about.roadmap': 'ロードマップ',
+        'lang.label': '言語',
+        'btn.wallet': 'ウォレット接続',
+        'btn.menu': 'メニュー'
+      },
+      'ko': {
+        'brand.tagline': '비표준 미래 · 탈중앙화 비표준 리스크 플랫폼',
+        'nav.genesis': '제네시스',
+        'nav.genesis.donation': '기부',
+        'nav.genesis.node': '노드 구매',
+        'nav.eco': 'NST 생태계',
+        'nav.eco.margin': '매수 / 매도 마진 풀',
+        'nav.eco.crowd': '매수 크라우드 & 자유 풀',
+        'nav.eco.rewards': 'NST 리워드 · 포인트 에어드랍',
+        'nav.trade': '마켓',
+        'nav.trade.options': '옵션 주문 홀',
+        'nav.trade.cfd': 'CFD 주문 홀',
+        'nav.trade.crowd': '크라우드 주문 홀',
+        'nav.trade.feeder': 'WL 가격 피드',
+        'nav.trade.arb': '중재 기록',
+        'nav.academy': '아카데미',
+        'nav.academy.how': '거래 방법',
+        'nav.academy.risk': '리스크 위치',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': '소개',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': '코어 팀',
+        'nav.about.roadmap': '로드맵',
+        'lang.label': '언어',
+        'btn.wallet': '지갑 연결',
+        'btn.menu': '메뉴'
+      },
+      'th': {
+        'brand.tagline': 'อนาคตสินทรัพย์นอกมาตรฐาน · แพลตฟอร์มความเสี่ยงแบบกระจายศูนย์',
+        'nav.genesis': 'Genesis',
+        'nav.genesis.donation': 'การบริจาค',
+        'nav.genesis.node': 'ซื้อโหนด',
+        'nav.eco': 'NST Eco',
+        'nav.eco.margin': 'พูลมาร์จิ้น ฝั่งซื้อ / ฝั่งขาย',
+        'nav.eco.crowd': 'ระดมทุนฝั่งซื้อ & พูลอิสระ',
+        'nav.eco.rewards': 'NST รางวัล · แอร์ดรอปแต้ม',
+        'nav.trade': 'ตลาด',
+        'nav.trade.options': 'ห้องคำสั่งออปชั่น',
+        'nav.trade.cfd': 'ห้องคำสั่ง CFD',
+        'nav.trade.crowd': 'ห้องคำสั่งระดมทุน',
+        'nav.trade.feeder': 'ห้องฟีดราคา Whitelist',
+        'nav.trade.arb': 'ห้องบันทึกการไกล่เกลี่ย',
+        'nav.academy': 'Academy',
+        'nav.academy.how': 'วิธีการเทรด',
+        'nav.academy.risk': 'ความเสี่ยงอยู่ที่ไหน',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': 'เกี่ยวกับ',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': 'ทีมหลัก',
+        'nav.about.roadmap': 'Roadmap',
+        'lang.label': 'ภาษา',
+        'btn.wallet': 'เชื่อมต่อกระเป๋า',
+        'btn.menu': 'เมนู'
+      }
+    };
+
+    function applyTranslations(dict) {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const value = dict[key];
+        if (!value) return;
+        el.textContent = value;
+      });
+    }
+
+    function setLanguage(lang) {
+      const dict = translations[lang] || translations['en'];
+      document.documentElement.lang = lang;
+      applyTranslations(dict);
+      try {
+        localStorage.setItem('nst_lang', lang);
+      } catch (e) {}
+      const mobileLang = document.getElementById('mobileLangNav');
+      if (mobileLang && !mobileLang.classList.contains('hidden')) {
+        mobileLang.classList.add('hidden');
+      }
+    }
+
+    // 页面加载时应用上次语言
+    document.addEventListener('DOMContentLoaded', () => {
+      let lang = 'zh-CN';
+      try {
+        const saved = localStorage.getItem('nst_lang');
+        if (saved && translations[saved]) lang = saved;
+      } catch (e) {}
+      setLanguage(lang);
+    });
+  </script>
+</body>
+</html>

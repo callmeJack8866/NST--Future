@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>NST – CFD 订单大厅</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top, rgba(56,189,248,0.18), transparent 55%),
+        radial-gradient(circle at bottom, rgba(129,140,248,0.18), transparent 55%),
+        #020617;
+      color: #e2e8f0;
+    }
+
+    .card {
+      background: rgba(15,23,42,0.95);
+      border-radius: 1.25rem;
+      border: 1px solid rgba(148,163,184,0.35);
+    }
+    .subcard {
+      background: rgba(15,23,42,0.92);
+      border-radius: 0.9rem;
+      border: 1px solid rgba(71,85,105,0.9);
+    }
+    .tab-active {
+      background: #1d4ed8;
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(129,140,248,0.9);
+    }
+    .tab-inactive {
+      background: #020617;
+      color: #94a3b8;
+      border: 1px solid rgba(51,65,85,0.9);
+    }
+    .order-scroll {
+      max-height: 480px;
+      overflow-y: auto;
+      padding-right: 12px;
+      margin-right: 2px;
+    }
+    .order-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .order-scroll::-webkit-scrollbar-track {
+      background: rgba(15,23,42,0.95);
+      border-radius: 999px;
+    }
+    .order-scroll::-webkit-scrollbar-thumb {
+      background: rgba(248,250,252,0.85);
+      border-radius: 999px;
+    }
+
+    /* 主按钮：桌面 & 手机共用 */
+    .main-pill {
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(37,99,235,0.9);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.28), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .main-pill:hover {
+      background: linear-gradient(to right, #22c55e, #0ea5e9, #6366f1);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9), 0 10px 25px rgba(15,23,42,0.85);
+    }
+
+    /* 顶部三颗按钮专用：严格按文字宽度，不拉伸 */
+    .top-pill {
+      flex: 0 0 auto;
+    }
+
+    /* 子菜单容器：透明，只保留内部胶囊 */
+    .submenu-panel {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* 子按钮：胶囊 + 渐变边框，宽度随文字 */
+    .submenu-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #22d3ee, #6366f1);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .submenu-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #38bdf8, #a855f7);
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9);
+    }
+
+    /* 语言主按钮：紫蓝系 */
+    .lang-pill-trigger {
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(147,51,234,0.85);
+      background:
+        radial-gradient(circle at top left, rgba(192,132,252,0.25), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .lang-pill-trigger:hover {
+      background: linear-gradient(to right, #6366f1, #a855f7);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(221,214,254,0.95), 0 10px 25px rgba(15,23,42,0.9);
+    }
+
+    /* 语言子按钮：胶囊 + 渐变边框 */
+    .lang-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #a855f7, #38bdf8);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .lang-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #c4b5fd, #7dd3fc);
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(226,232,240,0.9);
+    }
+
+    /* 手机端：更紧凑 */
+    @media (max-width: 767px) {
+      .main-pill {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .lang-pill-trigger {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .submenu-item {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+      .lang-item {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen pb-8">
+
+ <div w3-include-html="nst-header.html"></div>
+
+  <!-- 主体内容：你的 CFD 大厅完整保留 -->
+  <main class="mx-auto mt-6 max-w-6xl px-3 lg:px-0">
+    <!-- 整个 CFD 订单大厅胶囊 -->
+    <section class="card p-4 lg:p-5">
+      <!-- 标题 -->
+      <div class="mb-4 flex items-center justify-between">
+        <div class="inline-flex items-center gap-3 rounded-full bg-slate-900/85 px-5 py-2">
+          <span class="text-xl font-bold tracking-wide text-slate-50 md:text-2xl">
+            CFD 订单大厅
+          </span>
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          <span class="hidden text-[11px] text-slate-400 sm:inline">CFD Order Hall · NST</span>
+        </div>
+      </div>
+
+      <!-- 顶部：订单视角 + 搜索筛选 -->
+      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <!-- 左：订单视角按钮 -->
+        <div class="flex flex-1 items-center">
+          <div class="w-full rounded-xl bg-slate-100/5 px-3 py-2.5 shadow-inner shadow-slate-900/60">
+            <div class="px-1 pb-1 text-[11px] text-slate-400">订单视角</div>
+            <div class="flex gap-2">
+              <button
+                id="buyerTab"
+                class="tab-active flex-1 rounded-lg px-4 py-1.5 text-center text-[13px] font-semibold transition-colors hover:bg-primary-600 hover:text-slate-50">
+                买方订单
+              </button>
+              <button
+                id="sellerTab"
+                class="tab-inactive flex-1 rounded-lg px-4 py-1.5 text-center text-[13px] font-semibold transition-colors hover:bg-slate-900 hover:text-slate-100">
+                卖方订单
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：搜索 + 筛选 -->
+        <div class="mt-1 flex flex-1 flex-col items-stretch gap-2 text-[12px] sm:mt-0 sm:flex-row sm:items-center sm:justify-end">
+          <div class="flex items-center gap-2">
+            <input
+              class="h-9 w-44 rounded-lg border border-slate-700 bg-slate-950 px-2 text-[12px] placeholder:text-[12px] placeholder:text-slate-500"
+              placeholder="标的 / 代码 / 市场" />
+            <button class="h-9 rounded-lg bg-slate-800 px-3 text-[12px] text-slate-200 hover:bg-slate-700">
+              搜索
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-slate-500">筛选：</span>
+            <div class="flex flex-wrap gap-1">
+              <button class="rounded-full bg-slate-800 px-2.5 py-1 text-[11px] text-slate-200 hover:bg-slate-700">
+                做多
+              </button>
+              <button class="rounded-full bg-slate-800 px-2.5 py-1 text-[11px] text-slate-200 hover:bg-slate-700">
+                做空
+              </button>
+              <button class="rounded-full bg-slate-800 px-2.5 py-1 text-[11px] text-slate-300 hover:bg-slate-700">
+                高杠杆
+              </button>
+              <button class="rounded-full bg-slate-800 px-2.5 py-1 text-[11px] text-slate-300 hover:bg-slate-700">
+                低杠杆
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 买方订单视角 -->
+      <div id="buyerView" class="space-y-4 text-[13px] leading-relaxed">
+        <div class="order-scroll space-y-4">
+          <!-- BCFD001 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">BCFD001</span>
+                  <span>2025-11-18 13:20:15</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  BTCUSDT 永续合约
+                  <span class="text-slate-400">
+                    · 做多 Long · 杠杆 5× · 目标进场 63,500 – 64,200
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">1.0 BTC</span> · 参考名义约 64,000 USDT<br/>
+                  初始保证金：<span class="font-semibold">12,800 USDT</span>（20%） ·
+                  参考强平价：<span class="font-semibold">59,800 USDT</span><br/>
+                  隔夜费上限：年化 8% · 结算周期：T+1
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                  自由
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    倒计时 00:26:01
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-1/5 bg-emerald-400"></div>
+                  </div>
+                  <span>已接 1 / 5</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+                我要接单
+              </button>
+            </div>
+          </article>
+
+          <!-- BCFD002 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">BCFD002</span>
+                  <span>2025-11-18 14:05:41</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  XAUUSD 黄金 CFD
+                  <span class="text-slate-400">
+                    · 做空 Short · 杠杆 10× · 进场 2,360 – 2,380
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">500 oz</span> · 参考名义约 1,180,000 USD<br/>
+                  初始保证金：<span class="font-semibold">118,000 USD</span>（10%） ·
+                  参考强平价：<span class="font-semibold">2,430</span><br/>
+                  隔夜费：LIBOR + 3% 浮动 · 结算周期：T+1
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="rounded-full bg-sky-500/10 px-2.5 py-0.5 text-[11px] font-medium text-sky-300">
+                  自由 + 平台
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    倒计时 00:21:33
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-2/5 bg-emerald-400"></div>
+                  </div>
+                  <span>已接 2 / 5</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+                我要接单
+              </button>
+            </div>
+          </article>
+
+          <!-- BCFD003 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">BCFD003</span>
+                  <span>2025-11-18 14:32:09</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  恒生指数 CFD
+                  <span class="text-slate-400">
+                    · 做多 Long · 杠杆 20× · 目标区间 18,300 – 18,450
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">50 手</span> · 每点 50 HKD<br/>
+                  初始保证金：<span class="font-semibold">450,000 HKD</span> ·
+                  参考强平价：<span class="font-semibold">17,700</span><br/>
+                  隔夜费上限：年化 10% · 日内可多次平仓
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                  自由
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    倒计时 00:17:08
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-3/5 bg-emerald-400"></div>
+                  </div>
+                  <span>已接 3 / 5</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+                我要接单
+              </button>
+            </div>
+          </article>
+
+          <!-- BCFD004 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">BCFD004</span>
+                  <span>2025-11-18 15:01:22</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  USOIL 原油 CFD
+                  <span class="text-slate-400">
+                    · 做空 Short · 杠杆 5× · 进场 77.5 – 78.2
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">5,000 桶</span> · 参考名义约 390,000 USD<br/>
+                  初始保证金：<span class="font-semibold">78,000 USD</span> ·
+                  参考强平价：<span class="font-semibold">82.0</span><br/>
+                  隔夜费：年化 6% 封顶 · 支持部分减仓
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="rounded-full bg-sky-500/10 px-2.5 py-0.5 text-[11px] font-medium text-sky-300">
+                  自由 + 平台
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    倒计时 00:12:39
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-4/5 bg-emerald-400"></div>
+                  </div>
+                  <span>已接 4 / 5</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+                我要接单
+              </button>
+            </div>
+          </article>
+
+          <!-- BCFD005 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">BCFD005</span>
+                  <span>2025-11-18 15:32:48</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  NAS100 指数 CFD
+                  <span class="text-slate-400">
+                    · 做多 Long · 杠杆 15× · 目标 17,000 – 17,200
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义：<span class="font-semibold">30 手</span> · 每点 20 USD<br/>
+                  初始保证金：<span class="font-semibold">68,000 USD</span> ·
+                  参考强平价：<span class="font-semibold">16,400</span><br/>
+                  隔夜费：年化 9% 上限 · 日内可分批加仓
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                  自由
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    倒计时 00:08:55
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-1/5 bg-emerald-400"></div>
+                  </div>
+                  <span>已接 1 / 5</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+                我要接单
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <!-- 底部：买方建仓 -->
+        <div class="mt-4 border-t border-slate-800 pt-4">
+          <button class="w-full rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 py-2.5 text-[14px] font-semibold text-slate-950 shadow-lg shadow-blue-500/40 hover:brightness-110">
+            买方建仓 · 创建 CFD 订单
+          </button>
+        </div>
+      </div>
+
+      <!-- 卖方订单视角 -->
+      <div id="sellerView" class="hidden space-y-4 text-[13px] leading-relaxed">
+        <div class="order-scroll space-y-4">
+          <!-- SCFD001 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">SCFD001</span>
+                  <span>2025-11-18 14:10:03</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  BTCUSDT 永续 CFD
+                  <span class="text-slate-400">
+                    · 卖方方向：做空 Short · 杠杆 5×
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义上限：<span class="font-semibold">1.0 BTC</span> · 最小承接：0.2 BTC<br/>
+                  卖方报价：点差 20 美金内 · 隔夜费：年化 6%<br/>
+                  买方保证金要求：≥ 20% · 当前挂单仅限 1 名买方
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <!-- 卖方钱包地址 + 复制按钮 -->
+                <div class="flex items-center gap-2">
+                  <span class="max-w-[170px] truncate rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-mono text-slate-200">
+                    0xF1a2b3C4d5E6f7A8b9C0d1E2f3A4b5C6d7E8F9A0
+                  </span>
+                  <button
+                    class="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] text-slate-50 hover:bg-slate-600"
+                    onclick="copyAddress('0xF1a2b3C4d5E6f7A8b9C0d1E2f3A4b5C6d7E8F9A0')">
+                    复制
+                  </button>
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    剩余 00:34:21
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-full bg-emerald-400"></div>
+                  </div>
+                  <span>可接 1 / 1</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-primary-600 px-4 py-2 text-[13px] font-semibold text-slate-50 shadow-md shadow-blue-500/30 hover:bg-primary-500 sm:w-auto">
+                买入
+              </button>
+            </div>
+          </article>
+
+          <!-- SCFD002 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">SCFD002</span>
+                  <span>2025-11-18 14:40:55</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  XAUUSD 黄金 CFD
+                  <span class="text-slate-400">
+                    · 卖方方向：做多 Long · 杠杆 10×
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义上限：<span class="font-semibold">300 oz</span> · 最小承接：50 oz<br/>
+                  卖方点差：0.6 美金内 · 隔夜费：年化 7%<br/>
+                  买方保证金要求：≥ 12% · 挂单仅限 1 名买方
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="flex items-center gap-2">
+                  <span class="max-w-[170px] truncate rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-mono text-slate-200">
+                    0xA2b3C4d5E6f7A8b9C0d1E2f3A4b5C6d7E8F9A0B1
+                  </span>
+                  <button
+                    class="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] text-slate-50 hover:bg-slate-600"
+                    onclick="copyAddress('0xA2b3C4d5E6f7A8b9C0d1E2f3A4b5C6d7E8F9A0B1')">
+                    复制
+                  </button>
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    剩余 00:47:09
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-full bg-emerald-400"></div>
+                  </div>
+                  <span>可接 1 / 1</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-primary-600 px-4 py-2 text-[13px] font-semibold text-slate-50 shadow-md shadow-blue-500/30 hover:bg-primary-500 sm:w-auto">
+                买入
+              </button>
+            </div>
+          </article>
+
+          <!-- SCFD003 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">SCFD003</span>
+                  <span>2025-11-18 15:03:18</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  恒生指数 CFD
+                  <span class="text-slate-400">
+                    · 卖方方向：做空 Short · 杠杆 15×
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义上限：<span class="font-semibold">40 手</span> · 每点 50 HKD<br/>
+                  卖方点差：10 点内 · 隔夜费：年化 8%<br/>
+                  买方保证金要求：≥ 15% · 限单一买方接单
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="flex items-center gap-2">
+                  <span class="max-w-[170px] truncate rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-mono text-slate-200">
+                    0xB3C4d5E6f7A8b9C0d1E2f3A4b5C6d7E8F9A0B1C2
+                  </span>
+                  <button
+                    class="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] text-slate-50 hover:bg-slate-600"
+                    onclick="copyAddress('0xB3C4d5E6f7A8b9C0d1E2f3A4b5C6d7E8F9A0B1C2')">
+                    复制
+                  </button>
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    剩余 00:29:40
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-full bg-emerald-400"></div>
+                  </div>
+                  <span>可接 1 / 1</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-primary-600 px-4 py-2 text-[13px] font-semibold text-slate-50 shadow-md shadow-blue-500/30 hover:bg-primary-500 sm:w-auto">
+                买入
+              </button>
+            </div>
+          </article>
+
+          <!-- SCFD004 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">SCFD004</span>
+                  <span>2025-11-18 15:24:02</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  USOIL 原油 CFD
+                  <span class="text-slate-400">
+                    · 卖方方向：做多 Long · 杠杆 8×
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义上限：<span class="font-semibold">4,000 桶</span> · 最小承接：1,000 桶<br/>
+                  卖方点差：0.08 美金内 · 隔夜费：年化 7%<br/>
+                  买方保证金要求：≥ 18% · 单一买方接单
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="flex items-center gap-2">
+                  <span class="max-w-[170px] truncate rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-mono text-slate-200">
+                    0xC4d5E6f7A8b9C0d1E2f3A4b5C6d7E8F9A0B1C2D3
+                  </span>
+                  <button
+                    class="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] text-slate-50 hover:bg-slate-600"
+                    onclick="copyAddress('0xC4d5E6f7A8b9C0d1E2f3A4b5C6d7E8F9A0B1C2D3')">
+                    复制
+                  </button>
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    剩余 00:42:17
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-full bg-emerald-400"></div>
+                  </div>
+                  <span>可接 1 / 1</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-primary-600 px-4 py-2 text-[13px] font-semibold text-slate-50 shadow-md shadow-blue-500/30 hover:bg-primary-500 sm:w-auto">
+                买入
+              </button>
+            </div>
+          </article>
+
+          <!-- SCFD005 -->
+          <article class="subcard p-3.5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                  <span class="font-mono text-[13px] text-slate-200">SCFD005</span>
+                  <span>2025-11-18 15:52:40</span>
+                </div>
+                <div class="text-[14px] text-slate-100">
+                  NAS100 指数 CFD
+                  <span class="text-slate-400">
+                    · 卖方方向：做空 Short · 杠杆 12×
+                  </span>
+                </div>
+                <div class="text-[13px] text-slate-300">
+                  名义上限：<span class="font-semibold">25 手</span> · 每点 20 USD<br/>
+                  卖方点差：5 点内 · 隔夜费：年化 9%<br/>
+                  买方保证金要求：≥ 16% · 单一买方接单
+                </div>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 text-[12px]">
+                <div class="flex items-center gap-2">
+                  <span class="max-w-[170px] truncate rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] font-mono text-slate-200">
+                    0xD5E6f7A8b9C0d1E2f3A4b5C6d7E8F9A0B1C2D3E4
+                  </span>
+                  <button
+                    class="rounded-full bg-slate-700 px-2 py-0.5 text-[10px] text-slate-50 hover:bg-slate-600"
+                    onclick="copyAddress('0xD5E6f7A8b9C0d1E2f3A4b5C6d7E8F9A0B1C2D3E4')">
+                    复制
+                  </button>
+                </div>
+                <div class="flex items-center gap-1 text-amber-300">
+                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px]">
+                    剩余 00:55:03
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div class="h-1.5 w-20 overflow-hidden rounded-full bg-slate-800">
+                    <div class="h-1.5 w-full bg-emerald-400"></div>
+                  </div>
+                  <span>可接 1 / 1</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button class="w-full rounded-full bg-primary-600 px-4 py-2 text-[13px] font-semibold text-slate-50 shadow-md shadow-blue-500/30 hover:bg-primary-500 sm:w-auto">
+                买入
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <!-- 底部：卖方建仓 -->
+        <div class="mt-4 border-t border-slate-800 pt-4">
+          <button class="w-full rounded-xl bg-gradient-to-r from-emerald-400 via-blue-500 to-indigo-600 py-2.5 text-[14px] font-semibold text-slate-950 shadow-lg shadow-emerald-400/30 hover:brightness-110">
+            卖方建仓 · 发布 CFD 卖方订单
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- JS：Tab切换 + 复制地址 + 手机菜单 -->
+  <script>
+    // CFD 订单视角切换
+    const buyerTab = document.getElementById('buyerTab');
+    const sellerTab = document.getElementById('sellerTab');
+    const buyerView = document.getElementById('buyerView');
+    const sellerView = document.getElementById('sellerView');
+
+    function setActive(view) {
+      if (view === 'buyer') {
+        buyerTab.classList.add('tab-active');
+        buyerTab.classList.remove('tab-inactive');
+        sellerTab.classList.add('tab-inactive');
+        sellerTab.classList.remove('tab-active');
+        buyerView.classList.remove('hidden');
+        sellerView.classList.add('hidden');
+      } else {
+        sellerTab.classList.add('tab-active');
+        sellerTab.classList.remove('tab-inactive');
+        buyerTab.classList.add('tab-inactive');
+        buyerTab.classList.remove('tab-active');
+        sellerView.classList.remove('hidden');
+        buyerView.classList.add('hidden');
+      }
+    }
+
+    buyerTab.addEventListener('click', () => setActive('buyer'));
+    sellerTab.addEventListener('click', () => setActive('seller'));
+
+    // 复制地址
+    function copyAddress(addr) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(addr).catch(() => {});
+      }
+    }
+
+    // 手机菜单切换
+    function toggleMobileMain() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      main.classList.toggle('hidden');
+      if (!lang.classList.contains('hidden')) lang.classList.add('hidden');
+    }
+
+    function toggleMobileLang() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      lang.classList.toggle('hidden');
+      if (!main.classList.contains('hidden')) main.classList.add('hidden');
+    }
+  function includeHTML() {
+  var z, i, elmnt, file, xhttp;
+  z = document.getElementsByTagName("*");
+  for (i = 0; i < z.length; i++) {
+    elmnt = z[i];
+    file = elmnt.getAttribute("w3-include-html");
+    if (file) {
+      xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4) {
+          if (this.status == 200 || this.status == 0) { // 本地file://时可能是0
+            elmnt.innerHTML = this.responseText;
+          }
+          if (this.status == 404) {
+            elmnt.innerHTML = "Page not found.";
+          }
+          elmnt.removeAttribute("w3-include-html");
+          includeHTML();
+        }
+      }
+      xhttp.open("GET", file, true);
+      xhttp.send();
+      return;
+    }
+  }
+}
+includeHTML();
+</script>
+</body>
+</html>

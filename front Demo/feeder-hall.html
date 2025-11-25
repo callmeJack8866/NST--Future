@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>NST Finance – 喂价订单大厅</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top, rgba(56,189,248,0.18), transparent 55%),
+        radial-gradient(circle at bottom, rgba(129,140,248,0.18), transparent 55%),
+        #020617;
+      color: #e2e8f0;
+    }
+
+    /* ====== 新导航相关样式 ====== */
+
+    /* 主按钮：桌面 & 手机共用 */
+    .main-pill {
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(37,99,235,0.9);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.28), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .main-pill:hover {
+      background: linear-gradient(to right, #22c55e, #0ea5e9, #6366f1);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9), 0 10px 25px rgba(15,23,42,0.85);
+    }
+
+    /* 顶部三颗按钮专用：严格按文字宽度，不拉伸 */
+    .top-pill {
+      flex: 0 0 auto;
+    }
+
+    /* 子菜单容器：透明，只保留内部胶囊 */
+    .submenu-panel {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* 子按钮：胶囊 + 渐变边框，宽度随文字 */
+    .submenu-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #22d3ee, #6366f1);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .submenu-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #38bdf8, #a855f7);
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9);
+    }
+
+    /* 语言主按钮：紫蓝系 */
+    .lang-pill-trigger {
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(147,51,234,0.85);
+      background:
+        radial-gradient(circle at top left, rgba(192,132,252,0.25), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .lang-pill-trigger:hover {
+      background: linear-gradient(to right, #6366f1, #a855f7);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(221,214,254,0.95), 0 10px 25px rgba(15,23,42,0.9);
+    }
+
+    /* 语言子按钮：胶囊 + 渐变边框 */
+    .lang-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #a855f7, #38bdf8);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .lang-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #c4b5fd, #7dd3fc);
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(226,232,240,0.9);
+    }
+
+    /* 手机端：更紧凑 */
+    @media (max-width: 767px) {
+      .main-pill {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .lang-pill-trigger {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .submenu-item {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+      .lang-item {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+    }
+
+    /* ====== 喂价大厅自身样式 ====== */
+
+    .card {
+      background: rgba(15,23,42,0.95);
+      border-radius: 1.25rem;
+      border: 1px solid rgba(148,163,184,0.35);
+    }
+    .subcard {
+      background: rgba(15,23,42,0.92);
+      border-radius: 0.9rem;
+      border: 1px solid rgba(71,85,105,0.9);
+    }
+    .tab-active {
+      background: #1d4ed8;
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(129,140,248,0.9);
+    }
+    .tab-inactive {
+      background: rgba(15,23,42,0.95);
+      color: #cbd5f5;
+      border: 1px solid rgba(51,65,85,0.9);
+    }
+    .subtab-active {
+      background: #0f172a;
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(148,163,184,0.9);
+    }
+    .subtab-inactive {
+      background: rgba(15,23,42,0.95);
+      color: #9ca3af;
+      border: 1px solid rgba(55,65,81,0.9);
+    }
+    .order-scroll {
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 18px;
+      margin-right: 4px;
+    }
+    .order-scroll::-webkit-scrollbar {
+      width: 9px;
+    }
+    .order-scroll::-webkit-scrollbar-track {
+      background: rgba(15,23,42,0.95);
+      border-radius: 999px;
+    }
+    .order-scroll::-webkit-scrollbar-thumb {
+      background: rgba(248,250,252,0.95); /* 白亮色 */
+      border-radius: 999px;
+    }
+    .price-pill {
+      border-radius: 999px;
+      border: 1px solid rgba(52,211,153,0.85);
+      background: rgba(16,185,129,0.12);
+      padding: 2px 8px;
+      font-size: 13px;
+      color: #6ee7b7;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen pb-10">
+
+ <div w3-include-html="nst-header.html"></div>
+
+
+  <!-- ====== 喂价大厅主体：喂价员视角 ====== -->
+  <main class="mx-auto mt-6 max-w-6xl px-3 lg:px-0">
+    <section class="card p-4 lg:p-5">
+      <!-- 标题 + 我的地址 -->
+      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="inline-flex items-center gap-3 rounded-full bg-slate-900/85 px-5 py-2">
+          <span class="text-2xl font-bold tracking-wide text-slate-50 md:text-3xl">
+            喂价订单大厅 · 喂价员视角
+          </span>
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          <span class="hidden text-[11px] text-slate-400 sm:inline">仅展示待喂价订单 · 完成即自动下架</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+          <span>我的喂价员地址：</span>
+          <span class="max-w-[230px] truncate rounded-full bg-slate-900 px-2.5 py-0.5 font-mono text-[11px] text-slate-100">
+            0xFeEd1234AbCd5678Ef901234567890abcdefABCD
+          </span>
+        </div>
+      </div>
+
+      <!-- 主 Tab：期权 / CFD -->
+      <div class="mb-3 flex flex-wrap items-center gap-3">
+        <div class="flex gap-2">
+          <button
+            id="marketOptions"
+            class="tab-active rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors hover:bg-primary-600 hover:text-slate-50">
+            期权订单
+          </button>
+          <button
+            id="marketCfd"
+            class="tab-inactive rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors hover:bg-slate-800 hover:text-slate-100">
+            CFD 订单
+          </button>
+        </div>
+        <span class="text-[11px] text-slate-500">
+          喂价方式：3–5 名喂价员 · 多数价 / 中位数自动确认
+        </span>
+      </div>
+
+      <!-- 子 Tab + 搜索 -->
+      <div class="mb-4 flex flex-col gap-2 rounded-xl bg-slate-900/70 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="mr-1 text-[11px] text-slate-400">订单阶段：</span>
+          <button
+            id="stageInitial"
+            class="subtab-active rounded-full px-3 py-1 text-[12px] font-medium transition-colors hover:bg-slate-800">
+            期初订单
+          </button>
+          <button
+            id="stageFinal"
+            class="subtab-inactive rounded-full px-3 py-1 text-[12px] font-medium transition-colors hover:bg-slate-800">
+            期末订单
+          </button>
+          <button
+            id="stageMargin"
+            class="subtab-inactive rounded-full px-3 py-1 text-[12px] font-medium transition-colors hover:bg-slate-800">
+            保证金动态订单
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input
+            class="h-8 w-40 rounded-lg border border-slate-700 bg-slate-950 px-2 text-[11px] text-slate-100 placeholder:text-[11px] placeholder:text-slate-500 sm:w-56"
+            placeholder="搜索订单号 / 标的 / 代码" />
+          <button class="h-8 rounded-lg bg-slate-800 px-3 text-[11px] text-slate-100 hover:bg-slate-700">
+            搜索
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-3 text-[11px] text-slate-400">
+        说明：期初 / 期末喂价为一次性动作；保证金动态订单需按约定频率持续喂价。下方每条订单展示：已有喂价员地址 + 喂价成功价格（带边框高亮）。
+      </div>
+
+      <!-- ========= 视图 1：期权 · 期初 ========= -->
+      <div id="view-options-initial" class="order-scroll space-y-4 text-[14px] leading-relaxed">
+        <!-- O-IN-001 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">O-IN-001</span>
+                <span>2025-11-18 13:20:15</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-cyan-300">
+                  期权 · 期初喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                中国平安 · 看涨 Call
+                <span class="text-slate-400">· 代码 380582 · 中国 / A股</span>
+              </div>
+              <div class="text-[14px] text-slate-300">
+                名义本金：<span class="font-semibold">3,000,000 CNY</span><br/>
+                喂价类型：<span class="font-semibold">建仓日收盘价</span> · 容忍区间：±0.5%<br/>
+                喂价窗口：2025-11-18 15:00:00–15:05:00（北京时间）
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                待喂价 · 需 3 / 3
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:04:31
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">2 / 3</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <!-- 喂价 1 -->
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button
+                  class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                  onclick="copyAddress('0xF111111111111111111111111111111111111111')">
+                  0xF111...1111
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">
+                  喂价成功：23.78
+                </span>
+              </div>
+              <!-- 喂价 2 -->
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 2：</span>
+                <button
+                  class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                  onclick="copyAddress('0xF222222222222222222222222222222222222222')">
+                  0xF222...2222
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">
+                  喂价成功：23.80
+                </span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                第 3 名喂价员：待喂价
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">1 / 3</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- O-IN-002 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">O-IN-002</span>
+                <span>2025-11-18 13:45:02</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-cyan-300">
+                  期权 · 期初喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                上证50ETF · 看涨 Call
+                <span class="text-slate-400">· 代码 510050 · 中国 / A股</span>
+              </div>
+              <div class="text-[14px] text-slate-300">
+                名义本金：<span class="font-semibold">500,000 CNY</span><br/>
+                喂价类型：<span class="font-semibold">建仓时刻市价</span> · 参考 15:00 ± 2 分钟均价<br/>
+                价格偏差容忍：±0.3%
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-sky-500/10 px-2.5 py-0.5 text-[11px] font-medium text-sky-300">
+                待喂价 · 需 4 / 4
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:09:12
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">3 / 4</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xFAaaAA1111111111111111111111111111111111')">
+                  0xFAaa...1111
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：3.20</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 2：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xFBbbBB2222222222222222222222222222222222')">
+                  0xFBbb...2222
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：3.21</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 3：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xFCccCC3333333333333333333333333333333333')">
+                  0xFCcc...3333
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：3.20</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                第 4 名喂价员：待喂价
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">2 / 3</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- O-IN-003 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">O-IN-003</span>
+                <span>2025-11-18 14:02:33</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-cyan-300">
+                  期权 · 期初喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                恒生指数 · 看跌 Put
+                <span class="text-slate-400">· HSI · 香港 / HKEX</span>
+              </div>
+              <div class="text-[14px] text-slate-300">
+                名义本金：<span class="font-semibold">1,000,000 HKD</span><br/>
+                喂价类型：<span class="font-semibold">当日收盘均价</span> · 区间 15:55–16:05<br/>
+                要求：上传交易所收盘截图
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                待喂价 · 需 3 / 3
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:12:05
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">1 / 3</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xF333333333333333333333333333333333333333')">
+                  0xF333...3333
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：18,318</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                其余喂价员：待喂价
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">1 / 2</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- ========= 视图 2：期权 · 期末 ========= -->
+      <div id="view-options-final" class="hidden order-scroll space-y-4 text-[14px] leading-relaxed">
+        <!-- O-FI-001 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">O-FI-001</span>
+                <span>2025-12-22 15:05:11</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-rose-300">
+                  期权 · 期末喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                中国平安 · 看涨 Call（到期结算）
+              </div>
+              <div class="text-[14px] text-slate-300">
+                名义本金：<span class="font-semibold">3,000,000 CNY</span><br/>
+                期末价格类型：<span class="font-semibold">到期日收盘价</span> · 容忍：±0.3%<br/>
+                期初参考价格：<span class="font-semibold">23.80</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                待喂价 · 需 3 / 3
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:06:28
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">2 / 3</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xFA11111111111111111111111111111111111111')">
+                  0xFA11...1111
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：24.05</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 2：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xFB22222222222222222222222222222222222222')">
+                  0xFB22...2222
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：24.00</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                第 3 名喂价员：待喂价
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">2 / 3</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- O-FI-002 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">O-FI-002</span>
+                <span>2025-12-25 15:12:20</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-rose-300">
+                  期权 · 期末喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                上证50ETF · 看涨 Call（到期结算）
+              </div>
+              <div class="text-[14px] text-slate-300">
+                名义本金：<span class="font-semibold">500,000 CNY</span><br/>
+                期末价格类型：<span class="font-semibold">到期日收盘价</span><br/>
+                期初参考价格：<span class="font-semibold">3.21</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                待喂价 · 需 4 / 4
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:10:45
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">2 / 4</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xOFI2111111111111111111111111111111111111')">
+                  0xOFI2...1111
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：3.28</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 2：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xOFI2222222222222222222222222222222222222')">
+                  0xOFI2...2222
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：3.29</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                其余喂价员：待喂价
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">1 / 2</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- O-FI-003 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">O-FI-003</span>
+                <span>2025-12-21 15:35:33</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-rose-300">
+                  期权 · 期末喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                恒生指数 · 看跌 Put（到期结算）
+              </div>
+              <div class="text-[14px] text-slate-300">
+                名义本金：<span class="font-semibold">1,000,000 HKD</span><br/>
+                期末价格类型：<span class="font-semibold">到期日收盘均价</span><br/>
+                期初参考价格：<span class="font-semibold">18,320</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                待喂价 · 需 3 / 3
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:11:02
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">1 / 3</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xOFI3333333333333333333333333333333333333')">
+                  0xOFI3...3333
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：18,450</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                其余喂价员：待喂价
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">1 / 2</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- ========= 视图 3：期权 · 保证金动态 ========= -->
+      <div id="view-options-margin" class="hidden order-scroll space-y-4 text-[14px] leading-relaxed">
+        <!-- O-MG-001 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">O-MG-001</span>
+                <span>2025-11-18 10:00:00</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-emerald-300">
+                  期权 · 保证金动态
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                中国平安 · 看涨 Call（逐日盯市）
+              </div>
+              <div class="text-[14px] text-slate-300">
+                名义本金：<span class="font-semibold">3,000,000 CNY</span><br/>
+                当前保证金率：<span class="font-semibold text-amber-300">13%</span>（最低 10%）<br/>
+                喂价频率：<span class="font-semibold">每日收盘 1 次</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-emerald-300">
+                下次喂价截止：2025-11-18 15:05
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                今日喂价倒计时 02:15:33
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">0 / 1</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">最近喂价：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xMG11111111111111111111111111111111111111')">
+                  0xMG11...1111
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：23.90</span>
+                <span class="text-[11px] text-slate-400">（上一交易日）</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">0 / 1</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- O-MG-002 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">O-MG-002</span>
+                <span>2025-11-18 11:00:00</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-emerald-300">
+                  期权 · 保证金动态
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                上证50ETF · 看涨 Call（动态保证金）
+              </div>
+              <div class="text-[14px] text-slate-300">
+                名义本金：<span class="font-semibold">800,000 CNY</span><br/>
+                当前保证金率：<span class="font-semibold text-emerald-300">18%</span>（最低 12%）<br/>
+                喂价频率：<span class="font-semibold">每日收盘 + 异动时额外 1 次</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-emerald-300">
+                下次喂价截止：2025-11-18 15:10
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                今日喂价倒计时 02:30:20
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">1 / 2</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xOMG2222222222222222222222222222222222222')">
+                  0xOMG2...2222
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：3.25</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                今日剩余喂价次数：1 次
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">1 / 2</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- O-MG-003 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">O-MG-003</span>
+                <span>2025-11-18 09:45:20</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-emerald-300">
+                  期权 · 保证金动态
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                恒生指数 · 看涨 Call（高波动）
+              </div>
+              <div class="text-[14px] text-slate-300">
+                名义本金：<span class="font-semibold">1,500,000 HKD</span><br/>
+                当前保证金率：<span class="font-semibold text-red-300">9.2%</span>（最低 9%）<br/>
+                喂价频率：<span class="font-semibold">每 30 分钟一次</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-red-300">
+                风险：接近最低保证金 · 喂价可能触发补保证金
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                本次喂价倒计时 00:12:45
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">3 / 12</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">最近喂价：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xOMG3333333333333333333333333333333333333')">
+                  0xOMG3...3333
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：18,450</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                今日目标喂价次数：<span class="font-semibold">6 / 12</span>（当前 3 / 12）
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">3 / 12</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- ========= 视图 4：CFD · 期初 ========= -->
+      <div id="view-cfd-initial" class="hidden order-scroll space-y-4 text-[14px] leading-relaxed">
+        <!-- C-IN-001 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">C-IN-001</span>
+                <span>2025-11-18 13:10:00</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-cyan-300">
+                  CFD · 期初喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                BTCUSDT 永续 CFD · 做多 Long
+              </div>
+              <div class="text-[14px] text-slate-300">
+                杠杆：<span class="font-semibold">5×</span> · 名义：<span class="font-semibold">1 BTC</span><br/>
+                喂价类型：<span class="font-semibold">开仓成交均价</span> · 目标区间：63,500–64,200
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                待喂价 · 需 3 / 3
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:07:40
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">1 / 3</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xCFD1111111111111111111111111111111111111')">
+                  0xCFD1...1111
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：63,880</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">1 / 3</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- C-IN-002 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">C-IN-002</span>
+                <span>2025-11-18 13:20:30</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-cyan-300">
+                  CFD · 期初喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                ETHUSDT 永续 CFD · 做空 Short
+              </div>
+              <div class="text-[14px] text-slate-300">
+                杠杆：<span class="font-semibold">8×</span> · 名义：<span class="font-semibold">50 ETH</span><br/>
+                喂价类型：<span class="font-semibold">开仓时刻市价</span> · 目标区间：3,100–3,180
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                待喂价 · 需 4 / 4
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:06:12
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">2 / 4</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xCFD2222222222222222222222222222222222222')">
+                  0xCFD2...2222
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：3,150</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 2：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xCFD2333333333333333333333333333333333333')">
+                  0xCFD2...3333
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：3,145</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                剩余 2 名喂价员：待喂价
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">1 / 2</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- C-IN-003 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">C-IN-003</span>
+                <span>2025-11-18 13:35:45</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-cyan-300">
+                  CFD · 期初喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                黄金 XAUUSD CFD · 做多 Long
+              </div>
+              <div class="text-[14px] text-slate-300">
+                杠杆：<span class="font-semibold">10×</span> · 名义：<span class="font-semibold">1,000 盎司</span><br/>
+                喂价类型：<span class="font-semibold">开仓 VWAP</span> · 目标区间：2,380–2,395
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                待喂价 · 需 3 / 3
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:05:10
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">1 / 3</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xCFD3111111111111111111111111111111111111')">
+                  0xCFD3...1111
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：2,386.5</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                其余喂价员：待喂价
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">1 / 3</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- ========= 视图 5：CFD · 期末 ========= -->
+      <div id="view-cfd-final" class="hidden order-scroll space-y-4 text-[14px] leading-relaxed">
+        <!-- C-FI-001 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">C-FI-001</span>
+                <span>2025-11-30 23:59:02</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-rose-300">
+                  CFD · 期末喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                BTCUSDT 永续 CFD · 平仓结算
+              </div>
+              <div class="text-[14px] text-slate-300">
+                方向：<span class="font-semibold">做多</span> · 杠杆：<span class="font-semibold">5×</span><br/>
+                期末价格类型：<span class="font-semibold">指数中价（多交易所加权）</span><br/>
+                期初参考价格：<span class="font-semibold">63,880</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                待喂价 · 需 3 / 3
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:05:40
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">1 / 3</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xCFDFI11111111111111111111111111111111111')">
+                  0xCFDF...1111
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：64,050</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">1 / 2</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- C-FI-002 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">C-FI-002</span>
+                <span>2025-12-05 22:10:10</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-rose-300">
+                  CFD · 期末喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                ETHUSDT 永续 CFD · 平仓结算
+              </div>
+              <div class="text-[14px] text-slate-300">
+                方向：<span class="font-semibold">做空</span> · 杠杆：<span class="font-semibold">8×</span><br/>
+                期末价格类型：<span class="font-semibold">指数中价</span><br/>
+                期初参考价格：<span class="font-semibold">3,150</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                待喂价 · 需 3 / 3
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:08:12
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">2 / 3</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xCFDFI22222222222222222222222222222222222')">
+                  0xCFDF...2222
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：3,070</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 2：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xCFDFI23333333333333333333333333333333333')">
+                  0xCFDF...3333
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：3,075</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                第 3 名喂价员：待喂价
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">1 / 2</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- C-FI-003 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">C-FI-003</span>
+                <span>2025-12-12 21:30:44</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-rose-300">
+                  CFD · 期末喂价
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                黄金 XAUUSD CFD · 平仓结算
+              </div>
+              <div class="text-[14px] text-slate-300">
+                杠杆：<span class="font-semibold">10×</span> · 名义：<span class="font-semibold">1,000 盎司</span><br/>
+                期末价格类型：<span class="font-semibold">收盘 VWAP</span><br/>
+                期初参考价格：<span class="font-semibold">2,386.5</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                待喂价 · 需 3 / 3
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                截止倒计时 00:09:01
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">1 / 3</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">喂价 1：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xCFDFI34444444444444444444444444444444444')">
+                  0xCFDF...4444
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：2,392.0</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                其余喂价员：待喂价
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">1 / 2</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <!-- ========= 视图 6：CFD · 保证金动态 ========= -->
+      <div id="view-cfd-margin" class="hidden order-scroll space-y-4 text-[14px] leading-relaxed">
+        <!-- C-MG-001 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">C-MG-001</span>
+                <span>2025-11-18 10:05:00</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-emerald-300">
+                  CFD · 保证金动态
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                BTCUSDT 永续 CFD · 高杠杆账户
+              </div>
+              <div class="text-[14px] text-slate-300">
+                杠杆：<span class="font-semibold">10×</span> · 当前保证金率：<span class="font-semibold text-red-300">8.8%</span>（强平线 8%）<br/>
+                喂价频率：<span class="font-semibold">每 30 分钟一次</span> · 今日目标：<span class="font-semibold">16 次</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-red-300">
+                风险：接近强平线
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                本次喂价倒计时 00:11:20
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">4 / 16</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">最近喂价：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xCFDMG11111111111111111111111111111111111')">
+                  0xCFDM...1111
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：63,950</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                今日剩余目标喂价次数：<span class="font-semibold">12</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">4 / 16</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- C-MG-002 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">C-MG-002</span>
+                <span>2025-11-18 11:35:10</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-emerald-300">
+                  CFD · 保证金动态
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                ETHUSDT 永续 CFD · 正常杠杆
+              </div>
+              <div class="text-[14px] text-slate-300">
+                杠杆：<span class="font-semibold">6×</span> · 当前保证金率：<span class="font-semibold text-emerald-300">15%</span>（最低 10%）<br/>
+                喂价频率：<span class="font-semibold">每 1 小时一次</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-emerald-300">
+                下次喂价截止：2025-11-18 12:35
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                本次喂价倒计时 00:18:02
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">2 / 8</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">最近喂价：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xCFDMG22222222222222222222222222222222222')">
+                  0xCFDM...2222
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：3,180</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                今日已喂：<span class="font-semibold">2 / 4</span>（计划 4 次）
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">2 / 4</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+
+        <!-- C-MG-003 -->
+        <article class="subcard p-3.5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:justify-between">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2 text-[12px] text-slate-400">
+                <span class="font-mono text-[13px] text-slate-200">C-MG-003</span>
+                <span>2025-11-18 09:20:40</span>
+                <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[11px] text-emerald-300">
+                  CFD · 保证金动态
+                </span>
+              </div>
+              <div class="text-[15px] text-slate-100">
+                黄金 XAUUSD CFD · 日内高频
+              </div>
+              <div class="text-[14px] text-slate-300">
+                杠杆：<span class="font-semibold">12×</span> · 当前保证金率：<span class="font-semibold text-amber-300">11%</span>（最低 9%）<br/>
+                喂价频率：<span class="font-semibold">每 15 分钟一次</span> · 今日目标：<span class="font-semibold">24 次</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 text-[12px]">
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-emerald-300">
+                当前周期喂价截止：09:30
+              </div>
+              <div class="rounded-full bg-slate-900 px-2.5 py-0.5 text-[11px] text-amber-300">
+                本次喂价倒计时 00:06:12
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 space-y-2 text-[13px]">
+            <div class="text-slate-300">
+              本订单已喂：<span class="font-semibold text-emerald-300">5 / 24</span>
+            </div>
+            <div class="space-y-1.5 rounded-lg bg-slate-900/70 p-2.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-semibold text-slate-100">最近喂价：</span>
+                <button class="flex items-center gap-1 rounded-full bg-slate-800 px-2.5 py-0.5 font-mono text-[12px] text-slate-100"
+                        onclick="copyAddress('0xCFDMG33333333333333333333333333333333333')">
+                  0xCFDM...3333
+                  <span class="text-[10px] text-slate-300">复制</span>
+                </button>
+                <span class="price-pill">喂价成功：2,385.2</span>
+              </div>
+              <div class="text-[12px] text-amber-300">
+                今日剩余目标喂价次数：<span class="font-semibold">19</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-col gap-1 sm:items-end">
+            <div class="text-[12px] text-slate-400">
+              今日已喂：<span class="font-semibold">5 / 24</span>
+            </div>
+            <button class="w-full rounded-full bg-emerald-500 px-4 py-2 text-[14px] font-semibold text-slate-950 shadow-md shadow-emerald-500/30 hover:bg-emerald-400 sm:w-auto">
+              我来喂价
+            </button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ===== 手机端导航切换 =====
+    function toggleMobileMain() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      main.classList.toggle('hidden');
+      if (!lang.classList.contains('hidden')) lang.classList.add('hidden');
+    }
+
+    function toggleMobileLang() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      lang.classList.toggle('hidden');
+      if (!main.classList.contains('hidden')) main.classList.add('hidden');
+    }
+
+    // ===== 喂价大厅交互逻辑 =====
+    const marketOptions = document.getElementById('marketOptions');
+    const marketCfd = document.getElementById('marketCfd');
+    const stageInitial = document.getElementById('stageInitial');
+    const stageFinal = document.getElementById('stageFinal');
+    const stageMargin = document.getElementById('stageMargin');
+
+    const views = {
+      'options-initial': document.getElementById('view-options-initial'),
+      'options-final': document.getElementById('view-options-final'),
+      'options-margin': document.getElementById('view-options-margin'),
+      'cfd-initial': document.getElementById('view-cfd-initial'),
+      'cfd-final': document.getElementById('view-cfd-final'),
+      'cfd-margin': document.getElementById('view-cfd-margin')
+    };
+
+    let currentMarket = 'options';
+    let currentStage = 'initial';
+
+    function updateView() {
+      Object.keys(views).forEach(key => views[key].classList.add('hidden'));
+      const key = `${currentMarket}-${currentStage}`;
+      if (views[key]) views[key].classList.remove('hidden');
+
+      if (currentMarket === 'options') {
+        marketOptions.classList.add('tab-active');
+        marketOptions.classList.remove('tab-inactive');
+        marketCfd.classList.add('tab-inactive');
+        marketCfd.classList.remove('tab-active');
+      } else {
+        marketCfd.classList.add('tab-active');
+        marketCfd.classList.remove('tab-inactive');
+        marketOptions.classList.add('tab-inactive');
+        marketOptions.classList.remove('tab-active');
+      }
+
+      [stageInitial, stageFinal, stageMargin].forEach(btn => {
+        btn.classList.remove('subtab-active');
+        btn.classList.add('subtab-inactive');
+      });
+      if (currentStage === 'initial') {
+        stageInitial.classList.add('subtab-active');
+        stageInitial.classList.remove('subtab-inactive');
+      } else if (currentStage === 'final') {
+        stageFinal.classList.add('subtab-active');
+        stageFinal.classList.remove('subtab-inactive');
+      } else {
+        stageMargin.classList.add('subtab-active');
+        stageMargin.classList.remove('subtab-inactive');
+      }
+    }
+
+    marketOptions.addEventListener('click', () => { currentMarket = 'options'; updateView(); });
+    marketCfd.addEventListener('click', () => { currentMarket = 'cfd'; updateView(); });
+    stageInitial.addEventListener('click', () => { currentStage = 'initial'; updateView(); });
+    stageFinal.addEventListener('click', () => { currentStage = 'final'; updateView(); });
+    stageMargin.addEventListener('click', () => { currentStage = 'margin'; updateView(); });
+
+    function copyAddress(addr) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(addr).catch(() => {});
+      }
+    }
+
+    updateView();
+  function includeHTML() {
+  var z, i, elmnt, file, xhttp;
+  z = document.getElementsByTagName("*");
+  for (i = 0; i < z.length; i++) {
+    elmnt = z[i];
+    file = elmnt.getAttribute("w3-include-html");
+    if (file) {
+      xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4) {
+          if (this.status == 200 || this.status == 0) { // 本地file://时可能是0
+            elmnt.innerHTML = this.responseText;
+          }
+          if (this.status == 404) {
+            elmnt.innerHTML = "Page not found.";
+          }
+          elmnt.removeAttribute("w3-include-html");
+          includeHTML();
+        }
+      }
+      xhttp.open("GET", file, true);
+      xhttp.send();
+      return;
+    }
+  }
+}
+includeHTML();
+</script>
+</body>
+</html>

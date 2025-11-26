@@ -42,19 +42,25 @@ async function main() {
   let usdtAddress: string;
   let usdcAddress: string;
   let mockNSTAddress: string | undefined;
+  let usdtDecimals: number;
+  let usdcDecimals: number;
 
   if (network.chainId === 56n) {
-    // BSC Mainnet
+    // BSC Mainnet - 18 decimals
     console.log("Network: BSC Mainnet");
     usdtAddress = "0x55d398326f99059fF775485246999027B3197955";
     usdcAddress = "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d";
+    usdtDecimals = 18;
+    usdcDecimals = 18;
   } else if (network.chainId === 97n) {
-    // BSC Testnet
+    // BSC Testnet - 18 decimals
     console.log("Network: BSC Testnet");
     usdtAddress = "0x337610d27c682E347C9cD60BD4b3b107C9d34dDd";
     usdcAddress = "0x64544969ed7EBf5f083679233325356EbE738930";
+    usdtDecimals = 18;
+    usdcDecimals = 18;
   } else {
-    // Local/Hardhat - deploy mocks
+    // Local/Hardhat - deploy mocks with 18 decimals
     console.log("Network: Local/Hardhat - Deploying mock tokens...");
     
     const MockUSDT = await ethers.getContractFactory("MockUSDT");
@@ -68,6 +74,9 @@ async function main() {
     await mockUSDC.waitForDeployment();
     usdcAddress = await mockUSDC.getAddress();
     console.log("  MockUSDC deployed to:", usdcAddress);
+
+    usdtDecimals = 18;
+    usdcDecimals = 18;
 
     // Deploy MockNST for local testing
     const MockNST = await ethers.getContractFactory("MockNST");
@@ -96,16 +105,16 @@ async function main() {
     console.log("  ✅ NST claiming enabled");
   }
 
-  // Add USDT (6 decimals)
+  // Add USDT (18 decimals on BSC)
   console.log("\nAdding stablecoins...");
-  const tx1 = await nstFinance.addSupportedToken(usdtAddress, 6);
+  const tx1 = await nstFinance.addSupportedToken(usdtAddress, usdtDecimals);
   await tx1.wait();
-  console.log("  ✅ USDT added:", usdtAddress);
+  console.log(`  ✅ USDT added (${usdtDecimals} decimals):`, usdtAddress);
 
-  // Add USDC (6 decimals)
-  const tx2 = await nstFinance.addSupportedToken(usdcAddress, 6);
+  // Add USDC (18 decimals on BSC)
+  const tx2 = await nstFinance.addSupportedToken(usdcAddress, usdcDecimals);
   await tx2.wait();
-  console.log("  ✅ USDC added:", usdcAddress);
+  console.log(`  ✅ USDC added (${usdcDecimals} decimals):`, usdcAddress);
 
   // Get initial stats
   const stats = await nstFinance.getGlobalStats();
@@ -124,22 +133,13 @@ async function main() {
   console.log("  Public Remaining:", nodeStats[2].toString());
   console.log("  Team Remaining:", nodeStats[3].toString());
 
-  // Load ABIs
-  const nstFinanceArtifact = await ethers.getContractAt("NSTFinance", nstFinanceAddress);
-  const nstFinanceABI = JSON.parse(
-    fs.readFileSync(
-      path.join(__dirname, "..", "artifacts", "contracts", "NSTFinance.sol", "NSTFinance.json"),
-      "utf-8"
-    )
-  ).abi;
-
   // Get block number and timestamp
   const blockNumber = await ethers.provider.getBlockNumber();
   const block = await ethers.provider.getBlock(blockNumber);
 
-  // Create deployment object
+  // Create full deployment object (with ABI)
   const deploymentData = {
-    version: "1.2.0",
+    version: "1.0.0",
     network: {
       name: network.name,
       chainId: Number(network.chainId),
@@ -147,15 +147,14 @@ async function main() {
     contracts: {
       NSTFinance: {
         address: nstFinanceAddress,
-        abi: nstFinanceABI,
       },
       USDT: {
         address: usdtAddress,
-        decimals: 6,
+        decimals: usdtDecimals,
       },
       USDC: {
         address: usdcAddress,
-        decimals: 6,
+        decimals: usdcDecimals,
       },
       ...(mockNSTAddress && {
         NST: {
@@ -169,10 +168,10 @@ async function main() {
       minimumDonation: "100", // USD
       nodePrice: "2000", // USD
       maxNodesPerUser: 5,
-      maxTotalNodes: 120, // Updated from 100
-      maxPublicNodes: 100, // NEW
-      teamReservedNodes: 20, // NEW
-      teamLockDuration: "730 days", // NEW: 2 years
+      maxTotalNodes: 120,
+      maxPublicNodes: 100,
+      teamReservedNodes: 20,
+      teamLockDuration: "730 days",
       pointsPerUSD: 1,
       nodeHolderMultiplier: 2,
       nodeReferralReward: "500", // NST
@@ -188,10 +187,60 @@ async function main() {
     },
   };
 
-  // Save deploy.json
+  // Create simplified deployment object (addresses only, NO ABI)
+  const deploymentAddressesOnly = {
+    version: "1.2.0",
+    network: {
+      name: network.name,
+      chainId: Number(network.chainId),
+    },
+    contracts: {
+      NSTFinance: {
+        address: nstFinanceAddress,
+      },
+      USDT: {
+        address: usdtAddress,
+        decimals: usdtDecimals,
+      },
+      USDC: {
+        address: usdcAddress,
+        decimals: usdcDecimals,
+      },
+      ...(mockNSTAddress && {
+        NST: {
+          address: mockNSTAddress,
+          decimals: 18,
+        },
+      }),
+    },
+    configuration: {
+      treasury: treasuryAddress,
+      minimumDonation: "100",
+      nodePrice: "2000",
+      maxNodesPerUser: 5,
+      maxTotalNodes: 120,
+      maxPublicNodes: 100,
+      teamReservedNodes: 20,
+      teamLockDuration: "730 days",
+      pointsPerUSD: 1,
+      nodeHolderMultiplier: 2,
+      nodeReferralReward: "500",
+      donationReferralRewardPer1000: "100",
+      freeNodeReferralThreshold: 10,
+    },
+    deployment: {
+      deployer: deployer.address,
+      blockNumber: blockNumber,
+      blockTimestamp: block?.timestamp || 0,
+      timestamp: new Date().toISOString(),
+      transactionHash: nstFinance.deploymentTransaction()?.hash,
+    },
+  };
+
+  // Save deploy.json (addresses only - NO ABI)
   const deployJsonPath = path.join(__dirname, "..", "deploy.json");
-  fs.writeFileSync(deployJsonPath, JSON.stringify(deploymentData, null, 2));
-  console.log("\n💾 Deployment saved to: deploy.json");
+  fs.writeFileSync(deployJsonPath, JSON.stringify(deploymentAddressesOnly, null, 2));
+  console.log("\n💾 Deployment saved to: deploy.json (addresses only)");
 
   // Also save to deployments folder with timestamp
   const deploymentsDir = path.join(__dirname, "..", "deployments");
@@ -202,12 +251,12 @@ async function main() {
   const timestampedFilename = `deployment-${network.chainId}-${Date.now()}.json`;
   const timestampedPath = path.join(deploymentsDir, timestampedFilename);
   fs.writeFileSync(timestampedPath, JSON.stringify(deploymentData, null, 2));
-  console.log("💾 Backup saved to:", `deployments/${timestampedFilename}`);
+  console.log("💾 Backup saved to:", `deployments/${timestampedFilename}`, "(with ABI)");
 
   // Create/update latest deployment file
   const latestFilePath = path.join(deploymentsDir, `latest-${network.chainId}.json`);
   fs.writeFileSync(latestFilePath, JSON.stringify(deploymentData, null, 2));
-  console.log("💾 Latest deployment:", `deployments/latest-${network.chainId}.json`);
+  console.log("💾 Latest deployment:", `deployments/latest-${network.chainId}.json`, "(with ABI)");
 
   // Summary
   console.log("\n" + "=".repeat(70));
@@ -215,8 +264,8 @@ async function main() {
   console.log("=".repeat(70));
   console.log("📍 Contract Address:", nstFinanceAddress);
   console.log("💼 Treasury:", treasuryAddress);
-  console.log("💵 USDT:", usdtAddress);
-  console.log("💵 USDC:", usdcAddress);
+  console.log(`💵 USDT (${usdtDecimals} decimals):`, usdtAddress);
+  console.log(`💵 USDC (${usdcDecimals} decimals):`, usdcAddress);
   if (mockNSTAddress) {
     console.log("🪙 NST Token (Mock):", mockNSTAddress);
   }
@@ -238,9 +287,9 @@ async function main() {
   }
 
   console.log("\n📦 Files generated:");
-  console.log("  - deploy.json (main deployment file)");
-  console.log("  - deployments/deployment-{chainId}-{timestamp}.json (backup)");
-  console.log("  - deployments/latest-{chainId}.json (latest for this network)");
+  console.log("  - deploy.json (addresses only, NO ABI - lightweight)");
+  console.log("  - deployments/deployment-{chainId}-{timestamp}.json (with ABI - full backup)");
+  console.log("  - deployments/latest-{chainId}.json (with ABI - latest deployment)");
 }
 
 main()

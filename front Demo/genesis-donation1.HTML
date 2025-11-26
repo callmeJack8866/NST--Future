@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>NST – 我的资产</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top, rgba(56,189,248,0.18), transparent 55%),
+        radial-gradient(circle at bottom, rgba(129,140,248,0.18), transparent 55%),
+        #020617;
+      color: #e2e8f0;
+      font-size: 15px;
+    }
+
+    .main-pill {
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(37,99,235,0.9);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.28), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .main-pill:hover {
+      background: linear-gradient(to right, #22c55e, #0ea5e9, #6366f1);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9), 0 10px 25px rgba(15,23,42,0.85);
+    }
+    .top-pill { flex: 0 0 auto; }
+
+    .submenu-panel {
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .submenu-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #22d3ee, #6366f1);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .submenu-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #38bdf8, #a855f7);
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9);
+    }
+
+    .lang-pill-trigger {
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-width: 2px;
+      border-color: rgba(147,51,234,0.85);
+      background:
+        radial-gradient(circle at top left, rgba(192,132,252,0.25), transparent 60%),
+        rgba(15,23,42,0.98);
+      color: #e5e7eb;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.95);
+      cursor: pointer;
+    }
+    .lang-pill-trigger:hover {
+      background: linear-gradient(to right, #6366f1, #a855f7);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(221,214,254,0.95), 0 10px 25px rgba(15,23,42,0.9);
+    }
+    .lang-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #e5e7eb;
+      background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92));
+      border: 1px solid transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.92)),
+        linear-gradient(135deg, #a855f7, #38bdf8);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      transition: all 0.15s ease;
+      margin-bottom: 4px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .lang-item:hover {
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.85), rgba(15,23,42,0.85)),
+        linear-gradient(135deg, #c4b5fd, #7dd3fc);
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(226,232,240,0.9);
+    }
+
+    @media (max-width: 767px) {
+      .main-pill { padding: 5px 10px; font-size: 11px; }
+      .lang-pill-trigger { padding: 5px 10px; font-size: 11px; }
+      .submenu-item { padding: 6px 12px; font-size: 11px; }
+      .lang-item { padding: 5px 10px; font-size: 11px; }
+    }
+
+    .card {
+      background: rgba(15,23,42,0.96);
+      border-radius: 1.25rem;
+      border: 1px solid rgba(148,163,184,0.45);
+    }
+    .subcard {
+      background: rgba(15,23,42,0.94);
+      border-radius: 0.9rem;
+      border: 1px solid rgba(71,85,105,0.9);
+    }
+
+    .pill-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.6rem;
+      font-size: 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: rgba(15,23,42,0.9);
+      color: #e5e7eb;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.55rem;
+      font-size: 11px;
+      border-radius: 999px;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .status-normal {
+      background: rgba(34,197,94,0.12);
+      color: #bbf7d0;
+      border: 1px solid rgba(34,197,94,0.6);
+    }
+    .status-arb-window {
+      background: rgba(250,204,21,0.12);
+      color: #facc15;
+      border: 1px solid rgba(250,204,21,0.6);
+    }
+    .status-arb-pending {
+      background: rgba(59,130,246,0.12);
+      color: #bfdbfe;
+      border: 1px solid rgba(59,130,246,0.6);
+    }
+
+    .order-scroll {
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 10px;
+      margin-right: 2px;
+    }
+    .order-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .order-scroll::-webkit-scrollbar-track {
+      background: rgba(15,23,42,0.95);
+      border-radius: 999px;
+    }
+    .order-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148,163,184,0.8);
+      border-radius: 999px;
+    }
+
+    .btn-arb {
+      border-radius: 999px;
+      padding: 0.45rem 0.85rem;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-arb-active {
+      background: linear-gradient(to right, #facc15, #fb923c);
+      color: #1f2937;
+      box-shadow: 0 0 0 1px rgba(251,191,36,0.7), 0 8px 20px rgba(30,64,175,0.6);
+    }
+    .btn-arb-active:hover {
+      filter: brightness(1.05);
+    }
+    .btn-arb-disabled {
+      background: rgba(15,23,42,0.9);
+      color: #9ca3af;
+      border-color: rgba(55,65,81,0.9);
+      cursor: not-allowed;
+    }
+
+    .btn-primary-strong {
+      border-radius: 999px;
+      padding: 0.55rem 1.1rem;
+      font-size: 12px;
+      font-weight: 600;
+      background: linear-gradient(to right, #22c55e, #0ea5e9, #6366f1);
+      color: #020617;
+      box-shadow: 0 0 0 1px rgba(191,219,254,0.9), 0 12px 30px rgba(15,23,42,0.9);
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .btn-primary-strong:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+    }
+
+    /* 订单板块 Tab 按钮 */
+    .orders-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .orders-tab-btn {
+      border-radius: 999px;
+      padding: 0.4rem 0.9rem;
+      font-size: 12px;
+      border: 1px solid rgba(148,163,184,0.8);
+      background: rgba(15,23,42,0.95);
+      color: #cbd5f5;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .orders-tab-btn-active {
+      border-color: transparent;
+      background-image:
+        linear-gradient(135deg, rgba(15,23,42,0.95), rgba(15,23,42,0.95)),
+        linear-gradient(135deg, #22c55e, #0ea5e9, #6366f1);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      color: #e5e7eb;
+      box-shadow: 0 0 0 1px rgba(15,23,42,0.9);
+    }
+    .orders-tab-btn:hover {
+      border-color: rgba(148,163,184,1);
+    }
+
+    .orders-tab-panel {
+      display: none;
+    }
+    .orders-tab-panel-active {
+      display: block;
+    }
+
+    .btn-claim {
+      border-radius: 999px;
+      padding: 0.35rem 0.9rem;
+      font-size: 12px;
+      font-weight: 500;
+      background: linear-gradient(to right, #22c55e, #16a34a);
+      color: #022c22;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 0 1px rgba(187,247,208,0.7), 0 8px 18px rgba(22,163,74,0.4);
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .btn-claim:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    .tag-seller {
+      border-radius: 999px;
+      padding: 0.15rem 0.55rem;
+      font-size: 11px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,184,0.7);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen pb-10">
+  <!-- 顶部导航 -->
+  <div w3-include-html="nst-header.html">
+
+  </div>
+
+  <!-- 主体：我的资产总览 -->
+  <main class="mx-auto mt-6 max-w-6xl px-3 lg:px-0">
+    <section class="card p-4 sm:p-5 lg:p-6 space-y-5">
+      <!-- 标题 + 地址 -->
+      <div class="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+            MY ASSETS · DASHBOARD
+          </div>
+          <h1 class="mt-1 text-2xl font-semibold text-slate-50 sm:text-3xl">
+            我的资产 · 全局总览
+          </h1>
+          <p class="mt-2 text-sm text-slate-300 max-w-2xl">
+            上方是资产和奖励总览，下方通过四个订单视角：询价、持仓、结算仲裁、众筹，快速看到自己当前在做什么。
+          </p>
+        </div>
+        <div class="space-y-2 text-right">
+          <div class="pill-tag justify-end">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+            <span class="font-mono text-[11px] text-slate-100">
+              0xA1b2...9F23
+            </span>
+          </div>
+          <div class="text-[11px] text-slate-500">
+            最后同步时间：2025-11-26 14:32:10 （以链上数据为准）
+          </div>
+        </div>
+      </div>
+
+      <!-- 一、资产 + NST 生态资产（最上面） -->
+      <div class="grid gap-4 lg:grid-cols-[1.4fr,1.1fr]">
+        <!-- 左：总资产 + 保证金 -->
+        <div class="subcard p-4 sm:p-5 space-y-4">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <div class="text-xs text-slate-400">
+                总资产估值（全部链上资产折算）
+              </div>
+              <div class="mt-1 text-2xl font-semibold text-slate-50">
+                ≈ 23,456.78 <span class="text-base text-slate-300">USDT</span>
+              </div>
+            </div>
+            <div class="rounded-full border border-cyan-400/60 bg-cyan-500/10 px-3 py-1 text-[11px] text-cyan-100">
+              预估值 · 具体以链上为准
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 text-[13px]">
+            <div class="rounded-xl bg-slate-900/70 p-3 border border-slate-700/90">
+              <div class="text-[11px] text-slate-400">可用余额</div>
+              <div class="mt-1 font-semibold text-slate-50">2,350.00 USDT</div>
+              <div class="mt-1 text-[11px] text-slate-500">
+                可用于建仓 / 众筹 / 增加保证金
+              </div>
+            </div>
+            <div class="rounded-xl bg-slate-900/70 p-3 border border-slate-700/90">
+              <div class="text-[11px] text-slate-400">已锁定保证金</div>
+              <div class="mt-1 font-semibold text-slate-50">15,600.00 USDT</div>
+              <div class="mt-1 text-[11px] text-slate-500">
+                包含买方、卖方和众筹中的保证金
+              </div>
+            </div>
+            <div class="rounded-xl bg-slate-900/70 p-3 border border-slate-700/90">
+              <div class="text-[11px] text-slate-400">未实现盈亏（估算）</div>
+              <div class="mt-1 font-semibold text-emerald-300">+ 1,120.35 USDT</div>
+              <div class="mt-1 text-[11px] text-slate-500">
+                基于当前喂价推算，仅作参考
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：NST 生态资产 -->
+        <div class="subcard p-4 sm:p-5 space-y-3 text-[13px]">
+          <div class="flex items-center justify-between gap-2">
+            <div class="text-xs text-slate-300">
+              NST 生态资产
+            </div>
+            <div class="pill-tag">
+              <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+              我的节点：<span class="font-semibold text-slate-100">12 / 100</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="text-[11px] text-slate-400">NST 余额</div>
+              <div class="mt-1 font-semibold text-slate-50">128,500 NST</div>
+              <div class="mt-1 text-[11px] text-slate-500">
+                后续可用于手续费折扣 / 质押
+              </div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400">veNST 锁仓</div>
+              <div class="mt-1 font-semibold text-indigo-300">80,000 veNST</div>
+              <div class="mt-1 text-[11px] text-slate-500">
+                治理权 + 分红权 + 投票权
+              </div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400">LP 份额（NST / USDT）</div>
+              <div class="mt-1 font-semibold text-slate-50">35.24 LP</div>
+              <div class="mt-1 text-[11px] text-slate-500">
+                获取流动性手续费与做市奖励
+              </div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400">贡献积分</div>
+              <div class="mt-1 font-semibold text-emerald-300">32,560 分</div>
+              <div class="mt-1 text-[11px] text-slate-500">
+                节点积分翻倍 · 决定未来空投与排行
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 二、奖励与推荐总览 + 领取按钮 -->
+      <div class="subcard p-4 sm:p-5 space-y-3 text-[13px]">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div class="space-y-1">
+            <div class="text-xs text-slate-300">
+              奖励与推荐总览
+            </div>
+            <div class="text-[11px] text-slate-500">
+              积分、空投、推荐产生的奖励集中在这里，可用部分一键领取，其余按规则线性释放。
+            </div>
+          </div>
+          <div class="flex flex-wrap justify-end gap-2">
+            <span class="pill-tag">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+              本月预计积分空投：<span class="font-semibold text-emerald-200">1,200 NST</span>
+            </span>
+            <span class="pill-tag">
+              累计推荐奖励：<span class="font-semibold text-sky-300">3,450 NST</span>
+            </span>
+            <button class="btn-claim">
+              一键领取可释放奖励
+            </button>
+          </div>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-[1.3fr,1.2fr]">
+          <!-- 左：积分 / 空投 -->
+          <div class="rounded-xl bg-slate-900/70 p-3.5 border border-slate-700/90 space-y-2">
+            <div class="flex items-center justify-between text-[12px]">
+              <span class="text-slate-300">贡献积分明细</span>
+              <span class="text-slate-500">最近 30 日</span>
+            </div>
+            <ul class="space-y-1.5 text-[12px] text-slate-400">
+              <li>· 节点贡献积分：<span class="text-emerald-300 font-medium">+ 12,000 分</span></li>
+              <li>· 手续费贡献积分：<span class="text-emerald-300 font-medium">+ 6,800 分</span></li>
+              <li>· 推荐新地址积分：<span class="text-emerald-300 font-medium">+ 4,200 分</span>（42 个地址）</li>
+            </ul>
+            <div class="mt-2 flex flex-wrap gap-2 text-[11px]">
+              <span class="pill-tag">
+                排名预估：本月全网 <span class="font-semibold text-amber-200">Top 8%</span>
+              </span>
+              <span class="pill-tag">
+                下一次快照：2025-11-30 23:59:59
+              </span>
+            </div>
+          </div>
+
+          <!-- 右：推荐链接 + 推荐数据 -->
+          <div class="rounded-xl bg-slate-900/70 p-3.5 border border-slate-700/90 space-y-2">
+            <div class="flex items-center justify-between text-[12px]">
+              <span class="text-slate-300">我的推荐总览</span>
+              <span class="text-slate-500">所有链合并统计</span>
+            </div>
+            <div class="space-y-1.5 text-[12px] text-slate-400">
+              <div>推荐使用地址：<span class="font-semibold text-slate-100">42 个</span></div>
+              <div>推荐产生捐赠总额：<span class="font-semibold text-emerald-300">52,000 USDT</span></div>
+              <div>推荐产生交易手续费：<span class="font-semibold text-sky-300">3,280 USDT</span></div>
+            </div>
+            <div class="mt-2 space-y-2">
+              <div class="text-[11px] text-slate-500">
+                默认推荐链接（复制后可直接分享）：
+              </div>
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div class="flex-1 overflow-hidden rounded-full border border-slate-700/90 bg-slate-900/80 px-3 py-1.5 text-[11px] font-mono text-slate-300">
+                  https://nst.finance?ref=0xA1b2...9F23
+                </div>
+                <button class="btn-primary-strong">
+                  复制我的推荐链接
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分割线 -->
+      <div class="border-t border-slate-800/80 pt-4 space-y-5">
+        <!-- 三、资产 & 保证金明细 -->
+        <div class="grid gap-4 lg:grid-cols-2">
+          <div class="subcard p-3.5 sm:p-4 space-y-3 text-[13px]">
+            <div class="flex items-center justify-between gap-2">
+              <div class="text-xs text-slate-300">
+                资产明细 · 钱包余额
+              </div>
+              <div class="text-[11px] text-slate-500">
+                后续可切换不同链：BSC / ETH / Arbitrum / 其他
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-2">
+              <div class="rounded-lg bg-slate-900/70 p-3 border border-slate-700/90">
+                <div class="text-[11px] text-slate-400">USDT</div>
+                <div class="mt-1 font-semibold text-slate-50">2,350.00</div>
+                <div class="mt-1 text-[10px] text-slate-500">可用于建仓 / 众筹 / 增加保证金</div>
+              </div>
+              <div class="rounded-lg bg-slate-900/70 p-3 border border-slate-700/90">
+                <div class="text-[11px] text-slate-400">BNB / ETH</div>
+                <div class="mt-1 font-semibold text-slate-50">1.32 / 0.42</div>
+                <div class="mt-1 text-[10px] text-slate-500">主要用于 Gas 费用</div>
+              </div>
+              <div class="rounded-lg bg-slate-900/70 p-3 border border-slate-700/90">
+                <div class="text-[11px] text-slate-400">其他稳定币</div>
+                <div class="mt-1 font-semibold text-slate-50">320.00</div>
+                <div class="mt-1 text-[10px] text-slate-500">USDC / DAI 等</div>
+              </div>
+              <div class="rounded-lg bg-slate-900/70 p-3 border border-slate-700/90">
+                <div class="text-[11px] text-slate-400">外部抵押资产（RWA 等）</div>
+                <div class="mt-1 font-semibold text-slate-50">~ 8,500.00 USDT</div>
+                <div class="mt-1 text-[10px] text-slate-500">未来可接入的真实世界资产抵押</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="subcard p-3.5 sm:p-4 space-y-3 text-[13px]">
+            <div class="flex items-center justify-between gap-2">
+              <div class="text-xs text-slate-300">保证金分布</div>
+              <div class="pill-tag">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                当前保证金健康 · 暂无预警
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div>
+                <div class="text-[11px] text-slate-400 mb-1">买方保证金（期权订单）</div>
+                <div class="font-semibold text-slate-50">8,200.00 USDT</div>
+                <div class="mt-1 text-[11px] text-slate-500">
+                  你作为买方的期权订单，触及平仓线前可追加。
+                </div>
+              </div>
+              <div>
+                <div class="text-[11px] text-slate-400 mb-1">卖方保证金（期权订单）</div>
+                <div class="font-semibold text-slate-50">4,600.00 USDT</div>
+                <div class="mt-1 text-[11px] text-slate-500">
+                  你作为卖方承接订单时冻结的保证金。
+                </div>
+              </div>
+              <div>
+                <div class="text-[11px] text-slate-400 mb-1">众筹保证金</div>
+                <div class="font-semibold text-slate-50">2,800.00 USDT</div>
+                <div class="mt-1 text-[11px] text-slate-500">
+                  发起 / 参与众筹时锁定，用于后续行权或清算。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 四、订单视角：Tab 切换（询价 / 持仓 / 结算仲裁 / 众筹） -->
+        <div class="subcard p-3.5 sm:p-4 space-y-3 text-[13px]">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="space-y-1">
+              <div class="text-xs text-slate-300">
+                我的订单 · 一键切换视角
+              </div>
+              <div class="text-[11px] text-slate-500">
+                在这里切换查看：询价、持仓、结算 / 仲裁、众筹四类订单。
+              </div>
+            </div>
+            <div class="orders-tabs">
+              <button class="orders-tab-btn orders-tab-btn-active" data-orders-tab="rfq">
+                询价订单
+              </button>
+              <button class="orders-tab-btn" data-orders-tab="positions">
+                持仓中合约
+              </button>
+              <button class="orders-tab-btn" data-orders-tab="settlement">
+                结算 & 仲裁
+              </button>
+              <button class="orders-tab-btn" data-orders-tab="crowd">
+                众筹订单
+              </button>
+            </div>
+          </div>
+
+          <!-- Tab 1：询价订单（RFQ） -->
+          <div id="orders-tab-rfq" class="orders-tab-panel orders-tab-panel-active space-y-3">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div class="text-xs text-slate-300">
+                询价订单（RFQ） · 当前进行中的询价
+              </div>
+              <span class="pill-tag">
+                当前进行中询价：<span class="font-semibold text-amber-200">3</span> 笔
+              </span>
+            </div>
+
+            <!-- 上下结构：上 = 正在询价的订单 + 卖方报价，下 = 历史询价状态 -->
+            <div class="space-y-3">
+              <!-- 上：正在进行的询价（举三个标的） -->
+              <div class="order-scroll space-y-3">
+                <!-- RFQ 1：期权买方询价 -->
+                <article class="subcard border border-slate-700/90 p-3.5">
+                  <div class="flex flex-col gap-2">
+                    <!-- 顶部：标的 + 时间 + 名义本金 -->
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                      <span class="font-mono text-[12px] text-slate-200">RFQ-OPT-001</span>
+                      <span>510050 · 上证50ETF · A股</span>
+                      <span class="pill-tag">期权买方询价</span>
+                      <span class="pill-tag">
+                        提交时间：<span class="font-semibold text-slate-100">2025-11-26 13:45:20</span>
+                      </span>
+                    </div>
+                    <div class="text-[13px] text-slate-100">
+                      看涨 Call · 名义 <span class="font-semibold">1,000,000 CNY</span> · 期望费率 3.0% ~ 3.8% / 年
+                    </div>
+
+                    <!-- 当前最优卖方报价（紧凑展示） -->
+                    <!-- 卖方订单列表：一个卖方一横排，按钮在右边 -->
+<div class="mt-2 space-y-2 text-[12px]">
+  <!-- 卖方 S001 -->
+  <div class="flex items-center justify-between gap-3 rounded-lg bg-slate-900/80 p-2.5 border border-slate-700/80">
+    <!-- 左边：卖方信息 -->
+    <div class="space-y-1">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="tag-seller">
+          卖方：S001 · 自由卖方
+        </span>
+        <span class="pill-tag">
+          卖方接单喂价：
+          <span class="font-mono text-[11px] text-emerald-200">3.52%</span>
+        </span>
+      </div>
+      <div class="text-[11px] text-slate-400">
+        名义本金：
+        <span class="font-semibold text-slate-100">1,000,000 CNY</span> ·
+        喂价时间：
+        <span class="font-semibold text-amber-200">2025-11-26 13:47:05</span>
+      </div>
+      <div class="text-[11px] text-slate-500">
+        当前标的现价：
+        <span class="font-mono text-[11px] text-slate-100">3.156 CNY</span> ·
+        结算将按<span class="font-semibold text-slate-100">卖方接单价</span>对应的喂价来锁定。
+      </div>
+    </div>
+
+    <!-- 右边：操作按钮 -->
+    <div class="flex flex-col items-end gap-2 shrink-0">
+      <button class="btn-arb btn-arb-active"
+              style="background:linear-gradient(to right,#22c55e,#14b8a6);color:#022c22;">
+        选择成交
+      </button>
+      
+    </div>
+  </div>
+
+  <!-- 卖方：平台卖方池 -->
+  <div class="flex items-center justify-between gap-3 rounded-lg bg-slate-900/80 p-2.5 border border-slate-700/80">
+    <!-- 左边：卖方信息 -->
+    <div class="space-y-1">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="tag-seller">
+          卖方：平台卖方池
+        </span>
+        <span class="pill-tag">
+          统一报价费率：
+          <span class="font-mono text-[11px] text-sky-200">3.60%</span>
+        </span>
+      </div>
+      <div class="text-[11px] text-slate-400">
+        名义本金：
+        <span class="font-semibold text-slate-100">1,000,000 CNY</span> ·
+        最近更新：
+        <span class="font-semibold text-amber-200">2025-11-26 13:49:40</span>
+      </div>
+      <div class="text-[11px] text-slate-500">
+        平台卖方池会在你点击成交时统一锁定保证金并喂价。
+      </div>
+    </div>
+
+    <!-- 右边：操作按钮 -->
+    <div class="flex flex-col items-end gap-2 shrink-0">
+      <button class="btn-arb btn-arb-active"
+              style="background:linear-gradient(to right,#0ea5e9,#6366f1);color:#020617;">
+        选择成交
+      </button>
+      
+    </div>
+  </div>
+
+  <!-- 你以后可以在这里继续加更多卖方行 -->
+</div>
+
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              <!-- 下：历史询价状态（已成交增加成交价字段） -->
+              <div class="rounded-xl bg-slate-900/80 p-3 border border-slate-700/90 space-y-2 text-[12px]">
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-300">历史询价状态</span>
+                  <span class="text-[11px] text-slate-500">已结束 / 已成交 / 无人报价</span>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-left mt-1">
+                    <thead class="text-[11px] text-slate-400 border-b border-slate-700/80">
+                      <tr>
+                        <th class="py-1 pr-3">订单号</th>
+                        <th class="py-1 pr-3">标的</th>
+                        <th class="py-1 pr-3">名义本金</th>
+                        <th class="py-1 pr-3">状态</th>
+                        <th class="py-1 pr-3">成交价 / 费率</th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-[11px] text-slate-300">
+                      <tr>
+                        <td class="py-1.5 pr-3 font-mono text-slate-100">RFQ-OPT-0007</td>
+                        <td class="py-1.5 pr-3">中国平安 Call</td>
+                        <td class="py-1.5 pr-3">2,000,000 CNY</td>
+                        <td class="py-1.5 pr-3 text-emerald-300">已全部成交</td>
+                        <td class="py-1.5 pr-3 text-emerald-300">21.35/7.3%</td>
+                      </tr>
+                      <tr>
+                        <td class="py-1.5 pr-3 font-mono text-slate-100">RFQ-OPT-0008</td>
+                        <td class="py-1.5 pr-3">沪深300 Put</td>
+                        <td class="py-1.5 pr-3">1,500,000 CNY</td>
+                        <td class="py-1.5 pr-3 text-amber-300">无人报价 · 已结束</td>
+                        <td class="py-1.5 pr-3 text-slate-500">—</td>
+                      </tr>
+                      <tr>
+                        <td class="py-1.5 pr-3 font-mono text-slate-100">RFQ-CFD-0003</td>
+                        <td class="py-1.5 pr-3">HSI CFD 多头</td>
+                        <td class="py-1.5 pr-3">300,000 HKD</td>
+                        <td class="py-1.5 pr-3 text-slate-400">用户主动取消</td>
+                        <td class="py-1.5 pr-3 text-slate-500">—</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="text-[11px] text-slate-500">
+                  这里只做询价状态的快速总览，具体合约要素和持仓会在「持仓中合约」或「结算 & 仲裁」中详细展示。
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 2：持仓中合约 -->
+          <div id="orders-tab-positions" class="orders-tab-panel space-y-3">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div class="text-xs text-slate-300">
+                持仓中合约 · 我是买方 / 卖方 · 期权 + CFD
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span class="pill-tag">
+                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                  我是买方 · 3 笔
+                </span>
+                <span class="pill-tag">
+                  <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                  我是卖方 · 2 笔
+                </span>
+              </div>
+            </div>
+
+            <div class="order-scroll space-y-3">
+              <!-- 期权：我是买方 -->
+              <article class="subcard border border-slate-700/90 p-3.5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                  <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                      <span class="font-mono text-[12px] text-slate-200">B000312</span>
+                      <span>510050 · 上证50ETF · A股</span>
+                      <span class="pill-tag">期权 · 我是买方</span>
+                    </div>
+                    <div class="text-[13px] text-slate-100">
+                      看涨 Call · 名义 <span class="font-semibold">500,000 CNY</span> · 行权价 3.20 CNY · 费率 3.5% / 年
+                    </div>
+                    <div class="text-[12px] text-slate-400">
+                      合约期限：2025-11-25 ~ 2025-12-25 · 当前盈亏估算：
+                      <span class="text-slate-200 font-medium">- 120 USDT</span>（浮亏）
+                    </div>
+                    <div class="text-[11px] text-slate-500">
+                      当前标的喂价：<span class="font-mono text-[11px] text-slate-100">3.156 CNY</span> ·
+                      平仓线：保证金剩余 30% 时触发。
+                    </div>
+                  </div>
+                  <div class="flex flex-col items-end gap-1.5 text-[11px] mt-2 sm:mt-0">
+                    <span class="status-badge status-normal">
+                      正常履约中
+                    </span>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      <button class="btn-arb btn-arb-active" style="background:linear-gradient(to right,#22c55e,#14b8a6);color:#022c22;">
+                        提前行权
+                      </button>
+                      <button class="btn-arb btn-arb-active" style="background:linear-gradient(to right,#0ea5e9,#6366f1);color:#020617;">
+                        追加保证金
+                      </button>
+                    </div>
+                    <div class="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-400">
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看合约要素
+                      </button>
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看保证金记录
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <!-- CFD：我是买方 -->
+              <article class="subcard border border-slate-700/90 p-3.5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                  <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                      <span class="font-mono text-[12px] text-slate-200">CFD-OPEN-001</span>
+                      <span>恒生指数 · HSI · HKEX</span>
+                      <span class="pill-tag">CFD · 我是买方（多头）</span>
+                    </div>
+                    <div class="text-[13px] text-slate-100">
+                      多头 CFD · 名义 <span class="font-semibold">300,000 HKD</span> · 杠杆 3x
+                    </div>
+                    <div class="text-[12px] text-slate-400">
+                      开仓喂价：<span class="font-mono text-[11px] text-slate-100">17,600.0</span> ·
+                      当前喂价：<span class="font-mono text-[11px] text-emerald-200">17,835.2</span>
+                    </div>
+                    <div class="text-[12px] text-slate-400">
+                      浮动盈亏估算：<span class="text-emerald-300 font-medium">+ 680 USDT</span>
+                    </div>
+                  </div>
+                  <div class="flex flex-col items-end gap-1.5 text-[11px] mt-2 sm:mt-0">
+                    <span class="status-badge status-normal">
+                      正常持仓 · 支持随时部分平仓
+                    </span>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      <button class="btn-arb btn-arb-active" style="background:linear-gradient(to right,#22c55e,#14b8a6);color:#022c22;">
+                        部分平仓 / 调整杠杆
+                      </button>
+                      <button class="btn-arb btn-arb-active" style="background:linear-gradient(to right,#0ea5e9,#6366f1);color:#020617;">
+                        追加保证金
+                      </button>
+                    </div>
+                    <div class="mt-1 flex gap-2 text-[11px] text-slate-400">
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看合约要素
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <!-- 期权：我是卖方 -->
+              <article class="subcard border border-slate-700/90 p-3.5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                  <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                      <span class="font-mono text-[12px] text-slate-200">S000188</span>
+                      <span>中国平安 · 601318 · A股</span>
+                      <span class="pill-tag">期权 · 我是卖方</span>
+                    </div>
+                    <div class="text-[13px] text-slate-100">
+                      卖出看跌 Put · 名义 <span class="font-semibold">1,000,000 CNY</span> · 行权价 50.00 CNY · 费率 4.1% / 年
+                    </div>
+                    <div class="text-[12px] text-slate-400">
+                      当前标的喂价：<span class="font-mono text-[11px] text-slate-100">48.30 CNY</span> ·
+                      卖方保证金：<span class="font-semibold text-slate-100">4,100 USDT</span>
+                    </div>
+                    <div class="text-[11px] text-slate-500">
+                      若标的接近行权价，请关注保证金是否需要追加。
+                    </div>
+                  </div>
+                  <div class="flex flex-col items-end gap-1.5 text-[11px] mt-2 sm:mt-0">
+                    <span class="status-badge status-normal">
+                      正常履约中
+                    </span>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      <button class="btn-arb btn-arb-disabled">
+                        不支持提前行权
+                      </button>
+                      <button class="btn-arb btn-arb-active" style="background:linear-gradient(to right,#0ea5e9,#6366f1);color:#020617;">
+                        追加保证金
+                      </button>
+                    </div>
+                    <div class="mt-1 flex gap-2 text-[11px] text-slate-400">
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看合约要素
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <!-- 追加保证金列表 -->
+            <div class="rounded-xl bg-slate-900/80 p-3 border border-slate-700/90 space-y-2 text-[12px]">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-300">追加保证金记录</span>
+                <span class="text-[11px] text-slate-500">最近 10 条 · 仅显示当前地址</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-left mt-1">
+                  <thead class="text-[11px] text-slate-400 border-b border-slate-700/80">
+                    <tr>
+                      <th class="py-1 pr-3">时间</th>
+                      <th class="py-1 pr-3">关联订单</th>
+                      <th class="py-1 pr-3">标的</th>
+                      <th class="py-1 pr-3">本次追加</th>
+                      <th class="py-1 pr-3">当前保证金</th>
+                      <th class="py-1 pr-3">状态</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-[11px] text-slate-300">
+                    <tr>
+                      <td class="py-1.5 pr-3">2025-11-26 12:30:15</td>
+                      <td class="py-1.5 pr-3 font-mono text-slate-100">B000312</td>
+                      <td class="py-1.5 pr-3">上证50ETF Call</td>
+                      <td class="py-1.5 pr-3 text-emerald-300">+ 500 USDT</td>
+                      <td class="py-1.5 pr-3">3,500 USDT</td>
+                      <td class="py-1.5 pr-3 text-emerald-300">已入账</td>
+                    </tr>
+                    <tr>
+                      <td class="py-1.5 pr-3">2025-11-25 18:02:09</td>
+                      <td class="py-1.5 pr-3 font-mono text-slate-100">CFD-OPEN-001</td>
+                      <td class="py-1.5 pr-3">HSI CFD 多头</td>
+                      <td class="py-1.5 pr-3 text-emerald-300">+ 800 USDT</td>
+                      <td class="py-1.5 pr-3">4,200 USDT</td>
+                      <td class="py-1.5 pr-3 text-emerald-300">已入账</td>
+                    </tr>
+                    <tr>
+                      <td class="py-1.5 pr-3">2025-11-24 09:41:33</td>
+                      <td class="py-1.5 pr-3 font-mono text-slate-100">S000188</td>
+                      <td class="py-1.5 pr-3">中国平安 Put</td>
+                      <td class="py-1.5 pr-3 text-emerald-300">+ 600 USDT</td>
+                      <td class="py-1.5 pr-3">4,100 USDT</td>
+                      <td class="py-1.5 pr-3 text-slate-300">链上确认中</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 3：结算 & 仲裁 -->
+          <div id="orders-tab-settlement" class="orders-tab-panel space-y-3">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div class="text-xs text-slate-300">
+                结算 & 仲裁 · 结算价 / 收益 / 仲裁结果
+              </div>
+              <span class="pill-tag">
+                当前处于结算 / 仲裁流程的订单：<span class="font-semibold text-amber-200">2</span> 笔
+              </span>
+            </div>
+
+            <!-- 3.1 结算中的订单：你还可以选择仲裁 -->
+            <div class="order-scroll space-y-3">
+              <!-- 原 B000555：我是买方，结算窗口 + 仲裁按钮 -->
+              <article class="subcard border border-slate-700/90 p-3.5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                  <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                      <span class="font-mono text-[12px] text-slate-200">B000555</span>
+                      <span>中国平安 · 601318 · A股</span>
+                      <span class="pill-tag">期权 · 我是买方</span>
+                    </div>
+                    <div class="text-[13px] text-slate-100">
+                      看涨 Call · 名义 <span class="font-semibold">3,000,000 CNY</span> · 行权价 50.00 CNY · 费率 4.2% / 年
+                    </div>
+                    <div class="text-[12px] text-slate-400">
+                      合约期限：2025-11-22 ~ 2025-12-22
+                    </div>
+                    <div class="text-[12px] text-slate-400">
+                      结算参考价（喂价）：
+                      <span class="font-mono text-[11px] text-emerald-200">52.30 CNY</span> ·
+                      预估结算收益：
+                      <span class="font-semibold text-emerald-300">+ 1,200 USDT</span>
+                    </div>
+                    <div class="text-[11px] text-slate-500">
+                      若对喂价 / 成交价无异议，倒计时结束后将自动结算；如有异议，请在仲裁窗口内申请仲裁。
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col items-end gap-1.5 text-[11px] mt-2 sm:mt-0">
+                    <span class="status-badge status-arb-window">
+                      仲裁窗口开启中 · 剩余 18:32:10
+                    </span>
+                    <span class="text-slate-400">
+                      结算交易哈希：
+                      <span class="font-mono text-[10px] text-slate-300">
+                        0xabcd...1234
+                      </span>
+                    </span>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      <button class="btn-arb btn-arb-active">
+                        申请仲裁（24 小时内有效）
+                      </button>
+                      <button class="btn-arb btn-arb-active" style="background:linear-gradient(to right,#22c55e,#16a34a);color:#022c22;">
+                        确认无异议 · 接受结算
+                      </button>
+                    </div>
+                    <div class="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-400">
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看合约要素
+                      </button>
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看链上结算交易
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <!-- 原 S000203：我是卖方，已申请仲裁 -->
+              <article class="subcard border border-slate-700/90 p-3.5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                  <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                      <span class="font-mono text-[12px] text-slate-200">S000203</span>
+                      <span>恒生指数 · HSI · HKEX</span>
+                      <span class="pill-tag">期权 · 我是卖方</span>
+                    </div>
+                    <div class="text-[13px] text-slate-100">
+                      卖出看跌 Put · 名义 <span class="font-semibold">1,200,000 HKD</span> · 行权价 17,000 点 · 费率 5.0% / 年
+                    </div>
+                    <div class="text-[12px] text-slate-400">
+                      预设正常结算价：
+                      <span class="font-mono text-[11px] text-slate-100">16,820.0</span> ·
+                      预估结算损失：
+                      <span class="font-semibold text-amber-300">- 900 USDT</span>
+                    </div>
+                    <div class="text-[11px] text-slate-500">
+                      你已在 2025-11-25 16:03 提交仲裁申请，理由：对喂价时间点与成交价有异议。
+                      仲裁委员会预计在 <span class="text-sky-300 font-semibold">72 小时内</span> 给出结果。
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col items-end gap-1.5 text-[11px] mt-2 sm:mt-0">
+                    <span class="status-badge status-arb-pending">
+                      已申请仲裁 · 等待结果
+                    </span>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      <button class="btn-arb btn-arb-disabled">
+                        已申请仲裁 · 不可重复
+                      </button>
+                      <button class="btn-arb btn-arb-active" style="background: linear-gradient(to right,#3b82f6,#22d3ee); color:#0b1120;">
+                        补充说明 / 上传证据
+                      </button>
+                    </div>
+                    <div class="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-400">
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看仲裁进度
+                      </button>
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看链上锁定明细
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <!-- 3.2 已结算订单案例：正常结算 / 仲裁结算的价格与收益 -->
+            <div class="rounded-xl bg-slate-900/80 p-3 border border-slate-700/90 space-y-2 text-[12px]">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-300">已结算订单案例</span>
+                <span class="text-[11px] text-slate-500">正常结算 + 仲裁后结算</span>
+              </div>
+
+              <div class="space-y-2">
+                <!-- 正常结算 -->
+                <div class="rounded-lg bg-slate-950/70 p-2.5 border border-slate-700/80">
+                  <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                    <span class="font-mono text-[12px] text-slate-200">B000211</span>
+                    <span>中国平安 · 看跌 Put</span>
+                    <span class="pill-tag">正常结算</span>
+                  </div>
+                  <div class="mt-1 text-[12px] text-slate-400">
+                    正常结算价（喂价）：<span class="font-mono text-[11px] text-emerald-200">47.80 CNY</span> · 名义本金：1,000,000 CNY
+                  </div>
+                  <div class="mt-1 text-[11px] text-slate-500">
+                    结算后买方收益：<span class="font-semibold text-emerald-300">+ 600 USDT</span> ·
+                    卖方收益：<span class="font-semibold text-slate-100">+ 权利金 4,200 USDT - 600 = 3,600 USDT</span>
+                  </div>
+                </div>
+
+                <!-- 仲裁结算 -->
+                <div class="rounded-lg bg-slate-950/70 p-2.5 border border-slate-700/80">
+                  <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                    <span class="font-mono text-[12px] text-slate-200">ARB-2025-0003</span>
+                    <span>关联订单：B000311（中国平安 看涨）</span>
+                    <span class="pill-tag">仲裁结算</span>
+                  </div>
+                  <div class="mt-1 text-[12px] text-slate-400">
+                    初始正常结算价：<span class="font-mono text-[11px] text-slate-100">51.90 CNY</span> ·
+                    仲裁后结算价：<span class="font-mono text-[11px] text-emerald-200">51.40 CNY</span>
+                  </div>
+                  <div class="mt-1 text-[11px] text-slate-500">
+                    仲裁前买方收益：+ 1,500 USDT → 仲裁后调整为
+                    <span class="font-semibold text-emerald-300">+ 1,320 USDT</span>；
+                    卖方收益：从 2,700 USDT 调整为
+                    <span class="font-semibold text-slate-100">+ 2,880 USDT</span>。
+                  </div>
+                  <div class="mt-1 text-[11px] text-slate-500">
+                    仲裁委员会判定：双方对时间点存在误差，按平均价修正结算价，并按 70% / 30% 分摊差额。
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3.3 仲裁状态总览（集中看仲裁进度） -->
+            <div class="rounded-xl bg-slate-900/80 p-3 border border-slate-700/90 space-y-2 text-[12px]">
+              <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <span class="text-slate-300">仲裁状态总览</span>
+                <span class="pill-tag">
+                  当前进行中仲裁：<span class="font-semibold text-sky-300">1</span> 笔 ·
+                  最近 30 日已结束仲裁：<span class="font-semibold text-slate-100">3</span> 笔
+                </span>
+              </div>
+
+              <div class="order-scroll space-y-3">
+                <!-- 进行中仲裁（原 ARB-2025-001） -->
+                <article class="subcard border border-slate-700/90 p-3.5">
+                  <div class="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                    <div class="space-y-1">
+                      <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                        <span class="font-mono text-[12px] text-slate-200">ARB-2025-001</span>
+                        <span>关联订单：S000203（恒生指数 看跌 Put）</span>
+                      </div>
+                      <div class="text-[12px] text-slate-400">
+                        角色：你是 <span class="font-semibold text-emerald-300">卖方</span> ·
+                        仲裁阶段：<span class="font-semibold text-sky-300">证据补充中</span>
+                      </div>
+                      <div class="text-[11px] text-slate-500">
+                        仲裁理由：买卖双方对喂价时间点与成交价存在分歧，你已提交交易对账单与对冲记录。
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col items-end gap-1.5 text-[11px] mt-2 sm:mt-0">
+                      <span class="status-badge status-arb-pending">
+                        仲裁委员会处理时间：预计剩余 36:10:22
+                      </span>
+                      <div class="flex gap-2 mt-1">
+                        <button class="btn-arb btn-arb-active" style="background:linear-gradient(to right,#3b82f6,#22d3ee);color:#0b1120;">
+                          补充上传材料
+                        </button>
+                        <button class="btn-arb btn-arb-disabled">
+                          撤回申请（不可用）
+                        </button>
+                      </div>
+                      <div class="mt-1 flex gap-2 text-[11px] text-slate-400">
+                        <button class="underline decoration-slate-600 hover:text-slate-200">
+                          查看仲裁详情页
+                        </button>
+                        <button class="underline decoration-slate-600 hover:text-slate-200">
+                          下载仲裁记录（PDF）
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- 已结束仲裁示例（原 ARB-2025-0003 简略版） -->
+                <article class="subcard border border-slate-700/90 p-3.5">
+                  <div class="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                    <div class="space-y-1">
+                      <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                        <span class="font-mono text-[12px] text-slate-200">ARB-2025-0003</span>
+                        <span>关联订单：B000211（中国平安 看跌）</span>
+                      </div>
+                      <div class="text-[12px] text-slate-400">
+                        仲裁结果：<span class="font-semibold text-emerald-300">支持买方 70% / 卖方 30% 责任分担</span>
+                      </div>
+                      <div class="text-[11px] text-slate-500">
+                        已按仲裁结果重新结算权利金与保证金，多退少补部分均已链上完成。
+                      </div>
+                    </div>
+
+                    <div class="flex flex-col items-end gap-1.5 text-[11px] mt-2 sm:mt-0">
+                      <span class="status-badge status-normal">
+                        仲裁已完结
+                      </span>
+                      <button class="btn-arb btn-arb-disabled mt-1">
+                        已完结 · 不可再次仲裁
+                      </button>
+                      <button class="mt-1 underline decoration-slate-600 hover:text-slate-200">
+                        查看详细裁决理由
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 4：众筹订单（我发起 + 我参与） -->
+          <div id="orders-tab-crowd" class="orders-tab-panel space-y-3">
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div class="text-xs text-slate-300">
+                众筹订单 · 我发起的 / 我参与的
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <a
+                  href="crowd-launch.html"
+                  class="rounded-full bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-500 px-3 py-1.5 text-[12px] font-semibold text-slate-950 shadow-lg shadow-cyan-400/40 hover:brightness-110"
+                >
+                  发起新的期权买方众筹
+                </a>
+              </div>
+            </div>
+
+            <div class="order-scroll space-y-3">
+              <!-- 我发起的众筹 -->
+              <article class="subcard border border-slate-700/90 p-3.5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                  <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                      <span class="font-mono text-[12px] text-slate-200">C-BUY-001</span>
+                      <span>中国平安 · 看涨 Call 众筹</span>
+                      <span class="pill-tag">我是发起人</span>
+                    </div>
+                    <div class="text-[13px] text-slate-100">
+                      名义 2,000,000 CNY · 期权费率 5.0% / 年 · 合约期限
+                      <span class="font-semibold">3 个月（固定到期行权）</span>
+                    </div>
+                    <div class="text-[12px] text-slate-400">
+                      每份拆分：<span class="font-semibold">20 份</span> · 你已认购
+                      <span class="font-semibold text-emerald-300">8 份</span> · 其他参与者
+                      <span class="font-semibold">7 份</span> ·
+                      剩余 <span class="font-semibold text-amber-300">5 份</span> 待认购
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col items-end gap-1.5 text-[11px] mt-2 sm:mt-0">
+                    <span class="status-badge status-normal">
+                      众筹进行中 · 还有 01:23:10
+                    </span>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      <button class="btn-arb btn-arb-active" style="background:linear-gradient(to right,#22c55e,#14b8a6);color:#022c22;">
+                        自己追加认购
+                      </button>
+                      <button class="btn-arb btn-arb-disabled">
+                        查看参与者列表
+                      </button>
+                      <button class="btn-arb btn-arb-active" style="background:linear-gradient(to right,#0ea5e9,#6366f1);color:#020617;">
+                        复制该众筹链接
+                      </button>
+                    </div>
+                    <div class="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-400">
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看众筹合约要素
+                      </button>
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看众筹详情
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <!-- 我参与的众筹 -->
+              <article class="subcard border border-slate-700/90 p-3.5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                  <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                      <span class="font-mono text-[12px] text-slate-200">C-BUY-008</span>
+                      <span>恒生指数 看跌众筹</span>
+                      <span class="pill-tag">我是参与者</span>
+                    </div>
+                    <div class="text-[13px] text-slate-100">
+                      你认购 <span class="font-semibold text-emerald-300">3 / 20 份</span> ·
+                      对应名义约 300,000 HKD
+                    </div>
+                    <div class="text-[12px] text-slate-400">
+                      众筹状态：<span class="text-emerald-300 font-medium">已满额 · 等待建仓成交</span>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-col items-end gap-1.5 text-[11px] mt-2 sm:mt-0">
+                    <span class="status-badge status-normal">
+                      等待撮合卖方
+                    </span>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                      <button class="btn-arb btn-arb-disabled">
+                        众筹已满 · 不可撤销
+                      </button>
+                      <button class="btn-arb btn-arb-active" style="background:linear-gradient(to right,#0ea5e9,#6366f1);color:#020617;">
+                        复制该众筹链接
+                      </button>
+                    </div>
+                    <div class="mt-1 flex gap-2 text-[11px] text-slate-400">
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看众筹详情
+                      </button>
+                      <button class="underline decoration-slate-600 hover:text-slate-200">
+                        查看锁定资金
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <div class="text-[11px] text-slate-500">
+                提示：众筹成交之后，对应份额会自动出现在「持仓中合约」板块；若众筹失败，保证金将按规则原路退回。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 脚本：手机菜单 / 多语言 / 订单 Tab 切换 -->
+  <script>
+    function toggleMobileMain() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      main.classList.toggle('hidden');
+      if (!lang.classList.contains('hidden')) lang.classList.add('hidden');
+    }
+
+    function toggleMobileLang() {
+      const main = document.getElementById('mobileMainNav');
+      const lang = document.getElementById('mobileLangNav');
+      if (!main || !lang) return;
+      lang.classList.toggle('hidden');
+      if (!main.classList.contains('hidden')) main.classList.add('hidden');
+    }
+
+    function toggleMobileSection(section) {
+      const ids = [
+        'mobile-section-genesis',
+        'mobile-section-eco',
+        'mobile-section-trade',
+        'mobile-section-academy',
+        'mobile-section-about'
+      ];
+      const targetId = 'mobile-section-' + section;
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (id === targetId) {
+          el.classList.toggle('hidden');
+        } else {
+          if (!el.classList.contains('hidden')) el.classList.add('hidden');
+        }
+      });
+    }
+
+    // 多语言字典（与之前保持一致）
+    const translations = {
+      'en': {
+        'brand.tagline': 'Non-Standard Future · Decentralized Non-Standard Risk Platform',
+        'nav.genesis': 'Genesis',
+        'nav.genesis.donation': 'Donation',
+        'nav.genesis.node': 'Node Purchase',
+        'nav.eco': 'NST Capital',
+        'nav.eco.margin': 'Buyer / Seller Margin Pools',
+        'nav.eco.crowd': 'Buyer Crowd & Free Pool',
+        'nav.eco.rewards': 'NST Rewards · Points Airdrop',
+        'nav.trade': 'Markets',
+        'nav.trade.options': 'Options Order Hall',
+        'nav.trade.cfd': 'CFD Order Hall',
+        'nav.trade.crowd': 'Crowd Order Hall',
+        'nav.trade.feeder': 'Whitelist Price Feed',
+        'nav.trade.arb': 'Arbitration Records',
+        'nav.academy': 'Academy',
+        'nav.academy.how': 'How to Trade',
+        'nav.academy.risk': 'Where is the Risk',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': 'About',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': 'Core Team',
+        'nav.about.roadmap': 'Roadmap',
+        'lang.label': 'Language',
+        'btn.wallet': 'Connect Wallet',
+        'btn.menu': 'Menu'
+      },
+      'zh-CN': {
+        'brand.tagline': '非标未来 · 去中心化非标风险平台',
+        'nav.genesis': '创世阶段',
+        'nav.genesis.donation': '捐赠',
+        'nav.genesis.node': '节点购买',
+        'nav.eco': 'NST资本生态',
+        'nav.eco.margin': '买方 / 卖方保证金池',
+        'nav.eco.crowd': '买方众筹 + 自由买方资金池',
+        'nav.eco.rewards': 'NST 奖励计划 · 积分空投',
+        'nav.trade': '交易大厅',
+        'nav.trade.options': '期权订单大厅',
+        'nav.trade.cfd': 'CFD订单大厅',
+        'nav.trade.crowd': '众筹订单大厅',
+        'nav.trade.feeder': '白名单喂价大厅',
+        'nav.trade.arb': '仲裁记录大厅',
+        'nav.academy': 'NST课堂',
+        'nav.academy.how': '如何交易',
+        'nav.academy.risk': '风险在哪',
+        'nav.academy.faq': '常见问题',
+        'nav.about': '关于我们',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': '官方团队',
+        'nav.about.roadmap': '路线图',
+        'lang.label': '语言',
+        'btn.wallet': '连接钱包',
+        'btn.menu': '菜单'
+      },
+      'zh-TW': {
+        'brand.tagline': '非標未來 · 去中心化非標風險平台',
+        'nav.genesis': '創世階段',
+        'nav.genesis.donation': '捐贈',
+        'nav.genesis.node': '節點購買',
+        'nav.eco': 'NST資本生態',
+        'nav.eco.margin': '買方 / 賣方保證金池',
+        'nav.eco.crowd': '買方眾籌 + 自由買方資金池',
+        'nav.eco.rewards': 'NST 獎勵計劃 · 積分空投',
+        'nav.trade': '交易大廳',
+        'nav.trade.options': '期權訂單大廳',
+        'nav.trade.cfd': 'CFD訂單大廳',
+        'nav.trade.crowd': '眾籌訂單大廳',
+        'nav.trade.feeder': '白名單喂價大廳',
+        'nav.trade.arb': '仲裁記錄大廳',
+        'nav.academy': 'NST課堂',
+        'nav.academy.how': '如何交易',
+        'nav.academy.risk': '風險在哪裡',
+        'nav.academy.faq': '常見問題',
+        'nav.about': '關於我們',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': '官方團隊',
+        'nav.about.roadmap': '路線圖',
+        'lang.label': '語言',
+        'btn.wallet': '連接錢包',
+        'btn.menu': '選單'
+      },
+      'ja': {
+        'brand.tagline': '非標準な未来 · 分散型ノンスタンダードリスクプラットフォーム',
+        'nav.genesis': 'ジェネシス',
+        'nav.genesis.donation': 'ドネーション',
+        'nav.genesis.node': 'ノード購入',
+        'nav.eco': 'NSTエコ',
+        'nav.eco.margin': '買い / 売り マージンプール',
+        'nav.eco.crowd': '買い手クラウド & 自由プール',
+        'nav.eco.rewards': 'NSTリワード · ポイント',
+        'nav.trade': 'マーケット',
+        'nav.trade.options': 'オプション注文ホール',
+        'nav.trade.cfd': 'CFD注文ホール',
+        'nav.trade.crowd': 'クラウド注文ホール',
+        'nav.trade.feeder': 'WL価格フィード',
+        'nav.trade.arb': '仲裁記録',
+        'nav.academy': 'アカデミー',
+        'nav.academy.how': '取引方法',
+        'nav.academy.risk': 'リスクはどこに',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': '概要',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': 'コアチーム',
+        'nav.about.roadmap': 'ロードマップ',
+        'lang.label': '言語',
+        'btn.wallet': 'ウォレット接続',
+        'btn.menu': 'メニュー'
+      },
+      'ko': {
+        'brand.tagline': '비표준 미래 · 탈중앙화 비표준 리스크 플랫폼',
+        'nav.genesis': '제네시스',
+        'nav.genesis.donation': '기부',
+        'nav.genesis.node': '노드 구매',
+        'nav.eco': 'NST 생태계',
+        'nav.eco.margin': '매수 / 매도 마진 풀',
+        'nav.eco.crowd': '매수 크라우드 & 자유 풀',
+        'nav.eco.rewards': 'NST 리워드 · 포인트 에어드랍',
+        'nav.trade': '마켓',
+        'nav.trade.options': '옵션 주문 홀',
+        'nav.trade.cfd': 'CFD 주문 홀',
+        'nav.trade.crowd': '크라우드 주문 홀',
+        'nav.trade.feeder': 'WL 가격 피드',
+        'nav.trade.arb': '중재 기록',
+        'nav.academy': '아카데미',
+        'nav.academy.how': '거래 방법',
+        'nav.academy.risk': '리스크 위치',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': '소개',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': '코어 팀',
+        'nav.about.roadmap': '로드맵',
+        'lang.label': '언어',
+        'btn.wallet': '지갑 연결',
+        'btn.menu': '메뉴'
+      },
+      'th': {
+        'brand.tagline': 'อนาคตสินทรัพย์นอกมาตรฐาน · แพลตฟอร์มความเสี่ยงแบบกระจายศูนย์',
+        'nav.genesis': 'Genesis',
+        'nav.genesis.donation': 'การบริจาค',
+        'nav.genesis.node': 'ซื้อโหนด',
+        'nav.eco': 'NST Eco',
+        'nav.eco.margin': 'พูลมาร์จิ้น ฝั่งซื้อ / ฝั่งขาย',
+        'nav.eco.crowd': 'ระดมทุนฝั่งซื้อ & พูลอิสระ',
+        'nav.eco.rewards': 'NST รางวัล · แอร์ดรอปแต้ม',
+        'nav.trade': 'ตลาด',
+        'nav.trade.options': 'ห้องคำสั่งออปชั่น',
+        'nav.trade.cfd': 'ห้องคำสั่ง CFD',
+        'nav.trade.crowd': 'ห้องคำสั่งระดมทุน',
+        'nav.trade.feeder': 'ห้องฟีดราคา Whitelist',
+        'nav.trade.arb': 'ห้องบันทึกการไกล่เกลี่ย',
+        'nav.academy': 'Academy',
+        'nav.academy.how': 'วิธีการเทรด',
+        'nav.academy.risk': 'ความเสี่ยงอยู่ที่ไหน',
+        'nav.academy.faq': 'FAQ',
+        'nav.about': 'เกี่ยวกับ',
+        'nav.about.dao': 'NST DAO',
+        'nav.about.team': 'ทีมหลัก',
+        'nav.about.roadmap': 'Roadmap',
+        'lang.label': 'ภาษา',
+        'btn.wallet': 'เชื่อมต่อกระเป๋า',
+        'btn.menu': 'เมนู'
+      }
+    };
+
+    function applyTranslations(dict) {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        const value = dict[key];
+        if (!value) return;
+        el.textContent = value;
+      });
+    }
+
+    function setLanguage(lang) {
+      const dict = translations[lang] || translations['en'];
+      document.documentElement.lang = lang;
+      applyTranslations(dict);
+      try {
+        localStorage.setItem('nst_lang', lang);
+      } catch (e) {}
+      const mobileLang = document.getElementById('mobileLangNav');
+      if (mobileLang && !mobileLang.classList.contains('hidden')) {
+        mobileLang.classList.add('hidden');
+      }
+    }
+
+    function initOrdersTabs() {
+      const buttons = document.querySelectorAll('.orders-tab-btn');
+      const panels = {
+        rfq: document.getElementById('orders-tab-rfq'),
+        positions: document.getElementById('orders-tab-positions'),
+        settlement: document.getElementById('orders-tab-settlement'),
+        crowd: document.getElementById('orders-tab-crowd')
+      };
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.getAttribute('data-orders-tab');
+          // 按钮状态
+          buttons.forEach(b => b.classList.remove('orders-tab-btn-active'));
+          btn.classList.add('orders-tab-btn-active');
+          // 面板显示 / 隐藏
+          Object.keys(panels).forEach(key => {
+            if (!panels[key]) return;
+            if (key === target) {
+              panels[key].classList.add('orders-tab-panel-active');
+            } else {
+              panels[key].classList.remove('orders-tab-panel-active');
+            }
+          });
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      let lang = 'zh-CN';
+      try {
+        const saved = localStorage.getItem('nst_lang');
+        if (saved && translations[saved]) lang = saved;
+      } catch (e) {}
+      setLanguage(lang);
+      initOrdersTabs();
+    });
+  // 头部 include
+    function includeHTML() {
+      var z, i, elmnt, file, xhttp;
+      z = document.getElementsByTagName("*");
+      for (i = 0; i < z.length; i++) {
+        elmnt = z[i];
+        file = elmnt.getAttribute("w3-include-html");
+        if (file) {
+          xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function () {
+            if (this.readyState == 4) {
+              if (this.status == 200 || this.status == 0) { // 本地 file:// 时可能是 0
+                elmnt.innerHTML = this.responseText;
+              }
+              if (this.status == 404) {
+                elmnt.innerHTML = "Page not found.";
+              }
+              elmnt.removeAttribute("w3-include-html");
+              includeHTML();
+            }
+          }
+          xhttp.open("GET", file, true);
+          xhttp.send();
+          return;
+        }
+      }
+    }
+    includeHTML();
+     </script>
+</body>
+</html>

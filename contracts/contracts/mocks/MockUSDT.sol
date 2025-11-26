@@ -5,15 +5,15 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /**
  * @title MockUSDT
- * @notice Mock USDT token for testing (6 decimals like real USDT)
+ * @notice Mock USDT token for testing (18 decimals like BEP20 USDT on BSC)
  */
 contract MockUSDT is ERC20 {
     constructor() ERC20("Mock USDT", "USDT") {
-        _mint(msg.sender, 1_000_000 * 10**6); // 1 million USDT
+        _mint(msg.sender, 1_000_000 * 10**18); // 1 million USDT with 18 decimals
     }
 
     function decimals() public pure override returns (uint8) {
-        return 6;
+        return 18;
     }
 
     function mint(address to, uint256 amount) external {

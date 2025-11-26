@@ -8,57 +8,68 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title NSTFinance
- * @notice Main contract for NST Finance - Donation & Node-based reward ecosystem with Points & Airdrop System
- * @dev Phase 1 deployment on BSC with v1.1 features
+ * @notice Main contract for NST Finance
+ * @dev Phase 1 deployment on BSC
  */
 contract NSTFinance is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     // ============ Constants ============
     
-    uint256 public constant MINIMUM_DONATION = 100 * 10**18; // 100 USD (18 decimals)
+    uint256 public constant MINIMUM_DONATION = 100 * 10**18; // 100 USD
     uint256 public constant NODE_PRICE = 2000 * 10**18; // 2000 USD
     uint256 public constant MAX_NODES_PER_USER = 5;
-    uint256 public constant MAX_TOTAL_NODES = 100;
+    uint256 public constant MAX_TOTAL_NODES = 120; // Increased from 100
+    uint256 public constant MAX_PUBLIC_NODES = 100; // Available for public
+    uint256 public constant TEAM_RESERVED_NODES = 20; // Reserved for team
+    uint256 public constant TEAM_LOCK_DURATION = 730 days; // 2 years
     uint256 public constant AUTO_NODE_THRESHOLD = 2000 * 10**18;
     
     // Referral rewards
-    uint256 public constant NODE_REFERRAL_REWARD = 500 * 10**18; // 500 NST
-    uint256 public constant DONATION_REFERRAL_REWARD_PER_1000 = 100 * 10**18; // 100 NST per 1000 USD
+    uint256 public constant NODE_REFERRAL_REWARD = 500 * 10**18;
+    uint256 public constant DONATION_REFERRAL_REWARD_PER_1000 = 100 * 10**18;
     uint256 public constant FREE_NODE_REFERRAL_THRESHOLD = 10;
     
-    // Points system (1 USD = 1 point, stored as 18 decimals)
-    uint256 public constant POINTS_PER_USD = 1 * 10**18; // 1 point per USD
-    uint256 public constant NODE_HOLDER_MULTIPLIER = 2; // 2x points for node holders
+    // Points system
+    uint256 public constant POINTS_PER_USD = 1 * 10**18;
+    uint256 public constant NODE_HOLDER_MULTIPLIER = 2;
 
     // ============ State Variables ============
     
     struct UserInfo {
-        uint256 totalDonationUSD;      // Total donations in USD (18 decimals)
-        uint256 nodeCount;              // Number of nodes owned
-        address referrer;               // Referrer address (permanent)
-        uint256 directNodeCount;        // Direct referrals who became node holders
-        uint256 directDonationUSD;      // Total donations from direct referrals
-        uint256 nstReward;              // Accumulated NST rewards
-        bool hasAutoNode;               // Whether auto-node from donations was claimed
-        uint256 points;                 // User's total points (v1.1)
-        uint256 lastSnapshotPoints;     // Points at last snapshot (for growth calculation)
+        uint256 totalDonationUSD;
+        uint256 nodeCount;              // Regular nodes
+        uint256 teamNodeCount;          // Team nodes (locked)
+        address referrer;
+        uint256 directNodeCount;
+        uint256 directDonationUSD;
+        uint256 nstReward;
+        bool hasAutoNode;
+        uint256 points;
+        uint256 lastSnapshotPoints;
+    }
+    
+    struct TeamNodeInfo {
+        uint256 count;                  // Number of team nodes
+        uint256 unlockTime;             // When nodes unlock (2 years)
+        bool isTeamMember;              // Whether address is team
     }
     
     struct AirdropRound {
         uint256 roundNumber;
         uint256 timestamp;
-        uint256 airdropAmount;          // Amount per eligible user
-        uint256 totalEligible;          // Number of eligible users
-        bool isActive;                  // Whether round is active for claims
+        uint256 airdropAmount;
+        uint256 totalEligible;
+        bool isActive;
     }
     
     mapping(address => UserInfo) public users;
     mapping(address => bool) public isUser;
+    mapping(address => TeamNodeInfo) public teamNodes; // Team node tracking
     
-    // Points & Airdrop System (v1.1)
-    mapping(address => mapping(uint256 => bool)) public hasClaimedAirdrop; // user => round => claimed
-    mapping(address => mapping(uint256 => bool)) public isEligibleForAirdrop; // user => round => eligible
+    // Points & Airdrop System
+    mapping(address => mapping(uint256 => bool)) public hasClaimedAirdrop;
+    mapping(address => mapping(uint256 => bool)) public isEligibleForAirdrop;
     mapping(uint256 => AirdropRound) public airdropRounds;
     uint256 public currentAirdropRound;
     uint256 public lastSnapshotTimestamp;
@@ -73,14 +84,16 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     bool public claimEnabled;
     
     // Global stats
-    uint256 public totalNodesIssued;
+    uint256 public totalNodesIssued;        // Total nodes (public + team)
+    uint256 public publicNodesIssued;       // Public nodes issued
+    uint256 public teamNodesIssued;         // Team nodes issued
     uint256 public totalDonationsUSD;
     uint256 public totalUsers;
     uint256 public totalPointsDistributed;
+    uint256 public deploymentTime;          // Contract deployment time
 
     // ============ Events ============
     
-    // Existing events
     event UserRegistered(address indexed user, address indexed referrer);
     event DonationReceived(
         address indexed user,
@@ -95,6 +108,8 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         uint256 totalCost,
         address indexed referrer
     );
+    event TeamNodeAllocated(address indexed teamMember, uint256 count, uint256 unlockTime);
+    event TeamNodeUnlocked(address indexed teamMember, uint256 count);
     event AutoNodeGranted(address indexed user, uint256 nodeNumber);
     event NodeReferralReward(address indexed referrer, address indexed referee, uint256 reward);
     event DonationReferralReward(address indexed referrer, uint256 reward, uint256 donationAmount);
@@ -119,6 +134,8 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     error InvalidToken();
     error NodeLimitReached();
     error GlobalNodeLimitReached();
+    error PublicNodeLimitReached();
+    error TeamNodeLimitReached();
     error InvalidReferrer();
     error ClaimNotEnabled();
     error NoRewardsToClaim();
@@ -128,6 +145,9 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     error AirdropAlreadyClaimed();
     error AirdropRoundNotActive();
     error InvalidAirdropRound();
+    error TeamNodesLocked();
+    error NotTeamMember();
+    error AlreadyTeamMember();
 
     // ============ Constructor ============
     
@@ -135,16 +155,11 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         if (_treasury == address(0)) revert ZeroAddress();
         treasury = _treasury;
         lastSnapshotTimestamp = block.timestamp;
+        deploymentTime = block.timestamp;
     }
 
     // ============ Donation Functions ============
     
-    /**
-     * @notice Make a donation in supported stablecoin
-     * @param token The stablecoin address (USDT/USDC)
-     * @param amount The amount to donate (in token decimals)
-     * @param referrerHint Optional referrer address (only used if user has no referrer)
-     */
     function donate(
         address token,
         uint256 amount,
@@ -163,19 +178,19 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         user.totalDonationUSD += usdValue;
         totalDonationsUSD += usdValue;
         
-        // Award points (v1.1)
+        // Award points
         _awardDonationPoints(msg.sender, usdValue);
         
-        // Update referrer stats and process rewards
+        // Update referrer stats
         if (user.referrer != address(0)) {
             UserInfo storage referrer = users[user.referrer];
             uint256 oldDonations = referrer.directDonationUSD;
             referrer.directDonationUSD += usdValue;
             
-            // Award points to referrer for referee donation (v1.1)
+            // Award points to referrer
             _awardReferralPoints(user.referrer, usdValue);
             
-            // Calculate donation referral rewards (100 NST per 1000 USD)
+            // Calculate donation referral rewards
             uint256 newThousands = referrer.directDonationUSD / (1000 * 10**18);
             uint256 oldThousands = oldDonations / (1000 * 10**18);
             
@@ -193,12 +208,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
 
     // ============ Node Functions ============
     
-    /**
-     * @notice Purchase nodes directly
-     * @param token The stablecoin address (USDT/USDC)
-     * @param nodeCount Number of nodes to purchase (1-5)
-     * @param referrerHint Optional referrer address
-     */
     function buyNode(
         address token,
         uint256 nodeCount,
@@ -209,8 +218,11 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         
         UserInfo storage user = users[msg.sender];
         
+        // Check user limit (regular nodes only, team nodes don't count toward limit)
         if (user.nodeCount + nodeCount > MAX_NODES_PER_USER) revert NodeLimitReached();
-        if (totalNodesIssued + nodeCount > MAX_TOTAL_NODES) revert GlobalNodeLimitReached();
+        
+        // Check public node supply
+        if (publicNodesIssued + nodeCount > MAX_PUBLIC_NODES) revert PublicNodeLimitReached();
         
         _registerUser(msg.sender, referrerHint);
         
@@ -222,11 +234,12 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         user.totalDonationUSD += totalCost;
         totalDonationsUSD += totalCost;
         
-        // Award points (node purchase counts as donation) (v1.1)
+        // Award points
         _awardDonationPoints(msg.sender, totalCost);
         
         bool wasNodeHolder = user.nodeCount > 0;
         user.nodeCount += nodeCount;
+        publicNodesIssued += nodeCount;
         totalNodesIssued += nodeCount;
         
         if (!wasNodeHolder && user.nodeCount > 0 && user.referrer != address(0)) {
@@ -236,9 +249,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         emit NodePurchased(msg.sender, nodeCount, totalCost, user.referrer);
     }
 
-    /**
-     * @notice Internal function to check and grant auto-node from donations
-     */
     function _checkAndGrantAutoNode(address userAddress) internal {
         UserInfo storage user = users[userAddress];
         
@@ -246,12 +256,13 @@ contract NSTFinance is Ownable, ReentrancyGuard {
             !user.hasAutoNode && 
             user.totalDonationUSD >= AUTO_NODE_THRESHOLD &&
             user.nodeCount < MAX_NODES_PER_USER &&
-            totalNodesIssued < MAX_TOTAL_NODES
+            publicNodesIssued < MAX_PUBLIC_NODES
         ) {
             bool wasNodeHolder = user.nodeCount > 0;
             
             user.nodeCount++;
             user.hasAutoNode = true;
+            publicNodesIssued++;
             totalNodesIssued++;
             
             emit AutoNodeGranted(userAddress, user.nodeCount);
@@ -262,9 +273,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         }
     }
 
-    /**
-     * @notice Internal function to grant node referral rewards
-     */
     function _grantNodeReferralReward(address referrer, address referee) internal {
         UserInfo storage referrerInfo = users[referrer];
         
@@ -276,30 +284,70 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         if (
             referrerInfo.directNodeCount % FREE_NODE_REFERRAL_THRESHOLD == 0 &&
             referrerInfo.nodeCount < MAX_NODES_PER_USER &&
-            totalNodesIssued < MAX_TOTAL_NODES
+            publicNodesIssued < MAX_PUBLIC_NODES
         ) {
             referrerInfo.nodeCount++;
+            publicNodesIssued++;
             totalNodesIssued++;
             emit FreeNodeGranted(referrer, referrerInfo.nodeCount);
         }
     }
 
-    // ============ Points System (v1.1) ============
+    // ============ Team Node Functions ============
     
     /**
-     * @notice Award points for donations
-     * @dev Node holders get 2x points
+     * @notice Allocate team nodes (owner only, locked for 2 years)
+     * @param teamMember Address to receive team nodes
+     * @param nodeCount Number of nodes to allocate
      */
+    function allocateTeamNodes(address teamMember, uint256 nodeCount) external onlyOwner {
+        if (teamMember == address(0)) revert ZeroAddress();
+        if (nodeCount == 0) revert InvalidAmount();
+        if (teamNodesIssued + nodeCount > TEAM_RESERVED_NODES) revert TeamNodeLimitReached();
+        
+        TeamNodeInfo storage teamInfo = teamNodes[teamMember];
+        UserInfo storage user = users[teamMember];
+        
+        // Register as team member on first allocation
+        if (!teamInfo.isTeamMember) {
+            teamInfo.isTeamMember = true;
+            teamInfo.unlockTime = deploymentTime + TEAM_LOCK_DURATION;
+            _registerUser(teamMember, address(0));
+        }
+        
+        teamInfo.count += nodeCount;
+        user.teamNodeCount += nodeCount;
+        teamNodesIssued += nodeCount;
+        totalNodesIssued += nodeCount;
+        
+        emit TeamNodeAllocated(teamMember, nodeCount, teamInfo.unlockTime);
+    }
+    
+    /**
+     * @notice Check if team nodes are unlocked
+     */
+    function areTeamNodesUnlocked(address teamMember) public view returns (bool) {
+        TeamNodeInfo memory teamInfo = teamNodes[teamMember];
+        return teamInfo.isTeamMember && block.timestamp >= teamInfo.unlockTime;
+    }
+    
+    /**
+     * @notice Get total node count (regular + team nodes)
+     */
+    function getTotalNodeCount(address user) public view returns (uint256) {
+        return users[user].nodeCount + users[user].teamNodeCount;
+    }
+
+    // ============ Points System ============
+    
     function _awardDonationPoints(address user, uint256 usdValue) internal {
         UserInfo storage userInfo = users[user];
         
-        // Calculate points: 1 USD = 1 point
         uint256 basePoints = (usdValue * POINTS_PER_USD) / 10**18;
         
-        // Double points for node holders
-        uint256 points = userInfo.nodeCount > 0 
-            ? basePoints * NODE_HOLDER_MULTIPLIER 
-            : basePoints;
+        // Double points for node holders (including team nodes)
+        uint256 totalNodes = getTotalNodeCount(user);
+        uint256 points = totalNodes > 0 ? basePoints * NODE_HOLDER_MULTIPLIER : basePoints;
         
         userInfo.points += points;
         totalPointsDistributed += points;
@@ -307,13 +355,9 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         emit PointsEarned(user, points, "donation");
     }
     
-    /**
-     * @notice Award points to referrer for referee donations
-     */
     function _awardReferralPoints(address referrer, uint256 usdValue) internal {
         UserInfo storage referrerInfo = users[referrer];
         
-        // Referrer gets base points for referee donations
         uint256 points = (usdValue * POINTS_PER_USD) / 10**18;
         
         referrerInfo.points += points;
@@ -322,12 +366,8 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         emit PointsEarned(referrer, points, "referral");
     }
 
-    // ============ Snapshot & Airdrop System (v1.1) ============
+    // ============ Snapshot & Airdrop System ============
     
-    /**
-     * @notice Take snapshot of current points for ranking calculation
-     * @dev Called by admin twice a month (10th and 20th)
-     */
     function takeSnapshot() external onlyOwner {
         currentAirdropRound++;
         lastSnapshotTimestamp = block.timestamp;
@@ -335,10 +375,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         emit SnapshotTaken(currentAirdropRound, block.timestamp);
     }
     
-    /**
-     * @notice Update snapshot points for specific users (called by backend after snapshot)
-     * @param userAddresses Array of user addresses
-     */
     function updateSnapshotPoints(address[] calldata userAddresses) external onlyOwner {
         for (uint256 i = 0; i < userAddresses.length; i++) {
             address user = userAddresses[i];
@@ -346,12 +382,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         }
     }
     
-    /**
-     * @notice Create airdrop round with eligible users
-     * @param round Airdrop round number
-     * @param eligibleUsers Array of eligible user addresses
-     * @param airdropAmount NST amount per eligible user
-     */
     function createAirdropRound(
         uint256 round,
         address[] calldata eligibleUsers,
@@ -366,7 +396,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         airdrop.totalEligible = eligibleUsers.length;
         airdrop.isActive = true;
         
-        // Mark eligible users
         for (uint256 i = 0; i < eligibleUsers.length; i++) {
             isEligibleForAirdrop[eligibleUsers[i]][round] = true;
             emit AirdropEligibilitySet(eligibleUsers[i], round, true);
@@ -375,10 +404,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         emit AirdropRoundCreated(round, airdropAmount, eligibleUsers.length);
     }
     
-    /**
-     * @notice Claim airdrop for a specific round
-     * @param round Airdrop round number
-     */
     function claimAirdrop(uint256 round) external nonReentrant {
         if (round == 0 || round > currentAirdropRound) revert InvalidAirdropRound();
         
@@ -390,24 +415,17 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         
         hasClaimedAirdrop[msg.sender][round] = true;
         
-        // Transfer airdrop
         nstToken.safeTransfer(msg.sender, airdrop.airdropAmount);
         
         emit AirdropClaimed(msg.sender, round, airdrop.airdropAmount);
     }
     
-    /**
-     * @notice Close airdrop round (prevent further claims)
-     */
     function closeAirdropRound(uint256 round) external onlyOwner {
         airdropRounds[round].isActive = false;
     }
 
     // ============ NST Reward Functions ============
     
-    /**
-     * @notice Claim accumulated NST rewards
-     */
     function claimNST() external nonReentrant {
         if (!claimEnabled) revert ClaimNotEnabled();
         
@@ -424,9 +442,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
 
     // ============ User Management ============
     
-    /**
-     * @notice Internal function to register user and set referrer
-     */
     function _registerUser(address user, address referrerHint) internal {
         if (!isUser[user]) {
             isUser[user] = true;
@@ -447,9 +462,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
 
     // ============ View Functions ============
     
-    /**
-     * @notice Get user information
-     */
     function getUserInfo(address user) external view returns (
         uint256 totalDonationUSD,
         uint256 nodeCount,
@@ -475,9 +487,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         );
     }
     
-    /**
-     * @notice Get global statistics
-     */
     function getGlobalStats() external view returns (
         uint256 _totalNodesIssued,
         uint256 _totalDonationsUSD,
@@ -494,9 +503,20 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         );
     }
     
-    /**
-     * @notice Check airdrop eligibility for user and round
-     */
+    function getNodeStats() external view returns (
+        uint256 _publicNodesIssued,
+        uint256 _teamNodesIssued,
+        uint256 publicNodesRemaining,
+        uint256 teamNodesRemaining
+    ) {
+        return (
+            publicNodesIssued,
+            teamNodesIssued,
+            MAX_PUBLIC_NODES - publicNodesIssued,
+            TEAM_RESERVED_NODES - teamNodesIssued
+        );
+    }
+    
     function checkAirdropEligibility(address user, uint256 round) external view returns (
         bool eligible,
         bool claimed,
@@ -509,9 +529,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         );
     }
     
-    /**
-     * @notice Get airdrop round details
-     */
     function getAirdropRound(uint256 round) external view returns (
         uint256 roundNumber,
         uint256 timestamp,
@@ -529,15 +546,11 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         );
     }
     
-    /**
-     * @notice Calculate user's point growth percentage since last snapshot
-     * @dev Returns growth as basis points (100 = 1%, 10000 = 100%)
-     */
     function getUserPointsGrowth(address user) external view returns (uint256 growthBasisPoints) {
         UserInfo memory userInfo = users[user];
         
         if (userInfo.lastSnapshotPoints == 0) {
-            return userInfo.points > 0 ? 1000000 : 0; // 10000% if starting from 0
+            return userInfo.points > 0 ? 1000000 : 0;
         }
         
         if (userInfo.points <= userInfo.lastSnapshotPoints) {
@@ -548,24 +561,18 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         return (increase * 10000) / userInfo.lastSnapshotPoints;
     }
     
-    /**
-     * @notice Check if user is eligible for auto-node
-     */
     function isEligibleForAutoNode(address user) external view returns (bool) {
         UserInfo memory info = users[user];
         return (
             !info.hasAutoNode && 
             info.totalDonationUSD >= AUTO_NODE_THRESHOLD &&
             info.nodeCount < MAX_NODES_PER_USER &&
-            totalNodesIssued < MAX_TOTAL_NODES
+            publicNodesIssued < MAX_PUBLIC_NODES
         );
     }
 
     // ============ Admin Functions ============
     
-    /**
-     * @notice Add supported stablecoin
-     */
     function addSupportedToken(address token, uint8 decimals) external onlyOwner {
         if (token == address(0)) revert ZeroAddress();
         supportedTokens[token] = true;
@@ -573,34 +580,22 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         emit TokenAdded(token, decimals);
     }
     
-    /**
-     * @notice Remove supported stablecoin
-     */
     function removeSupportedToken(address token) external onlyOwner {
         supportedTokens[token] = false;
         emit TokenRemoved(token);
     }
     
-    /**
-     * @notice Set NST token address
-     */
     function setNSTToken(address _nstToken) external onlyOwner {
         if (_nstToken == address(0)) revert ZeroAddress();
         nstToken = IERC20(_nstToken);
         emit NSTTokenSet(_nstToken);
     }
     
-    /**
-     * @notice Enable/disable NST claiming
-     */
     function setClaimEnabled(bool _enabled) external onlyOwner {
         claimEnabled = _enabled;
         emit ClaimEnabled(_enabled);
     }
     
-    /**
-     * @notice Update treasury address
-     */
     function setTreasury(address _treasury) external onlyOwner {
         if (_treasury == address(0)) revert ZeroAddress();
         address oldTreasury = treasury;
@@ -608,18 +603,12 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         emit TreasuryUpdated(oldTreasury, _treasury);
     }
     
-    /**
-     * @notice Emergency withdraw NST tokens (only owner)
-     */
     function emergencyWithdrawNST(uint256 amount) external onlyOwner {
         nstToken.safeTransfer(owner(), amount);
     }
 
     // ============ Internal Helper Functions ============
     
-    /**
-     * @notice Normalize token amount to 18 decimals
-     */
     function _normalizeAmount(uint256 amount, uint8 decimals) internal pure returns (uint256) {
         if (decimals == 18) {
             return amount;
@@ -630,9 +619,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         }
     }
     
-    /**
-     * @notice Denormalize from 18 decimals to token decimals
-     */
     function _denormalizeAmount(uint256 amount, uint8 decimals) internal pure returns (uint256) {
         if (decimals == 18) {
             return amount;

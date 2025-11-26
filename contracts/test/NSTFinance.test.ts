@@ -296,4 +296,87 @@ describe("NSTFinance", function () {
       expect(balanceAfter - balanceBefore).to.equal(amount);
     });
   });
+
+  describe("Team Nodes)", function () {
+    it("Should allow owner to allocate team nodes", async function () {
+      await expect(nstFinance.allocateTeamNodes(user1.address, 5))
+        .to.emit(nstFinance, "TeamNodeAllocated");
+
+      const userInfo = await nstFinance.getUserInfo(user1.address);
+      expect(userInfo[1]).to.equal(0); // Regular nodes
+      
+      const totalNodes = await nstFinance.getTotalNodeCount(user1.address);
+      expect(totalNodes).to.equal(5); // Team nodes
+    });
+
+    it("Should enforce team node limit (20 max)", async function () {
+      await nstFinance.allocateTeamNodes(user1.address, 20);
+      
+      await expect(
+        nstFinance.allocateTeamNodes(user2.address, 1)
+      ).to.be.revertedWithCustomError(nstFinance, "TeamNodeLimitReached");
+    });
+
+    it("Should lock team nodes for 2 years", async function () {
+      await nstFinance.allocateTeamNodes(user1.address, 5);
+      
+      const unlocked = await nstFinance.areTeamNodesUnlocked(user1.address);
+      expect(unlocked).to.be.false;
+    });
+
+    it("Team nodes should earn 2x points", async function () {
+      // Allocate team nodes
+      await nstFinance.allocateTeamNodes(user1.address, 1);
+      
+      // Donate
+      await usdt.connect(user1).approve(await nstFinance.getAddress(), USD_1000);
+      await nstFinance.connect(user1).donate(await usdt.getAddress(), USD_1000, ethers.ZeroAddress);
+      
+      const userInfo = await nstFinance.getUserInfo(user1.address);
+      // Should get 2x points (2000 points for 1000 USD with node)
+      expect(userInfo.points).to.equal(ethers.parseEther("2000"));
+    });
+
+    it("Should track public and team nodes separately", async function () {
+      await nstFinance.allocateTeamNodes(user1.address, 5);
+      
+      await usdt.connect(user2).approve(await nstFinance.getAddress(), USD_2000);
+      await nstFinance.connect(user2).buyNode(await usdt.getAddress(), 1, ethers.ZeroAddress);
+      
+      const nodeStats = await nstFinance.getNodeStats();
+      expect(nodeStats[0]).to.equal(1);  // publicNodesIssued
+      expect(nodeStats[1]).to.equal(5);  // teamNodesIssued
+      expect(nodeStats[2]).to.equal(99); // publicNodesRemaining
+      expect(nodeStats[3]).to.equal(15); // teamNodesRemaining
+    });
+
+    it("Should prevent non-owner from allocating team nodes", async function () {
+      await expect(
+        nstFinance.connect(user1).allocateTeamNodes(user2.address, 1)
+      ).to.be.revertedWithCustomError(nstFinance, "OwnableUnauthorizedAccount");
+    });
+
+    it("Should allow multiple allocations to same team member", async function () {
+      await nstFinance.allocateTeamNodes(user1.address, 3);
+      await nstFinance.allocateTeamNodes(user1.address, 2);
+      
+      const totalNodes = await nstFinance.getTotalNodeCount(user1.address);
+      expect(totalNodes).to.equal(5);
+    });
+
+    it("Team members should still be within max 5 nodes per user for regular nodes", async function () {
+      // Allocate 3 team nodes
+      await nstFinance.allocateTeamNodes(user1.address, 3);
+      
+      // Should still be able to buy 5 regular nodes (team nodes don't count toward limit)
+      await usdt.connect(user1).approve(await nstFinance.getAddress(), USD_2000 * 5n);
+      await nstFinance.connect(user1).buyNode(await usdt.getAddress(), 5, ethers.ZeroAddress);
+      
+      const userInfo = await nstFinance.getUserInfo(user1.address);
+      expect(userInfo[1]).to.equal(5); // Regular nodes
+      
+      const totalNodes = await nstFinance.getTotalNodeCount(user1.address);
+      expect(totalNodes).to.equal(8); // 5 regular + 3 team
+    });
+  });
 });

@@ -1,12 +1,12 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "network": {
     "name": "bscTestnet",
     "chainId": 97
   },
   "contracts": {
     "NSTFinance": {
-      "address": "0x2dEba444b53Ad98d14f4BdDFC44eC3eD0d1c1af6",
+      "address": "0xA3B3b1200489cEdE5B0Fc3e8B5DC3e905bBE99B9",
       "abi": [
         {
           "inputs": [
@@ -27,6 +27,11 @@
         {
           "inputs": [],
           "name": "AirdropRoundNotActive",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "AlreadyTeamMember",
           "type": "error"
         },
         {
@@ -80,6 +85,11 @@
           "type": "error"
         },
         {
+          "inputs": [],
+          "name": "NotTeamMember",
+          "type": "error"
+        },
+        {
           "inputs": [
             {
               "internalType": "address",
@@ -103,6 +113,11 @@
         },
         {
           "inputs": [],
+          "name": "PublicNodeLimitReached",
+          "type": "error"
+        },
+        {
+          "inputs": [],
           "name": "ReentrancyGuardReentrantCall",
           "type": "error"
         },
@@ -115,6 +130,16 @@
             }
           ],
           "name": "SafeERC20FailedOperation",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "TeamNodeLimitReached",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "TeamNodesLocked",
           "type": "error"
         },
         {
@@ -467,6 +492,50 @@
             {
               "indexed": true,
               "internalType": "address",
+              "name": "teamMember",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "count",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "unlockTime",
+              "type": "uint256"
+            }
+          ],
+          "name": "TeamNodeAllocated",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "teamMember",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "count",
+              "type": "uint256"
+            }
+          ],
+          "name": "TeamNodeUnlocked",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
               "name": "token",
               "type": "address"
             },
@@ -585,6 +654,19 @@
         },
         {
           "inputs": [],
+          "name": "MAX_PUBLIC_NODES",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
           "name": "MAX_TOTAL_NODES",
           "outputs": [
             {
@@ -662,6 +744,32 @@
           "type": "function"
         },
         {
+          "inputs": [],
+          "name": "TEAM_LOCK_DURATION",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "TEAM_RESERVED_NODES",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
           "inputs": [
             {
               "internalType": "address",
@@ -712,6 +820,43 @@
             {
               "internalType": "bool",
               "name": "isActive",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "teamMember",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nodeCount",
+              "type": "uint256"
+            }
+          ],
+          "name": "allocateTeamNodes",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "teamMember",
+              "type": "address"
+            }
+          ],
+          "name": "areTeamNodesUnlocked",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
               "type": "bool"
             }
           ],
@@ -858,6 +1003,19 @@
           "type": "function"
         },
         {
+          "inputs": [],
+          "name": "deploymentTime",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
           "inputs": [
             {
               "internalType": "address",
@@ -959,6 +1117,53 @@
             {
               "internalType": "uint256",
               "name": "_totalPointsDistributed",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "getNodeStats",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "_publicNodesIssued",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "_teamNodesIssued",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "publicNodesRemaining",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "teamNodesRemaining",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "user",
+              "type": "address"
+            }
+          ],
+          "name": "getTotalNodeCount",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
               "type": "uint256"
             }
           ],
@@ -1169,6 +1374,19 @@
           "type": "function"
         },
         {
+          "inputs": [],
+          "name": "publicNodesIssued",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
           "inputs": [
             {
               "internalType": "address",
@@ -1251,6 +1469,48 @@
           "name": "takeSnapshot",
           "outputs": [],
           "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "name": "teamNodes",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "count",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "unlockTime",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "isTeamMember",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "teamNodesIssued",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
           "type": "function"
         },
         {
@@ -1384,6 +1644,11 @@
               "type": "uint256"
             },
             {
+              "internalType": "uint256",
+              "name": "teamNodeCount",
+              "type": "uint256"
+            },
+            {
               "internalType": "address",
               "name": "referrer",
               "type": "address"
@@ -1438,7 +1703,10 @@
     "minimumDonation": "100",
     "nodePrice": "2000",
     "maxNodesPerUser": 5,
-    "maxTotalNodes": 100,
+    "maxTotalNodes": 120,
+    "maxPublicNodes": 100,
+    "teamReservedNodes": 20,
+    "teamLockDuration": "730 days",
     "pointsPerUSD": 1,
     "nodeHolderMultiplier": 2,
     "nodeReferralReward": "500",
@@ -1447,9 +1715,9 @@
   },
   "deployment": {
     "deployer": "0xEc50dfEd7a7de26C1a94D4684FcF8e43C89f3DD1",
-    "blockNumber": 74671479,
-    "blockTimestamp": 1764010293,
-    "timestamp": "2025-11-24T18:51:33.426Z",
-    "transactionHash": "0xb46a55f75e486a0b327982e75b155da65239d25ce33ab9d87f91e0cd9039dd0b"
+    "blockNumber": 74859056,
+    "blockTimestamp": 1764095275,
+    "timestamp": "2025-11-25T18:27:56.383Z",
+    "transactionHash": "0x31c1d2a0cc6088394ff99b1656dfc667f1ce690ac5ef9e609b563ae6003845dc"
   }
 }

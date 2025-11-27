@@ -1,42 +1,31 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Providers } from "@/components/providers/Provider";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-import { Toaster } from "sonner";
+import type React from "react"
+import type { Metadata } from "next"
+import { Inter, Geist_Mono } from "next/font/google"
+import { Analytics } from "@vercel/analytics/next"
+import "./globals.css"
+import { Web3Provider } from "@/components/providers/web3-provider"
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
 
 export const metadata: Metadata = {
-  title: "NST Finance - Transparent Donation & Node Ecosystem",
-  description: "Decentralized donation platform with node-based rewards, referral system, and gamified points on BNB Smart Chain",
-  keywords: ["DeFi", "Donation", "Nodes", "BSC", "Web3", "Referral", "Rewards"],
-  authors: [{ name: "NST Finance" }],
-  openGraph: {
-    title: "NST Finance",
-    description: "Transparent donation and node-based reward ecosystem",
-    type: "website",
-  },
-};
+  title: "NST Finance",
+  description:
+    "The most transparent donation + node incentive model in Web3. Earn rewards through donations, node ownership, and referrals.",
+  keywords: ["DeFi", "Blockchain", "Donation", "Nodes", "BSC", "Web3", "NST Token"],
+}
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        <Providers>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-          <Toaster position="top-right" richColors closeButton />
-        </Providers>
+    <html lang="en" className="dark">
+      <body className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}>
+        <Web3Provider>{children}</Web3Provider>
+        <Analytics />
       </body>
     </html>
-  );
+  )
 }

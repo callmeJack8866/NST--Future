@@ -110,7 +110,7 @@ export default function HomePage() {
 
       {/* Features Section */}
       <section className="py-20 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-card/50 to-background" />
+        <div className="absolute inset-0 bg-linear-to-b from-background via-card/50 to-background" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -176,7 +176,7 @@ export default function HomePage() {
             ].map((item, i) => (
               <div key={i} className="relative text-center group">
                 <div className="glass rounded-2xl p-8 h-full hover:glass-strong transition-all duration-300">
-                  <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <item.icon className="w-8 h-8 text-primary-foreground" />
                   </div>
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
@@ -196,7 +196,7 @@ export default function HomePage() {
 
       {/* Multichain Section */}
       <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5" />
+        <div className="absolute inset-0 bg-linear-to-r from-primary/5 via-transparent to-accent/5" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="glass rounded-3xl p-8 md:p-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -227,13 +227,13 @@ export default function HomePage() {
               </div>
               <div className="flex justify-center">
                 <div className="relative w-64 h-64">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 animate-pulse" />
+                  <div className="absolute inset-0 rounded-full bg-linear-to-br from-primary/30 to-accent/30 animate-pulse" />
                   <div
-                    className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 animate-pulse"
+                    className="absolute inset-4 rounded-full bg-linear-to-br from-primary/20 to-accent/20 animate-pulse"
                     style={{ animationDelay: "0.5s" }}
                   />
                   <div
-                    className="absolute inset-8 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 animate-pulse"
+                    className="absolute inset-8 rounded-full bg-linear-to-br from-primary/10 to-accent/10 animate-pulse"
                     style={{ animationDelay: "1s" }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">

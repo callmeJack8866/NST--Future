@@ -163,7 +163,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="h-2 bg-secondary rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
+                          className="h-full bg-linear-to-r from-primary to-accent transition-all duration-500"
                           style={{ width: `${nodeProgress}%` }}
                         />
                       </div>
@@ -205,7 +205,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="h-2 bg-secondary rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
+                          className="h-full bg-linear-to-r from-primary to-accent transition-all duration-500"
                           style={{ width: `${upgradeProgress}%` }}
                         />
                       </div>
@@ -244,7 +244,7 @@ export default function DashboardPage() {
             <CardContent>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#22d3ee]/20 to-primary/20 flex items-center justify-center">
+                  <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-[#22d3ee]/20 to-primary/20 flex items-center justify-center">
                     <span className="text-3xl font-bold gradient-text">{user.nstReward.toLocaleString()}</span>
                   </div>
                   <div>

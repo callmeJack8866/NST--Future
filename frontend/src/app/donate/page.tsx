@@ -266,7 +266,7 @@ export default function DonatePage() {
                   </div>
                   <div className="h-3 bg-secondary rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
+                      className="h-full bg-linear-to-r from-primary to-accent transition-all duration-500"
                       style={{ width: `${progressToUpgrade}%` }}
                     />
                   </div>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { StatCard } from "@/components/ui/stat-card"
 import { ProgressRing } from "@/components/ui/progress-ring"
 import { GlowButton } from "@/components/ui/glow-button"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { useWeb3 } from "@/components/providers/web3-provider"
 import { mockUserData, mockDonationHistory, mockNodePurchases } from "@/lib/mock-data"
 import { MAX_NODES_PER_USER, AUTO_UPGRADE_THRESHOLD } from "@/lib/constants"
@@ -102,37 +103,45 @@ export default function DashboardPage() {
 
           {/* Main Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <StatCard
-              title="Total Donated"
-              value={user.totalDonationUSD}
-              prefix="$"
-              icon={DollarSign}
-              trend={12.5}
-              iconColor="text-primary"
-            />
-            <StatCard
-              title="My Nodes"
-              value={user.nodeCount}
-              suffix={`/${MAX_NODES_PER_USER}`}
-              icon={Box}
-              description={`${MAX_NODES_PER_USER - user.nodeCount} slots available`}
-              iconColor="text-accent"
-            />
-            <StatCard
-              title="My Points"
-              value={user.points}
-              icon={Star}
-              trend={8.2}
-              description={user.isNodeHolder ? "2x multiplier active" : undefined}
-              iconColor="text-[#facc15]"
-            />
-            <StatCard
-              title="NST Rewards"
-              value={user.nstReward}
-              icon={Coins}
-              description={claimEnabled ? "Available to claim" : "Claim coming soon"}
-              iconColor="text-[#22d3ee]"
-            />
+            <ScrollReveal delay={0.1}>
+              <StatCard
+                title="Total Donated"
+                value={user.totalDonationUSD}
+                prefix="$"
+                icon={DollarSign}
+                trend={12.5}
+                iconColor="text-primary"
+              />
+            </ScrollReveal>
+            <ScrollReveal delay={0.2}>
+              <StatCard
+                title="My Nodes"
+                value={user.nodeCount}
+                suffix={`/${MAX_NODES_PER_USER}`}
+                icon={Box}
+                description={`${MAX_NODES_PER_USER - user.nodeCount} slots available`}
+                iconColor="text-accent"
+              />
+            </ScrollReveal>
+            <ScrollReveal delay={0.3}>
+              <StatCard
+                title="My Points"
+                value={user.points}
+                icon={Star}
+                trend={8.2}
+                description={user.isNodeHolder ? "2x multiplier active" : undefined}
+                iconColor="text-[#facc15]"
+              />
+            </ScrollReveal>
+            <ScrollReveal delay={0.4}>
+              <StatCard
+                title="NST Rewards"
+                value={user.nstReward}
+                icon={Coins}
+                description={claimEnabled ? "Available to claim" : "Claim coming soon"}
+                iconColor="text-[#22d3ee]"
+              />
+            </ScrollReveal>
           </div>
 
           {/* Progress Cards */}

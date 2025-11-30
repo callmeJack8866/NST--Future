@@ -31,7 +31,7 @@ export function StatCard({
   iconColor = "text-primary",
 }: StatCardProps) {
   return (
-    <Card className={cn("glass hover:glass-strong transition-all duration-300 group", className)}>
+    <Card className={cn("glass hover:glass-strong transition-all duration-300 group hover-lift animate-float-slow", className)}>
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
@@ -49,7 +49,7 @@ export function StatCard({
           </div>
           <div
             className={cn(
-              "p-3 rounded-xl bg-secondary/50 group-hover:scale-110 transition-transform duration-300",
+              "p-3 rounded-xl bg-secondary/50 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 animate-bounce-subtle",
               iconColor,
             )}
           >

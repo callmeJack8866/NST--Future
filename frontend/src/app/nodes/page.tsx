@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { GlowButton } from "@/components/ui/glow-button"
 import { ProgressRing } from "@/components/ui/progress-ring"
 import { AnimatedCounter } from "@/components/ui/animated-counter"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { useWeb3 } from "@/components/providers/web3-provider"
 import {
   NODE_PRICE,
@@ -102,7 +103,7 @@ export default function NodesPage() {
 
           {/* Global Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card className="glass">
+            <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0s' }}>
               <CardContent className="p-6 text-center">
                 <p className="text-3xl font-bold gradient-text">
                   <AnimatedCounter value={nodesSold} />/{GLOBAL_NODE_SUPPLY}
@@ -110,7 +111,7 @@ export default function NodesPage() {
                 <p className="text-sm text-muted-foreground">Nodes Sold</p>
               </CardContent>
             </Card>
-            <Card className="glass">
+            <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.2s' }}>
               <CardContent className="p-6 text-center">
                 <p className="text-3xl font-bold text-primary">
                   <AnimatedCounter value={mockGlobalStats.nodesRemaining} />
@@ -118,7 +119,7 @@ export default function NodesPage() {
                 <p className="text-sm text-muted-foreground">Available</p>
               </CardContent>
             </Card>
-            <Card className="glass">
+            <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.4s' }}>
               <CardContent className="p-6 text-center">
                 <p className="text-3xl font-bold">
                   $<AnimatedCounter value={NODE_PRICE} />
@@ -126,7 +127,7 @@ export default function NodesPage() {
                 <p className="text-sm text-muted-foreground">Price Per Node</p>
               </CardContent>
             </Card>
-            <Card className="glass">
+            <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.6s' }}>
               <CardContent className="p-6 text-center">
                 <p className="text-3xl font-bold text-accent">
                   <AnimatedCounter value={user.nodeCount} />/{MAX_NODES_PER_USER}

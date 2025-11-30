@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { GlowButton } from "@/components/ui/glow-button"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { useWeb3 } from "@/components/providers/web3-provider"
 import { mockLeaderboardPoints, mockLeaderboardGrowth, mockUserData } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
@@ -111,11 +112,11 @@ export default function LeaderboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-xl bg-secondary/30 text-center">
+                  <div className="p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0s' }}>
                     <p className="text-3xl font-bold gradient-text">{user.points.toLocaleString()}</p>
                     <p className="text-sm text-muted-foreground">Total Points</p>
                   </div>
-                  <div className="p-4 rounded-xl bg-secondary/30 text-center">
+                  <div className="p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.2s' }}>
                     <p className="text-3xl font-bold">
                       {isEligiblePoints ? (
                         <span className="text-primary">#{userPointsRank}</span>
@@ -125,7 +126,7 @@ export default function LeaderboardPage() {
                     </p>
                     <p className="text-sm text-muted-foreground">Points Rank</p>
                   </div>
-                  <div className="p-4 rounded-xl bg-secondary/30 text-center">
+                  <div className="p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.4s' }}>
                     <p className="text-3xl font-bold">
                       {isEligibleGrowth ? (
                         <span className="text-primary">#{userGrowthRank}</span>

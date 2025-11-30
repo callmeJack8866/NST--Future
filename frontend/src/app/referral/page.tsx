@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { GlowButton } from "@/components/ui/glow-button"
 import { ProgressRing } from "@/components/ui/progress-ring"
 import { AnimatedCounter } from "@/components/ui/animated-counter"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { useWeb3 } from "@/components/providers/web3-provider"
 import { mockUserData, mockReferrals } from "@/lib/mock-data"
 import { NODE_REFERRAL_REWARD, DONATION_REFERRAL_REWARD, FREE_NODE_REFERRAL_COUNT } from "@/lib/constants"
@@ -136,7 +137,7 @@ export default function ReferralPage() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Card className="glass">
+            <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0s' }}>
               <CardContent className="p-6 text-center">
                 <p className="text-3xl font-bold gradient-text">
                   <AnimatedCounter value={mockReferrals.length} />
@@ -144,7 +145,7 @@ export default function ReferralPage() {
                 <p className="text-sm text-muted-foreground">Total Referrals</p>
               </CardContent>
             </Card>
-            <Card className="glass">
+            <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.2s' }}>
               <CardContent className="p-6 text-center">
                 <p className="text-3xl font-bold text-primary">
                   <AnimatedCounter value={user.directNodeCount} />
@@ -152,7 +153,7 @@ export default function ReferralPage() {
                 <p className="text-sm text-muted-foreground">Node Holders</p>
               </CardContent>
             </Card>
-            <Card className="glass">
+            <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.4s' }}>
               <CardContent className="p-6 text-center">
                 <p className="text-3xl font-bold">
                   $<AnimatedCounter value={user.directDonationUSD} />
@@ -160,7 +161,7 @@ export default function ReferralPage() {
                 <p className="text-sm text-muted-foreground">Referral Donations</p>
               </CardContent>
             </Card>
-            <Card className="glass">
+            <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.6s' }}>
               <CardContent className="p-6 text-center">
                 <p className="text-3xl font-bold text-[#22d3ee]">
                   <AnimatedCounter value={totalEarned} />

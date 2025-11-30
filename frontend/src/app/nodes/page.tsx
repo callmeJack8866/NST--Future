@@ -72,8 +72,8 @@ export default function NodesPage() {
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-float">
                 <Box className="w-12 h-12 text-primary" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Node Sale</h1>
-              <p className="text-muted-foreground max-w-md mb-8">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Node Sale</h1>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-8">
                 Connect your wallet to purchase nodes and unlock exclusive benefits.
               </p>
               <GlowButton onClick={connect} size="lg">
@@ -95,44 +95,44 @@ export default function NodesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Node Sale</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Node Sale</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Own nodes to earn NST rewards and unlock 2x points on all donations.
             </p>
           </div>
 
           {/* Global Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
             <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0s' }}>
-              <CardContent className="p-6 text-center">
-                <p className="text-3xl font-bold gradient-text">
+              <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+                <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold gradient-text">
                   <AnimatedCounter value={nodesSold} />/{GLOBAL_NODE_SUPPLY}
                 </p>
-                <p className="text-sm text-muted-foreground">Nodes Sold</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Nodes Sold</p>
               </CardContent>
             </Card>
             <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.2s' }}>
-              <CardContent className="p-6 text-center">
-                <p className="text-3xl font-bold text-primary">
+              <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+                <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary">
                   <AnimatedCounter value={mockGlobalStats.nodesRemaining} />
                 </p>
-                <p className="text-sm text-muted-foreground">Available</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Available</p>
               </CardContent>
             </Card>
             <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.4s' }}>
-              <CardContent className="p-6 text-center">
-                <p className="text-3xl font-bold">
+              <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+                <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
                   $<AnimatedCounter value={NODE_PRICE} />
                 </p>
-                <p className="text-sm text-muted-foreground">Price Per Node</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Price Per Node</p>
               </CardContent>
             </Card>
             <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.6s' }}>
-              <CardContent className="p-6 text-center">
-                <p className="text-3xl font-bold text-accent">
+              <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+                <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-accent">
                   <AnimatedCounter value={user.nodeCount} />/{MAX_NODES_PER_USER}
                 </p>
-                <p className="text-sm text-muted-foreground">Your Nodes</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Your Nodes</p>
               </CardContent>
             </Card>
           </div>
@@ -146,30 +146,30 @@ export default function NodesPage() {
                     <Box className="w-5 h-5 text-primary" />
                     Purchase Nodes
                   </CardTitle>
-                  <CardDescription>Each node costs ${NODE_PRICE.toLocaleString()} USD</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">Each node costs ${NODE_PRICE.toLocaleString()} USD</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Token Selection */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Select Payment Token</label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       {SUPPORTED_TOKENS.map((token) => (
                         <button
                           key={token.symbol}
                           onClick={() => setSelectedToken(token.symbol)}
                           className={cn(
-                            "flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200",
+                            "flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all duration-200",
                             selectedToken === token.symbol
                               ? "border-primary bg-primary/10"
                               : "border-border hover:border-primary/50 bg-secondary/30",
                           )}
                         >
-                          <span className="text-2xl">{token.icon}</span>
-                          <div className="text-left">
-                            <p className="font-semibold">{token.symbol}</p>
-                            <p className="text-xs text-muted-foreground">{token.name}</p>
+                          <span className="text-xl sm:text-2xl">{token.icon}</span>
+                          <div className="text-left min-w-0 flex-1">
+                            <p className="text-sm sm:text-base font-semibold">{token.symbol}</p>
+                            <p className="text-xs text-muted-foreground truncate">{token.name}</p>
                           </div>
-                          {selectedToken === token.symbol && <CheckCircle className="w-5 h-5 text-primary ml-auto" />}
+                          {selectedToken === token.symbol && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />}
                         </button>
                       ))}
                     </div>
@@ -178,31 +178,31 @@ export default function NodesPage() {
                   {/* Node Count Selector */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Number of Nodes</label>
-                    <div className="flex items-center justify-center gap-6 p-6 rounded-xl bg-secondary/30">
+                    <div className="flex items-center justify-center gap-4 sm:gap-6 p-4 sm:p-6 rounded-xl bg-secondary/30">
                       <Button
                         variant="outline"
                         size="icon"
-                        className="h-12 w-12 rounded-full glass bg-transparent"
+                        className="h-10 w-10 sm:h-12 sm:w-12 rounded-full glass bg-transparent"
                         onClick={() => setNodeCount(Math.max(1, nodeCount - 1))}
                         disabled={nodeCount <= 1}
                       >
-                        <Minus className="w-5 h-5" />
+                        <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
                       </Button>
-                      <div className="text-center min-w-[120px]">
-                        <p className="text-5xl font-bold gradient-text">{nodeCount}</p>
-                        <p className="text-sm text-muted-foreground">Node{nodeCount > 1 ? "s" : ""}</p>
+                      <div className="text-center min-w-[100px] sm:min-w-[120px]">
+                        <p className="text-4xl sm:text-5xl font-bold gradient-text">{nodeCount}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">Node{nodeCount > 1 ? "s" : ""}</p>
                       </div>
                       <Button
                         variant="outline"
                         size="icon"
-                        className="h-12 w-12 rounded-full glass bg-transparent"
+                        className="h-10 w-10 sm:h-12 sm:w-12 rounded-full glass bg-transparent"
                         onClick={() => setNodeCount(Math.min(maxPurchasable, nodeCount + 1))}
                         disabled={nodeCount >= maxPurchasable}
                       >
-                        <Plus className="w-5 h-5" />
+                        <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                       </Button>
                     </div>
-                    <p className="text-sm text-muted-foreground text-center">
+                    <p className="text-xs sm:text-sm text-muted-foreground text-center">
                       Max purchasable: {maxPurchasable} node{maxPurchasable !== 1 ? "s" : ""}
                     </p>
                   </div>
@@ -223,16 +223,16 @@ export default function NodesPage() {
                   </div>
 
                   {/* Cost Summary */}
-                  <div className="p-4 rounded-xl bg-secondary/30 space-y-2">
-                    <div className="flex justify-between">
+                  <div className="p-3 sm:p-4 rounded-xl bg-secondary/30 space-y-2">
+                    <div className="flex justify-between text-sm sm:text-base">
                       <span className="text-muted-foreground">Nodes</span>
                       <span>
                         {nodeCount} × ${NODE_PRICE.toLocaleString()}
                       </span>
                     </div>
-                    <div className="border-t border-border pt-2 flex justify-between">
-                      <span className="font-semibold">Total</span>
-                      <span className="text-xl font-bold gradient-text">
+                    <div className="border-t border-border pt-2 flex justify-between items-center">
+                      <span className="text-sm sm:text-base font-semibold">Total</span>
+                      <span className="text-lg sm:text-xl font-bold gradient-text">
                         ${totalCost.toLocaleString()} {selectedToken}
                       </span>
                     </div>
@@ -251,7 +251,7 @@ export default function NodesPage() {
                   )}
 
                   <GlowButton
-                    className="w-full h-14 text-lg"
+                    className="w-full h-12 sm:h-14 text-base sm:text-lg"
                     disabled={maxPurchasable === 0 || isLoading}
                     onClick={handlePurchase}
                   >
@@ -278,7 +278,7 @@ export default function NodesPage() {
                     Your Node History
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -333,19 +333,19 @@ export default function NodesPage() {
               {/* Global Supply */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Zap className="w-5 h-5 text-primary" />
                     Global Supply
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
-                  <ProgressRing progress={globalProgress} size={160}>
+                  <ProgressRing progress={globalProgress} size={140}>
                     <div className="text-center">
-                      <p className="text-3xl font-bold">{nodesSold}</p>
+                      <p className="text-2xl sm:text-3xl font-bold">{nodesSold}</p>
                       <p className="text-xs text-muted-foreground">of {GLOBAL_NODE_SUPPLY}</p>
                     </div>
                   </ProgressRing>
-                  <p className="mt-4 text-sm text-muted-foreground text-center">
+                  <p className="mt-4 text-xs sm:text-sm text-muted-foreground text-center">
                     {mockGlobalStats.nodesRemaining} nodes remaining
                   </p>
                 </CardContent>
@@ -354,7 +354,7 @@ export default function NodesPage() {
               {/* Node Benefits */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Gift className="w-5 h-5 text-primary" />
                     Node Benefits
                   </CardTitle>
@@ -404,7 +404,7 @@ export default function NodesPage() {
               {/* Ways to Get Nodes */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Box className="w-5 h-5 text-muted-foreground" />
                     Ways to Get Nodes
                   </CardTitle>

@@ -32,11 +32,11 @@ export function StatCard({
 }: StatCardProps) {
   return (
     <Card className={cn("glass hover:glass-strong transition-all duration-300 group hover-lift animate-float-slow", className)}>
-      <CardContent className="p-6">
+      <CardContent className="p-4 sm:p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl md:text-3xl font-bold">
+            <p className="text-xs sm:text-sm text-muted-foreground">{title}</p>
+            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
               <AnimatedCounter value={value} prefix={prefix} suffix={suffix} decimals={decimals} />
             </p>
             {trend !== undefined && (

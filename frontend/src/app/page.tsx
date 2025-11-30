@@ -99,10 +99,10 @@ export default function HomePage() {
                   direction="up"
                 >
                   <div className="glass rounded-xl p-4 md:p-6 hover-lift animate-float-slow cursor-pointer">
-                    <p className="text-2xl md:text-3xl font-bold gradient-text">
+                    <p className="text-lg sm:text-xl md:text-3xl font-bold gradient-text">
                       <AnimatedCounter value={stat.value} prefix={stat.prefix} suffix={stat.suffix} />
                     </p>
-                    <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">{stat.label}</p>
                   </div>
                 </ScrollReveal>
               ))}

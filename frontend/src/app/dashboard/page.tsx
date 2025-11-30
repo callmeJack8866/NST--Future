@@ -49,7 +49,7 @@ export default function DashboardPage() {
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-float">
                 <Wallet className="w-12 h-12 text-primary" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Connect Your Wallet</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Connect Your Wallet</h1>
               <p className="text-muted-foreground max-w-md mb-8">
                 Connect your Web3 wallet to access your dashboard and start earning rewards.
               </p>
@@ -73,8 +73,8 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-              <p className="text-muted-foreground">Welcome back! Here's your NST Finance overview.</p>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Dashboard</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">Welcome back! Here's your NST Finance overview.</p>
             </div>
             <div className="flex items-center gap-3">
               <Badge variant="outline" className="glass px-4 py-2">
@@ -155,14 +155,16 @@ export default function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-8">
-                  <ProgressRing progress={nodeProgress} size={140} animated>
-                    <div className="text-center">
-                      <p className="text-3xl font-bold">{user.nodeCount}</p>
-                      <p className="text-xs text-muted-foreground">of {MAX_NODES_PER_USER}</p>
-                    </div>
-                  </ProgressRing>
-                  <div className="flex-1 space-y-4">
+                <div className="flex items-center gap-4 sm:gap-8">
+                  <div className="flex-shrink-0">
+                    <ProgressRing progress={nodeProgress} size={120} animated>
+                      <div className="text-center">
+                        <p className="text-xl sm:text-2xl md:text-3xl font-bold">{user.nodeCount}</p>
+                        <p className="text-xs text-muted-foreground">of {MAX_NODES_PER_USER}</p>
+                      </div>
+                    </ProgressRing>
+                  </div>
+                  <div className="flex-1 space-y-4 min-w-0">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-muted-foreground">Node Slots Used</span>
@@ -199,14 +201,16 @@ export default function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-8">
-                  <ProgressRing progress={upgradeProgress} size={140} animated>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold">${user.totalDonationUSD.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">of ${AUTO_UPGRADE_THRESHOLD.toLocaleString()}</p>
-                    </div>
-                  </ProgressRing>
-                  <div className="flex-1 space-y-4">
+                <div className="flex items-center gap-4 sm:gap-8">
+                  <div className="flex-shrink-0">
+                    <ProgressRing progress={upgradeProgress} size={120} animated>
+                      <div className="text-center px-1">
+                        <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold leading-tight">${user.totalDonationUSD.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground whitespace-nowrap">of ${AUTO_UPGRADE_THRESHOLD.toLocaleString()}</p>
+                      </div>
+                    </ProgressRing>
+                  </div>
+                  <div className="flex-1 space-y-4 min-w-0">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-muted-foreground">Progress to Free Node</span>
@@ -254,11 +258,11 @@ export default function DashboardPage() {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
                   <div className="min-w-20 h-20 px-3 rounded-2xl bg-linear-to-br from-[#22d3ee]/20 to-primary/20 flex items-center justify-center">
-                    <span className="text-2xl md:text-3xl font-bold gradient-text">{user.nstReward.toLocaleString()}</span>
+                    <span className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text">{user.nstReward.toLocaleString()}</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold">NST Available</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="text-lg sm:text-xl font-semibold">NST Available</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {claimEnabled ? "Ready to claim to your wallet" : "Token launch coming soon"}
                     </p>
                   </div>
@@ -291,30 +295,30 @@ export default function DashboardPage() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="text-center p-4 rounded-lg bg-secondary/30">
-                  <p className="text-2xl font-bold">{user.directNodeCount}</p>
-                  <p className="text-sm text-muted-foreground">Node Referrals</p>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold">{user.directNodeCount}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Node Referrals</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-secondary/30">
-                  <p className="text-2xl font-bold">${user.directDonationUSD.toLocaleString()}</p>
-                  <p className="text-sm text-muted-foreground">Referral Donations</p>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold">${user.directDonationUSD.toLocaleString()}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Referral Donations</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-secondary/30">
-                  <p className="text-2xl font-bold">{Math.floor(user.directDonationUSD / 1000) * 100}</p>
-                  <p className="text-sm text-muted-foreground">NST from Donations</p>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold">{Math.floor(user.directDonationUSD / 1000) * 100}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">NST from Donations</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-secondary/30">
-                  <p className="text-2xl font-bold">{user.directNodeCount >= 10 ? "1" : "0"}</p>
-                  <p className="text-sm text-muted-foreground">Free Nodes Earned</p>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold">{user.directNodeCount >= 10 ? "1" : "0"}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Free Nodes Earned</p>
                 </div>
               </div>
-              <div className="flex justify-between items-center">
-                <p className="text-sm text-muted-foreground">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {10 - user.directNodeCount > 0
                     ? `${10 - user.directNodeCount} more node referrals for a free node`
                     : "You earned a free node from referrals!"}
                 </p>
-                <Link href="/referral">
-                  <Button variant="outline" className="glass bg-transparent">
+                <Link href="/referral" className="w-full sm:w-auto">
+                  <Button variant="outline" className="glass bg-transparent w-full sm:w-auto whitespace-nowrap">
                     <Users className="w-4 h-4 mr-2" />
                     View Referral Dashboard
                   </Button>
@@ -338,7 +342,7 @@ export default function DashboardPage() {
                   </Link>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -385,7 +389,7 @@ export default function DashboardPage() {
                   </Link>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>

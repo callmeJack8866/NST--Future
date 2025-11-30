@@ -69,8 +69,8 @@ export default function ReferralPage() {
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-float">
                 <Users className="w-12 h-12 text-primary" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Referral Program</h1>
-              <p className="text-muted-foreground max-w-md mb-8">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Referral Program</h1>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-8">
                 Connect your wallet to get your unique referral link and start earning rewards.
               </p>
               <GlowButton onClick={connect} size="lg">
@@ -92,8 +92,8 @@ export default function ReferralPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Referral Program</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Referral Program</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Invite friends and earn NST rewards for every node holder and donation.
             </p>
           </div>
@@ -105,31 +105,31 @@ export default function ReferralPage() {
                 <LinkIcon className="w-5 h-5 text-primary" />
                 Your Referral Link
               </CardTitle>
-              <CardDescription>Share this link to earn rewards when your referrals donate or buy nodes</CardDescription>
+              <CardDescription className="text-xs sm:text-sm">Share this link to earn rewards when your referrals donate or buy nodes</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
-                <Input value={referralLink} readOnly className="glass font-mono text-sm" />
+                <Input value={referralLink} readOnly className="glass font-mono text-xs sm:text-sm" />
                 <Button variant="outline" className="glass shrink-0 bg-transparent" onClick={copyLink}>
                   {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
                 </Button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" className="glass bg-transparent" onClick={copyLink}>
-                  <Copy className="w-4 h-4 mr-2" />
-                  {copied ? "Copied!" : "Copy Link"}
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+                <Button variant="outline" className="glass bg-transparent text-xs sm:text-sm" onClick={copyLink}>
+                  <Copy className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="truncate">{copied ? "Copied!" : "Copy Link"}</span>
                 </Button>
-                <Button variant="outline" className="glass bg-transparent" onClick={shareOnTwitter}>
-                  <Twitter className="w-4 h-4 mr-2" />
-                  Share on X
+                <Button variant="outline" className="glass bg-transparent text-xs sm:text-sm" onClick={shareOnTwitter}>
+                  <Twitter className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="truncate">Share on X</span>
                 </Button>
-                <Button variant="outline" className="glass bg-transparent" onClick={shareOnTelegram}>
-                  <Send className="w-4 h-4 mr-2" />
-                  Share on Telegram
+                <Button variant="outline" className="glass bg-transparent text-xs sm:text-sm" onClick={shareOnTelegram}>
+                  <Send className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="truncate">Telegram</span>
                 </Button>
-                <Button variant="outline" className="glass bg-transparent" onClick={shareOnDiscord}>
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Share on Discord
+                <Button variant="outline" className="glass bg-transparent text-xs sm:text-sm" onClick={shareOnDiscord}>
+                  <MessageCircle className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="truncate">Discord</span>
                 </Button>
               </div>
             </CardContent>
@@ -138,35 +138,35 @@ export default function ReferralPage() {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0s' }}>
-              <CardContent className="p-6 text-center">
-                <p className="text-3xl font-bold gradient-text">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text">
                   <AnimatedCounter value={mockReferrals.length} />
                 </p>
-                <p className="text-sm text-muted-foreground">Total Referrals</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Total Referrals</p>
               </CardContent>
             </Card>
             <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.2s' }}>
-              <CardContent className="p-6 text-center">
-                <p className="text-3xl font-bold text-primary">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">
                   <AnimatedCounter value={user.directNodeCount} />
                 </p>
-                <p className="text-sm text-muted-foreground">Node Holders</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Node Holders</p>
               </CardContent>
             </Card>
             <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.4s' }}>
-              <CardContent className="p-6 text-center">
-                <p className="text-3xl font-bold">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold">
                   $<AnimatedCounter value={user.directDonationUSD} />
                 </p>
-                <p className="text-sm text-muted-foreground">Referral Donations</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Referral Donations</p>
               </CardContent>
             </Card>
             <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.6s' }}>
-              <CardContent className="p-6 text-center">
-                <p className="text-3xl font-bold text-[#22d3ee]">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <p className="text-xl sm:text-2xl md:text-3xl font-bold text-[#22d3ee]">
                   <AnimatedCounter value={totalEarned} />
                 </p>
-                <p className="text-sm text-muted-foreground">NST Earned</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">NST Earned</p>
               </CardContent>
             </Card>
           </div>
@@ -182,7 +182,7 @@ export default function ReferralPage() {
                     Your Referrals
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -230,37 +230,37 @@ export default function ReferralPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 rounded-lg bg-secondary/30">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10">
+                        <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
                           <Box className="w-5 h-5 text-primary" />
                         </div>
-                        <div>
-                          <p className="font-medium">Node Referral Rewards</p>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="min-w-0">
+                          <p className="text-sm sm:text-base font-medium">Node Referral Rewards</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             {user.directNodeCount} node holders × {NODE_REFERRAL_REWARD} NST
                           </p>
                         </div>
                       </div>
-                      <p className="text-xl font-bold text-primary">+{earnedFromNodes} NST</p>
+                      <p className="text-lg sm:text-xl font-bold text-primary whitespace-nowrap">+{earnedFromNodes} NST</p>
                     </div>
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 rounded-lg bg-secondary/30">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-[#22d3ee]/10">
+                        <div className="p-2 rounded-lg bg-[#22d3ee]/10 flex-shrink-0">
                           <TrendingUp className="w-5 h-5 text-[#22d3ee]" />
                         </div>
-                        <div>
-                          <p className="font-medium">Donation Referral Rewards</p>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="min-w-0">
+                          <p className="text-sm sm:text-base font-medium">Donation Referral Rewards</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             ${user.directDonationUSD.toLocaleString()} ÷ $1,000 × {DONATION_REFERRAL_REWARD} NST
                           </p>
                         </div>
                       </div>
-                      <p className="text-xl font-bold text-[#22d3ee]">+{earnedFromDonations} NST</p>
+                      <p className="text-lg sm:text-xl font-bold text-[#22d3ee] whitespace-nowrap">+{earnedFromDonations} NST</p>
                     </div>
                     <div className="border-t border-border pt-4 flex items-center justify-between">
-                      <p className="font-semibold">Total Earned</p>
-                      <p className="text-2xl font-bold gradient-text">{totalEarned} NST</p>
+                      <p className="text-sm sm:text-base font-semibold">Total Earned</p>
+                      <p className="text-xl sm:text-2xl font-bold gradient-text whitespace-nowrap">{totalEarned} NST</p>
                     </div>
                   </div>
                 </CardContent>
@@ -272,19 +272,19 @@ export default function ReferralPage() {
               {/* Progress to Free Node */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Gift className="w-5 h-5 text-primary" />
                     Free Node Progress
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
-                  <ProgressRing progress={progressToFreeNode} size={160} animated>
+                  <ProgressRing progress={progressToFreeNode} size={140} animated>
                     <div className="text-center">
-                      <p className="text-3xl font-bold">{user.directNodeCount}</p>
+                      <p className="text-2xl sm:text-3xl font-bold">{user.directNodeCount}</p>
                       <p className="text-xs text-muted-foreground">of {FREE_NODE_REFERRAL_COUNT}</p>
                     </div>
                   </ProgressRing>
-                  <p className="mt-4 text-sm text-muted-foreground text-center">
+                  <p className="mt-4 text-xs sm:text-sm text-muted-foreground text-center">
                     {FREE_NODE_REFERRAL_COUNT - user.directNodeCount > 0
                       ? `${FREE_NODE_REFERRAL_COUNT - user.directNodeCount} more node referrals for a free node`
                       : "🎉 You earned a free node!"}
@@ -295,7 +295,7 @@ export default function ReferralPage() {
               {/* Reward Rules */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Share2 className="w-5 h-5 text-muted-foreground" />
                     Reward Rules
                   </CardTitle>
@@ -337,7 +337,7 @@ export default function ReferralPage() {
               {/* Tips */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="text-lg">Tips for Success</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">Tips for Success</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
                   <p>• Share your link on social media and crypto communities</p>

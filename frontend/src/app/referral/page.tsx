@@ -12,7 +12,7 @@ import { AnimatedCounter } from "@/components/ui/animated-counter"
 import { useWeb3 } from "@/components/providers/web3-provider"
 import { mockUserData, mockReferrals } from "@/lib/mock-data"
 import { NODE_REFERRAL_REWARD, DONATION_REFERRAL_REWARD, FREE_NODE_REFERRAL_COUNT } from "@/lib/constants"
-import { Users, Wallet, Copy, Check, Share2, Gift, Coins, Box, TrendingUp, LinkIcon, Twitter, Send } from "lucide-react"
+import { Users, Wallet, Copy, Check, Share2, Gift, Coins, Box, TrendingUp, LinkIcon, Twitter, Send, MessageCircle } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 
@@ -44,6 +44,14 @@ export default function ReferralPage() {
       `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`,
       "_blank",
     )
+  }
+
+  const shareOnDiscord = () => {
+    // Copy link and notify user to paste in Discord
+    navigator.clipboard.writeText(
+      `Join me on NST Finance - the most transparent donation ecosystem in Web3! 🚀\n\nEarn rewards through donations, node ownership, and referrals.\n\n${referralLink}`
+    )
+    alert("Link copied! Paste it in your Discord server or DMs.")
   }
 
   const formatAddress = (addr: string) => {
@@ -117,6 +125,10 @@ export default function ReferralPage() {
                 <Button variant="outline" className="glass bg-transparent" onClick={shareOnTelegram}>
                   <Send className="w-4 h-4 mr-2" />
                   Share on Telegram
+                </Button>
+                <Button variant="outline" className="glass bg-transparent" onClick={shareOnDiscord}>
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Share on Discord
                 </Button>
               </div>
             </CardContent>
@@ -265,7 +277,7 @@ export default function ReferralPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
-                  <ProgressRing progress={progressToFreeNode} size={160}>
+                  <ProgressRing progress={progressToFreeNode} size={160} animated>
                     <div className="text-center">
                       <p className="text-3xl font-bold">{user.directNodeCount}</p>
                       <p className="text-xs text-muted-foreground">of {FREE_NODE_REFERRAL_COUNT}</p>

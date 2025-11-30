@@ -147,7 +147,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-8">
-                  <ProgressRing progress={nodeProgress} size={140}>
+                  <ProgressRing progress={nodeProgress} size={140} animated>
                     <div className="text-center">
                       <p className="text-3xl font-bold">{user.nodeCount}</p>
                       <p className="text-xs text-muted-foreground">of {MAX_NODES_PER_USER}</p>
@@ -191,7 +191,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-8">
-                  <ProgressRing progress={upgradeProgress} size={140}>
+                  <ProgressRing progress={upgradeProgress} size={140} animated>
                     <div className="text-center">
                       <p className="text-2xl font-bold">${user.totalDonationUSD.toLocaleString()}</p>
                       <p className="text-xs text-muted-foreground">of ${AUTO_UPGRADE_THRESHOLD.toLocaleString()}</p>
@@ -244,8 +244,8 @@ export default function DashboardPage() {
             <CardContent>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-[#22d3ee]/20 to-primary/20 flex items-center justify-center">
-                    <span className="text-3xl font-bold gradient-text">{user.nstReward.toLocaleString()}</span>
+                  <div className="min-w-20 h-20 px-3 rounded-2xl bg-linear-to-br from-[#22d3ee]/20 to-primary/20 flex items-center justify-center">
+                    <span className="text-2xl md:text-3xl font-bold gradient-text">{user.nstReward.toLocaleString()}</span>
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold">NST Available</h3>
@@ -306,8 +306,8 @@ export default function DashboardPage() {
                 </p>
                 <Link href="/referral">
                   <Button variant="outline" className="glass bg-transparent">
+                    <Users className="w-4 h-4 mr-2" />
                     View Referral Dashboard
-                    <ArrowUpRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
               </div>

@@ -23,7 +23,7 @@ export const GlowButton = forwardRef<HTMLButtonElement, GlowButtonProps>(
         className={cn("relative overflow-hidden transition-all duration-300", glowClasses[glowColor], className)}
         {...props}
       >
-        <span className="relative z-10">{children}</span>
+        <span className="relative z-10 flex items-center gap-2">{children}</span>
         <div className="absolute inset-0 animate-shimmer" />
       </Button>
     )

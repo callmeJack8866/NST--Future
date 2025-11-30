@@ -8,7 +8,7 @@ import { Footer } from "@/components/layout/footer"
 import { AnimatedCounter } from "@/components/ui/animated-counter"
 import { GlowButton } from "@/components/ui/glow-button"
 import { mockGlobalStats } from "@/lib/mock-data"
-import { ArrowRight, Shield, Coins, Users, TrendingUp, Zap, Globe, Lock, ChevronRight } from "lucide-react"
+import { ArrowRight, Shield, Coins, Users, TrendingUp, Zap, Globe, Lock, ChevronRight, Heart } from "lucide-react"
 
 const features = [
   {
@@ -76,12 +76,13 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
             <Link href="/dashboard">
               <GlowButton size="lg" className="w-full sm:w-auto text-lg px-8">
+                <Zap className="w-5 h-5 mr-2" />
                 Launch App
-                <ArrowRight className="w-5 h-5 ml-2" />
               </GlowButton>
             </Link>
             <Link href="/donate">
               <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 glass bg-transparent">
+                <Heart className="w-5 h-5 mr-2" />
                 Start Donating
               </Button>
             </Link>
@@ -256,9 +257,9 @@ export default function HomePage() {
             Start your journey in the most transparent donation ecosystem. Connect your wallet and begin earning today.
           </p>
           <Link href="/dashboard">
-            <GlowButton size="lg" className="text-lg px-12">
+            <GlowButton size="lg" className="text-lg px-8">
+              <Zap className="w-5 h-5 mr-2" />
               Get Started Now
-              <ArrowRight className="w-5 h-5 ml-2" />
             </GlowButton>
           </Link>
         </div>

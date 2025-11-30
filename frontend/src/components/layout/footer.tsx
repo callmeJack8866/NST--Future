@@ -1,6 +1,7 @@
 import Link from "next/link"
-import { Twitter, Send, Github, FileText, MessageCircle, Youtube } from "lucide-react"
-
+import { Github, FileText } from "lucide-react"
+import { FaDiscord, FaTelegram, FaYoutube } from "react-icons/fa"
+import { FaXTwitter } from "react-icons/fa6"
 export function Footer() {
   return (
     <footer className="border-t border-border bg-card/50">
@@ -19,22 +20,22 @@ export function Footer() {
               ecosystem for contributors and node operators.
             </p>
             <div className="flex gap-3 sm:gap-4 mt-4 sm:mt-6">
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Twitter className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="X (Twitter)">
+                <FaXTwitter className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Telegram">
+                <FaTelegram className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Discord">
+                <FaDiscord className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Youtube className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="YouTube">
+                <FaYoutube className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="GitHub">
                 <Github className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Documentation">
                 <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
             </div>

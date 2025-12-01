@@ -31,7 +31,7 @@ export function StatCard({
   iconColor = "text-primary",
 }: StatCardProps) {
   return (
-    <Card className={cn("glass hover:glass-strong transition-all duration-300 group hover-lift animate-float-slow", className)}>
+    <Card className={cn("h-full glass hover:glass-strong transition-all duration-300 group hover-lift animate-float-slow", className)}>
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
@@ -42,7 +42,7 @@ export function StatCard({
             {trend !== undefined && (
               <p className={cn("text-xs font-medium", trend >= 0 ? "text-primary" : "text-destructive")}>
                 {trend >= 0 ? "+" : ""}
-                {trend}% from last month
+                {trend}%
               </p>
             )}
             {description && <p className="text-xs text-muted-foreground">{description}</p>}

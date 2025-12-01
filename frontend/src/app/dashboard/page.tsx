@@ -112,6 +112,7 @@ export default function DashboardPage() {
                 prefix="$"
                 icon={DollarSign}
                 trend={12.5}
+                description={t("dashboard.fromLastMonth")}
                 iconColor="text-primary"
               />
             </ScrollReveal>

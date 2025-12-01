@@ -69,14 +69,17 @@ export function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-strong">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-primary to-accent flex items-center justify-center animate-pulse-glow">
-              <span className="text-xl font-bold text-primary-foreground">N</span>
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-linear-to-br from-primary to-accent flex items-center justify-center animate-pulse-glow">
+              <span className="text-base sm:text-xl font-bold text-primary-foreground">N</span>
             </div>
-            <span className="text-xl font-bold gradient-text hidden sm:block">NST Finance</span>
+            <div className="flex flex-col sm:block">
+              <span className="text-sm sm:text-xl font-bold gradient-text leading-tight">NST</span>
+              <span className="text-xs sm:text-xl font-bold gradient-text leading-tight sm:ml-1">Finance</span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
@@ -103,15 +106,15 @@ export function Navbar() {
           </div>
 
           {/* Wallet Connection */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {isConnected && address ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="glass flex items-center gap-2 bg-transparent">
+                  <Button variant="outline" className="glass flex items-center gap-1.5 sm:gap-2 bg-transparent text-xs sm:text-sm px-2 sm:px-4 h-8 sm:h-10">
                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     <span className="hidden sm:inline">{getChainName(chainId)}</span>
-                    <span className="font-mono">{formatAddress(address)}</span>
-                    <ChevronDown className="w-4 h-4" />
+                    <span className="font-mono text-xs sm:text-sm">{formatAddress(address)}</span>
+                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 glass-strong">
@@ -130,9 +133,10 @@ export function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button onClick={connect} className="bg-primary hover:bg-primary/90 text-primary-foreground glow-green">
-                <Wallet className="w-4 h-4 mr-2" />
-                Connect Wallet
+              <Button onClick={connect} className="bg-primary hover:bg-primary/90 text-primary-foreground glow-green text-xs sm:text-sm px-2 sm:px-4 h-8 sm:h-10">
+                <Wallet className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Connect</span>
+                <span className="hidden sm:inline ml-1">Wallet</span>
               </Button>
             )}
 
@@ -140,10 +144,10 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden h-8 w-8 sm:h-10 sm:w-10"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
             </Button>
           </div>
         </div>

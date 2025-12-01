@@ -64,8 +64,8 @@ export default function DonatePage() {
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-float">
                 <Heart className="w-12 h-12 text-primary" />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Make a Donation</h1>
-              <p className="text-muted-foreground max-w-md mb-8">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Make a Donation</h1>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-8">
                 Connect your wallet to start donating and earning rewards in the NST ecosystem.
               </p>
               <GlowButton onClick={connect} size="lg">
@@ -87,8 +87,8 @@ export default function DonatePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Donate</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Donate</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Support the ecosystem and earn points, rewards, and automatic node upgrades.
             </p>
           </div>
@@ -102,30 +102,30 @@ export default function DonatePage() {
                     <Heart className="w-5 h-5 text-primary" />
                     Make a Donation
                   </CardTitle>
-                  <CardDescription>Minimum donation is ${MIN_DONATION} USD</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">Minimum donation is ${MIN_DONATION} USD</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Token Selection */}
                   <div className="space-y-2">
-                    <Label>Select Token</Label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <Label className="text-sm">Select Token</Label>
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       {SUPPORTED_TOKENS.map((token) => (
                         <button
                           key={token.symbol}
                           onClick={() => setSelectedToken(token.symbol)}
                           className={cn(
-                            "flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200",
+                            "flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all duration-200",
                             selectedToken === token.symbol
                               ? "border-primary bg-primary/10"
                               : "border-border hover:border-primary/50 bg-secondary/30",
                           )}
                         >
-                          <span className="text-2xl">{token.icon}</span>
-                          <div className="text-left">
-                            <p className="font-semibold">{token.symbol}</p>
-                            <p className="text-xs text-muted-foreground">{token.name}</p>
+                          <span className="text-xl sm:text-2xl">{token.icon}</span>
+                          <div className="text-left min-w-0 flex-1">
+                            <p className="text-sm sm:text-base font-semibold">{token.symbol}</p>
+                            <p className="text-xs text-muted-foreground truncate">{token.name}</p>
                           </div>
-                          {selectedToken === token.symbol && <CheckCircle className="w-5 h-5 text-primary ml-auto" />}
+                          {selectedToken === token.symbol && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />}
                         </button>
                       ))}
                     </div>
@@ -133,16 +133,16 @@ export default function DonatePage() {
 
                   {/* Amount Input */}
                   <div className="space-y-2">
-                    <Label htmlFor="amount">Donation Amount (USD)</Label>
+                    <Label htmlFor="amount" className="text-sm">Donation Amount (USD)</Label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                       <Input
                         id="amount"
                         type="number"
                         placeholder="Enter amount"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="pl-10 text-lg h-14 glass"
+                        className="pl-9 sm:pl-10 text-base sm:text-lg h-12 sm:h-14 glass"
                       />
                     </div>
                     {amount && !isValidAmount && (
@@ -155,16 +155,16 @@ export default function DonatePage() {
 
                   {/* Quick Amount Buttons */}
                   <div className="space-y-2">
-                    <Label>Quick Select</Label>
+                    <Label className="text-sm">Quick Select</Label>
                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                       {quickAmounts.map((amt) => (
                         <Button
                           key={amt}
                           variant="outline"
-                          className={cn("glass", Number.parseFloat(amount) === amt && "border-primary bg-primary/10")}
+                          className={cn("glass text-xs sm:text-sm px-2 sm:px-4", Number.parseFloat(amount) === amt && "border-primary bg-primary/10")}
                           onClick={() => setAmount(amt.toString())}
                         >
-                          ${amt.toLocaleString()}
+                          ${amt >= 1000 ? `${amt / 1000}k` : amt}
                         </Button>
                       ))}
                     </div>
@@ -185,7 +185,7 @@ export default function DonatePage() {
 
                   {/* Donate Button */}
                   <GlowButton
-                    className="w-full h-14 text-lg"
+                    className="w-full h-12 sm:h-14 text-base sm:text-lg"
                     disabled={!isValidAmount || isLoading}
                     onClick={handleDonate}
                   >
@@ -212,7 +212,7 @@ export default function DonatePage() {
                     Your Donation History
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -254,15 +254,15 @@ export default function DonatePage() {
               {/* Progress to Auto Upgrade */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Gift className="w-5 h-5 text-primary" />
                     Auto Node Upgrade
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-center">
-                    <p className="text-3xl font-bold gradient-text">${user.totalDonationUSD.toLocaleString()}</p>
-                    <p className="text-sm text-muted-foreground">of ${AUTO_UPGRADE_THRESHOLD.toLocaleString()} goal</p>
+                    <p className="text-2xl sm:text-3xl font-bold gradient-text">${user.totalDonationUSD.toLocaleString()}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">of ${AUTO_UPGRADE_THRESHOLD.toLocaleString()} goal</p>
                   </div>
                   <div className="h-3 bg-secondary rounded-full overflow-hidden">
                     <div
@@ -281,7 +281,7 @@ export default function DonatePage() {
               {/* Benefits */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Info className="w-5 h-5 text-muted-foreground" />
                     Donation Benefits
                   </CardTitle>
@@ -320,17 +320,17 @@ export default function DonatePage() {
               {/* Your Stats */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <DollarSign className="w-5 h-5 text-muted-foreground" />
                     Your Stats
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm sm:text-base">
                     <span className="text-muted-foreground">Total Donated</span>
                     <span className="font-medium">${user.totalDonationUSD.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm sm:text-base">
                     <span className="text-muted-foreground">Total Points</span>
                     <span className="font-medium">{user.points.toLocaleString()}</span>
                   </div>

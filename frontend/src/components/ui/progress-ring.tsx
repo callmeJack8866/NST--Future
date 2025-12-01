@@ -10,9 +10,10 @@ interface ProgressRingProps {
   strokeWidth?: number
   className?: string
   children?: React.ReactNode
+  animated?: boolean
 }
 
-export function ProgressRing({ progress, size = 120, strokeWidth = 8, className, children }: ProgressRingProps) {
+export function ProgressRing({ progress, size = 120, strokeWidth = 8, className, children, animated = false }: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2
   const circumference = radius * 2 * Math.PI
   const offset = circumference - (progress / 100) * circumference
@@ -41,7 +42,7 @@ export function ProgressRing({ progress, size = 120, strokeWidth = 8, className,
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          className="transition-all duration-1000 ease-out"
+          className={cn("transition-all duration-1000 ease-out", animated && "animate-pulse-ring")}
         />
         <defs>
           <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">

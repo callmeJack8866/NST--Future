@@ -11,6 +11,7 @@ import { ProgressRing } from "@/components/ui/progress-ring"
 import { AnimatedCounter } from "@/components/ui/animated-counter"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { useWeb3 } from "@/components/providers/web3-provider"
+import { useLanguage } from "@/contexts/language-context"
 import { mockUserData, mockReferrals } from "@/lib/mock-data"
 import { NODE_REFERRAL_REWARD, DONATION_REFERRAL_REWARD, FREE_NODE_REFERRAL_COUNT } from "@/lib/constants"
 import { Users, Wallet, Copy, Check, Share2, Gift, Coins, Box, TrendingUp, LinkIcon, Twitter, Send, MessageCircle } from "lucide-react"
@@ -19,6 +20,7 @@ import { Badge } from "@/components/ui/badge"
 
 export default function ReferralPage() {
   const { isConnected, address, connect } = useWeb3()
+  const { t } = useLanguage()
   const [copied, setCopied] = useState(false)
   const user = mockUserData
 
@@ -69,13 +71,13 @@ export default function ReferralPage() {
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-float">
                 <Users className="w-12 h-12 text-primary" />
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Referral Program</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">{t("referral.title")}</h1>
               <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-8">
-                Connect your wallet to get your unique referral link and start earning rewards.
+                {t("referral.connectMessage")}
               </p>
               <GlowButton onClick={connect} size="lg">
                 <Wallet className="w-5 h-5 mr-2" />
-                Connect Wallet
+                {t("common.connectWallet")}
               </GlowButton>
             </div>
           </div>
@@ -92,9 +94,9 @@ export default function ReferralPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Referral Program</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("referral.title")}</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Invite friends and earn NST rewards for every node holder and donation.
+              {t("referral.subtitle")}
             </p>
           </div>
 
@@ -103,9 +105,9 @@ export default function ReferralPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <LinkIcon className="w-5 h-5 text-primary" />
-                Your Referral Link
+                {t("referral.yourReferralLink")}
               </CardTitle>
-              <CardDescription className="text-xs sm:text-sm">Share this link to earn rewards when your referrals donate or buy nodes</CardDescription>
+              <CardDescription className="text-xs sm:text-sm">{t("referral.shareToEarn")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
@@ -117,19 +119,19 @@ export default function ReferralPage() {
               <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
                 <Button variant="outline" className="glass bg-transparent text-xs sm:text-sm" onClick={copyLink}>
                   <Copy className="w-4 h-4 mr-1 sm:mr-2" />
-                  <span className="truncate">{copied ? "Copied!" : "Copy Link"}</span>
+                  <span className="truncate">{copied ? t("referral.copied") : t("referral.copyLink")}</span>
                 </Button>
                 <Button variant="outline" className="glass bg-transparent text-xs sm:text-sm" onClick={shareOnTwitter}>
                   <Twitter className="w-4 h-4 mr-1 sm:mr-2" />
-                  <span className="truncate">Share on X</span>
+                  <span className="truncate">{t("referral.shareOnX")}</span>
                 </Button>
                 <Button variant="outline" className="glass bg-transparent text-xs sm:text-sm" onClick={shareOnTelegram}>
                   <Send className="w-4 h-4 mr-1 sm:mr-2" />
-                  <span className="truncate">Telegram</span>
+                  <span className="truncate">{t("referral.telegram")}</span>
                 </Button>
                 <Button variant="outline" className="glass bg-transparent text-xs sm:text-sm" onClick={shareOnDiscord}>
                   <MessageCircle className="w-4 h-4 mr-1 sm:mr-2" />
-                  <span className="truncate">Discord</span>
+                  <span className="truncate">{t("referral.discord")}</span>
                 </Button>
               </div>
             </CardContent>
@@ -142,7 +144,7 @@ export default function ReferralPage() {
                 <p className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text">
                   <AnimatedCounter value={mockReferrals.length} />
                 </p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Total Referrals</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("referral.totalReferrals")}</p>
               </CardContent>
             </Card>
             <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.2s' }}>
@@ -150,7 +152,7 @@ export default function ReferralPage() {
                 <p className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">
                   <AnimatedCounter value={user.directNodeCount} />
                 </p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Node Holders</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("referral.nodeHolders")}</p>
               </CardContent>
             </Card>
             <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.4s' }}>
@@ -158,7 +160,7 @@ export default function ReferralPage() {
                 <p className="text-xl sm:text-2xl md:text-3xl font-bold">
                   $<AnimatedCounter value={user.directDonationUSD} />
                 </p>
-                <p className="text-xs sm:text-sm text-muted-foreground">Referral Donations</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("referral.referralDonations")}</p>
               </CardContent>
             </Card>
             <Card className="glass hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.6s' }}>
@@ -166,7 +168,7 @@ export default function ReferralPage() {
                 <p className="text-xl sm:text-2xl md:text-3xl font-bold text-[#22d3ee]">
                   <AnimatedCounter value={totalEarned} />
                 </p>
-                <p className="text-xs sm:text-sm text-muted-foreground">NST Earned</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">{t("referral.nstEarned")}</p>
               </CardContent>
             </Card>
           </div>
@@ -179,18 +181,18 @@ export default function ReferralPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="w-5 h-5 text-muted-foreground" />
-                    Your Referrals
+                    {t("referral.yourReferrals")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Address</TableHead>
-                        <TableHead>Donated</TableHead>
-                        <TableHead>Nodes</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead className="text-right">NST Earned</TableHead>
+                        <TableHead>{t("referral.address")}</TableHead>
+                        <TableHead>{t("referral.donated")}</TableHead>
+                        <TableHead>{t("referral.nodes")}</TableHead>
+                        <TableHead>{t("referral.joined")}</TableHead>
+                        <TableHead className="text-right">{t("common.nstEarned")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -201,7 +203,7 @@ export default function ReferralPage() {
                           <TableCell>
                             {referral.nodeCount > 0 ? (
                               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                                {referral.nodeCount} node{referral.nodeCount > 1 ? "s" : ""}
+                                {referral.nodeCount} {t("common.nodes")}
                               </Badge>
                             ) : (
                               <span className="text-muted-foreground">-</span>
@@ -225,7 +227,7 @@ export default function ReferralPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Coins className="w-5 h-5 text-[#22d3ee]" />
-                    Reward Breakdown
+                    {t("referral.rewardBreakdown")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -236,9 +238,9 @@ export default function ReferralPage() {
                           <Box className="w-5 h-5 text-primary" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm sm:text-base font-medium">Node Referral Rewards</p>
+                          <p className="text-sm sm:text-base font-medium">{t("referral.nodeReferralRewards")}</p>
                           <p className="text-xs sm:text-sm text-muted-foreground">
-                            {user.directNodeCount} node holders × {NODE_REFERRAL_REWARD} NST
+                            {user.directNodeCount} {t("referral.nodeHoldersMultiplied")} × {NODE_REFERRAL_REWARD} NST
                           </p>
                         </div>
                       </div>
@@ -250,7 +252,7 @@ export default function ReferralPage() {
                           <TrendingUp className="w-5 h-5 text-[#22d3ee]" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm sm:text-base font-medium">Donation Referral Rewards</p>
+                          <p className="text-sm sm:text-base font-medium">{t("referral.donationReferralRewards")}</p>
                           <p className="text-xs sm:text-sm text-muted-foreground">
                             ${user.directDonationUSD.toLocaleString()} ÷ $1,000 × {DONATION_REFERRAL_REWARD} NST
                           </p>
@@ -259,7 +261,7 @@ export default function ReferralPage() {
                       <p className="text-lg sm:text-xl font-bold text-[#22d3ee] whitespace-nowrap">+{earnedFromDonations} NST</p>
                     </div>
                     <div className="border-t border-border pt-4 flex items-center justify-between">
-                      <p className="text-sm sm:text-base font-semibold">Total Earned</p>
+                      <p className="text-sm sm:text-base font-semibold">{t("referral.totalEarned")}</p>
                       <p className="text-xl sm:text-2xl font-bold gradient-text whitespace-nowrap">{totalEarned} NST</p>
                     </div>
                   </div>
@@ -274,7 +276,7 @@ export default function ReferralPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Gift className="w-5 h-5 text-primary" />
-                    Free Node Progress
+                    {t("referral.freeNodeProgress")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
@@ -286,8 +288,8 @@ export default function ReferralPage() {
                   </ProgressRing>
                   <p className="mt-4 text-xs sm:text-sm text-muted-foreground text-center">
                     {FREE_NODE_REFERRAL_COUNT - user.directNodeCount > 0
-                      ? `${FREE_NODE_REFERRAL_COUNT - user.directNodeCount} more node referrals for a free node`
-                      : "🎉 You earned a free node!"}
+                      ? `${FREE_NODE_REFERRAL_COUNT - user.directNodeCount} ${t("referral.moreForFreeNode")}`
+                      : t("referral.earnedFreeNode")}
                   </p>
                 </CardContent>
               </Card>
@@ -297,38 +299,36 @@ export default function ReferralPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Share2 className="w-5 h-5 text-muted-foreground" />
-                    Reward Rules
+                    {t("referral.rewardRules")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="p-3 rounded-lg bg-secondary/30">
                     <div className="flex items-center gap-2 mb-1">
                       <Box className="w-4 h-4 text-primary" />
-                      <p className="font-medium">Node Referral</p>
+                      <p className="font-medium">{t("referral.nodeReferral")}</p>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Earn <span className="text-primary font-semibold">{NODE_REFERRAL_REWARD} NST</span> when your
-                      referral becomes a node holder
+                      {t("referral.nodeReferralDesc")} <span className="text-primary font-semibold">{NODE_REFERRAL_REWARD} NST</span> {t("referral.nodeReferralDesc2")}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-secondary/30">
                     <div className="flex items-center gap-2 mb-1">
                       <Coins className="w-4 h-4 text-[#22d3ee]" />
-                      <p className="font-medium">Donation Referral</p>
+                      <p className="font-medium">{t("referral.donationReferral")}</p>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Earn <span className="text-[#22d3ee] font-semibold">{DONATION_REFERRAL_REWARD} NST</span> per
-                      $1,000 donated by referrals
+                      {t("referral.donationReferralDesc")} <span className="text-[#22d3ee] font-semibold">{DONATION_REFERRAL_REWARD} NST</span> {t("referral.donationReferralDesc2")}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-secondary/30">
                     <div className="flex items-center gap-2 mb-1">
                       <Gift className="w-4 h-4 text-accent" />
-                      <p className="font-medium">Free Node Milestone</p>
+                      <p className="font-medium">{t("referral.freeNodeMilestone")}</p>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Get a <span className="text-accent font-semibold">free node</span> after{" "}
-                      {FREE_NODE_REFERRAL_COUNT} node referrals
+                      {t("referral.freeNodeMilestoneDesc")} <span className="text-accent font-semibold">{t("common.free")} {t("common.nodes")}</span> {t("referral.freeNodeMilestoneDesc2")}{" "}
+                      {FREE_NODE_REFERRAL_COUNT} {t("referral.freeNodeMilestoneDesc3")}
                     </p>
                   </div>
                 </CardContent>
@@ -337,13 +337,13 @@ export default function ReferralPage() {
               {/* Tips */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="text-base sm:text-lg">Tips for Success</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">{t("referral.tipsForSuccess")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
-                  <p>• Share your link on social media and crypto communities</p>
-                  <p>• Explain the benefits of node ownership</p>
-                  <p>• Highlight the 2x points bonus for node holders</p>
-                  <p>• Mention the monthly airdrop opportunities</p>
+                  <p>{t("referral.tip1")}</p>
+                  <p>{t("referral.tip2")}</p>
+                  <p>{t("referral.tip3")}</p>
+                  <p>{t("referral.tip4")}</p>
                 </CardContent>
               </Card>
             </div>

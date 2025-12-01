@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { GlowButton } from "@/components/ui/glow-button"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { useWeb3 } from "@/components/providers/web3-provider"
+import { useLanguage } from "@/contexts/language-context"
 import { mockLeaderboardPoints, mockLeaderboardGrowth, mockUserData } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import {
@@ -28,6 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function LeaderboardPage() {
   const { isConnected, address, connect } = useWeb3()
+  const { t } = useLanguage()
   const [isApplying, setIsApplying] = useState(false)
   const [applyResult, setApplyResult] = useState<"success" | "failed" | null>(null)
   const user = mockUserData
@@ -72,13 +74,13 @@ export default function LeaderboardPage() {
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-float">
                 <Trophy className="w-12 h-12 text-primary" />
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Leaderboard</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">{t("leaderboard.title")}</h1>
               <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-8">
-                Connect your wallet to view rankings and apply for NST airdrops.
+                {t("leaderboard.connectMessage")}
               </p>
               <GlowButton onClick={connect} size="lg">
                 <Wallet className="w-5 h-5 mr-2" />
-                Connect Wallet
+                {t("common.connectWallet")}
               </GlowButton>
             </div>
           </div>
@@ -95,9 +97,9 @@ export default function LeaderboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Leaderboard</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("leaderboard.title")}</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Compete for monthly NST airdrops. Rankings update on the 10th and 20th of each month.
+              {t("leaderboard.subtitle")}
             </p>
           </div>
 
@@ -107,14 +109,14 @@ export default function LeaderboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Star className="w-5 h-5 text-[#facc15]" />
-                  Your Rankings
+                  {t("leaderboard.yourRankings")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="p-3 sm:p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0s' }}>
                     <p className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text">{user.points.toLocaleString()}</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Total Points</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{t("leaderboard.totalPoints")}</p>
                   </div>
                   <div className="p-3 sm:p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.2s' }}>
                     <p className="text-xl sm:text-2xl md:text-3xl font-bold">
@@ -124,7 +126,7 @@ export default function LeaderboardPage() {
                         <span className="text-muted-foreground">-</span>
                       )}
                     </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Points Rank</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{t("leaderboard.pointsRank")}</p>
                   </div>
                   <div className="p-3 sm:p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.4s' }}>
                     <p className="text-xl sm:text-2xl md:text-3xl font-bold">
@@ -134,7 +136,7 @@ export default function LeaderboardPage() {
                         <span className="text-muted-foreground">-</span>
                       )}
                     </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Growth Rank</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{t("leaderboard.growthRank")}</p>
                   </div>
                 </div>
               </CardContent>
@@ -144,21 +146,21 @@ export default function LeaderboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Gift className="w-5 h-5 text-primary" />
-                  Apply for Airdrop
+                  {t("leaderboard.applyForAirdrop")}
                 </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">Monthly airdrops for Top 20 rankings</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">{t("leaderboard.monthlyAirdrops")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-2 text-sm">
                   {isEligible ? (
                     <>
                       <CheckCircle className="w-4 h-4 text-primary" />
-                      <span className="text-primary">You are eligible!</span>
+                      <span className="text-primary">{t("leaderboard.youAreEligible")}</span>
                     </>
                   ) : (
                     <>
                       <XCircle className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Not in Top 20</span>
+                      <span className="text-muted-foreground">{t("leaderboard.notInTop20")}</span>
                     </>
                   )}
                 </div>
@@ -166,14 +168,14 @@ export default function LeaderboardPage() {
                 {applyResult === "success" && (
                   <div className="p-3 rounded-lg bg-primary/10 text-primary text-sm flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
-                    Airdrop successfully claimed!
+                    {t("leaderboard.airdropClaimed")}
                   </div>
                 )}
 
                 {applyResult === "failed" && (
                   <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm flex items-center gap-2">
                     <XCircle className="w-4 h-4" />
-                    Not eligible. Reach Top 20 to qualify.
+                    {t("leaderboard.notEligible")}
                   </div>
                 )}
 
@@ -181,12 +183,12 @@ export default function LeaderboardPage() {
                   {isApplying ? (
                     <>
                       <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
-                      Checking...
+                      {t("leaderboard.checking")}
                     </>
                   ) : (
                     <>
                       <Gift className="w-4 h-4 mr-2" />
-                      Apply for Airdrop
+                      {t("leaderboard.applyForAirdrop")}
                     </>
                   )}
                 </GlowButton>
@@ -201,13 +203,13 @@ export default function LeaderboardPage() {
                 <div className="flex items-center gap-3">
                   <Calendar className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                   <div>
-                    <p className="text-sm sm:text-base font-medium">Next Ranking Snapshot</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">December 10, 2024 at 00:00 UTC</p>
+                    <p className="text-sm sm:text-base font-medium">{t("leaderboard.nextSnapshot")}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{t("leaderboard.snapshotDate")}</p>
                   </div>
                 </div>
                 <Badge variant="outline" className="glass">
                   <div className="w-2 h-2 rounded-full bg-primary animate-pulse mr-2" />
-                  Live Rankings
+                  {t("leaderboard.liveRankings")}
                 </Badge>
               </div>
             </CardContent>
@@ -221,14 +223,14 @@ export default function LeaderboardPage() {
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm"
               >
                 <Star className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Highest </span>Points
+                <span className="hidden sm:inline">{t("leaderboard.highestPoints")} </span>{t("common.points")}
               </TabsTrigger>
               <TabsTrigger
                 value="growth"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm"
               >
                 <TrendingUp className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Fastest </span>Growth
+                <span className="hidden sm:inline">{t("leaderboard.fastestGrowth")} </span>{t("common.growth")}
               </TabsTrigger>
             </TabsList>
 
@@ -237,19 +239,19 @@ export default function LeaderboardPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-[#facc15]" />
-                    Top 20 by Total Points
+                    {t("leaderboard.topByPoints")}
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">Users with the highest cumulative points</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">{t("leaderboard.topByPointsDesc")}</CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-16">Rank</TableHead>
-                        <TableHead>Address</TableHead>
-                        <TableHead>Points</TableHead>
-                        <TableHead>Nodes</TableHead>
-                        <TableHead className="text-right">Donations</TableHead>
+                        <TableHead className="w-16">{t("leaderboard.rank")}</TableHead>
+                        <TableHead>{t("leaderboard.address")}</TableHead>
+                        <TableHead>{t("leaderboard.points")}</TableHead>
+                        <TableHead>{t("leaderboard.nodes")}</TableHead>
+                        <TableHead className="text-right">{t("leaderboard.donations")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -265,7 +267,7 @@ export default function LeaderboardPage() {
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline" className="glass">
-                              {entry.nodeCount} nodes
+                              {entry.nodeCount} {t("common.nodes")}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">${entry.donations.toLocaleString()}</TableCell>
@@ -282,19 +284,19 @@ export default function LeaderboardPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-primary" />
-                    Top 20 by Fastest Growth
+                    {t("leaderboard.topByGrowth")}
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">Users with the highest percentage growth since last snapshot</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">{t("leaderboard.topByGrowthDesc")}</CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-16">Rank</TableHead>
-                        <TableHead>Address</TableHead>
-                        <TableHead>Growth</TableHead>
-                        <TableHead>Points</TableHead>
-                        <TableHead className="text-right">Nodes</TableHead>
+                        <TableHead className="w-16">{t("leaderboard.rank")}</TableHead>
+                        <TableHead>{t("leaderboard.address")}</TableHead>
+                        <TableHead>{t("leaderboard.growth")}</TableHead>
+                        <TableHead>{t("leaderboard.points")}</TableHead>
+                        <TableHead className="text-right">{t("leaderboard.nodes")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -308,7 +310,7 @@ export default function LeaderboardPage() {
                           <TableCell>{entry.points.toLocaleString()}</TableCell>
                           <TableCell className="text-right">
                             <Badge variant="outline" className="glass">
-                              {entry.nodeCount} nodes
+                              {entry.nodeCount} {t("common.nodes")}
                             </Badge>
                           </TableCell>
                         </TableRow>
@@ -323,7 +325,7 @@ export default function LeaderboardPage() {
           {/* Airdrop Info */}
           <Card className="glass mt-8">
             <CardHeader>
-              <CardTitle className="text-lg sm:text-xl">How Airdrops Work</CardTitle>
+              <CardTitle className="text-lg sm:text-xl">{t("leaderboard.howAirdropsWork")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -331,27 +333,27 @@ export default function LeaderboardPage() {
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                     <Calendar className="w-5 h-5 text-primary" />
                   </div>
-                  <h3 className="text-sm sm:text-base font-semibold">Monthly Snapshots</h3>
+                  <h3 className="text-sm sm:text-base font-semibold">{t("leaderboard.monthlySnapshots")}</h3>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Rankings are captured on the 10th and 20th of each month at 00:00 UTC.
+                    {t("leaderboard.monthlySnapshotsDesc")}
                   </p>
                 </div>
                 <div className="space-y-2">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                     <Trophy className="w-5 h-5 text-primary" />
                   </div>
-                  <h3 className="text-sm sm:text-base font-semibold">Two Categories</h3>
+                  <h3 className="text-sm sm:text-base font-semibold">{t("leaderboard.twoCategories")}</h3>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Top 20 in both Highest Points and Fastest Growth receive NST airdrops.
+                    {t("leaderboard.twoCategoriesDesc")}
                   </p>
                 </div>
                 <div className="space-y-2">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                     <Gift className="w-5 h-5 text-primary" />
                   </div>
-                  <h3 className="text-sm sm:text-base font-semibold">Claim Your Reward</h3>
+                  <h3 className="text-sm sm:text-base font-semibold">{t("leaderboard.claimYourReward")}</h3>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    If eligible, click "Apply for Airdrop" to claim your NST tokens.
+                    {t("leaderboard.claimRewardDesc")}
                   </p>
                 </div>
               </div>

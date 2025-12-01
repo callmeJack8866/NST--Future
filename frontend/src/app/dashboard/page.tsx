@@ -10,6 +10,7 @@ import { ProgressRing } from "@/components/ui/progress-ring"
 import { GlowButton } from "@/components/ui/glow-button"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { useWeb3 } from "@/components/providers/web3-provider"
+import { useLanguage } from "@/contexts/language-context"
 import { mockUserData, mockDonationHistory, mockNodePurchases } from "@/lib/mock-data"
 import { MAX_NODES_PER_USER, AUTO_UPGRADE_THRESHOLD } from "@/lib/constants"
 import {
@@ -32,6 +33,7 @@ import Link from "next/link"
 
 export default function DashboardPage() {
   const { isConnected, address, connect } = useWeb3()
+  const { t } = useLanguage()
   const [claimEnabled] = useState(false) // Pre-launch state
   const user = mockUserData
 
@@ -49,13 +51,13 @@ export default function DashboardPage() {
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-float">
                 <Wallet className="w-12 h-12 text-primary" />
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Connect Your Wallet</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">{t("common.connectYourWallet")}</h1>
               <p className="text-muted-foreground max-w-md mb-8">
-                Connect your Web3 wallet to access your dashboard and start earning rewards.
+                {t("dashboard.connectMessage")}
               </p>
               <GlowButton onClick={connect} size="lg">
                 <Wallet className="w-5 h-5 mr-2" />
-                Connect Wallet
+                {t("common.connectWallet")}
               </GlowButton>
             </div>
           </div>
@@ -73,30 +75,30 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Dashboard</h1>
-              <p className="text-sm sm:text-base text-muted-foreground">Welcome back! Here's your NST Finance overview.</p>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("dashboard.title")}</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">{t("dashboard.subtitle")}</p>
             </div>
             <div className="flex items-center gap-3">
               <Badge variant="outline" className="glass px-4 py-2">
                 {user.isNodeHolder ? (
                   <>
                     <Box className="w-4 h-4 mr-2 text-primary" />
-                    Node Holder
+                    {t("common.nodeHolder")}
                   </>
                 ) : user.isDonor ? (
                   <>
                     <CheckCircle className="w-4 h-4 mr-2 text-primary" />
-                    Donor
+                    {t("common.donor")}
                   </>
                 ) : (
                   <>
                     <AlertCircle className="w-4 h-4 mr-2" />
-                    Regular User
+                    {t("common.regularUser")}
                   </>
                 )}
               </Badge>
               <Badge variant="outline" className="glass px-4 py-2 font-mono">
-                Rank #{user.rank}
+                {t("common.rank")} #{user.rank}
               </Badge>
             </div>
           </div>
@@ -105,7 +107,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <ScrollReveal delay={0.1}>
               <StatCard
-                title="Total Donated"
+                title={t("dashboard.totalDonated")}
                 value={user.totalDonationUSD}
                 prefix="$"
                 icon={DollarSign}
@@ -115,30 +117,30 @@ export default function DashboardPage() {
             </ScrollReveal>
             <ScrollReveal delay={0.2}>
               <StatCard
-                title="My Nodes"
+                title={t("dashboard.myNodes")}
                 value={user.nodeCount}
                 suffix={`/${MAX_NODES_PER_USER}`}
                 icon={Box}
-                description={`${MAX_NODES_PER_USER - user.nodeCount} slots available`}
+                description={`${MAX_NODES_PER_USER - user.nodeCount} ${t("common.slotsAvailable")}`}
                 iconColor="text-accent"
               />
             </ScrollReveal>
             <ScrollReveal delay={0.3}>
               <StatCard
-                title="My Points"
+                title={t("dashboard.myPoints")}
                 value={user.points}
                 icon={Star}
                 trend={8.2}
-                description={user.isNodeHolder ? "2x multiplier active" : undefined}
+                description={user.isNodeHolder ? `2x ${t("common.multiplierActive")}` : undefined}
                 iconColor="text-[#facc15]"
               />
             </ScrollReveal>
             <ScrollReveal delay={0.4}>
               <StatCard
-                title="NST Rewards"
+                title={t("dashboard.nstRewards")}
                 value={user.nstReward}
                 icon={Coins}
-                description={claimEnabled ? "Available to claim" : "Claim coming soon"}
+                description={claimEnabled ? t("common.availableToClaim") : t("common.claimComingSoon")}
                 iconColor="text-[#22d3ee]"
               />
             </ScrollReveal>
@@ -151,12 +153,12 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Box className="w-5 h-5 text-primary" />
-                  Node Ownership
+                  {t("dashboard.nodeOwnership")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-4 sm:gap-8">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <ProgressRing progress={nodeProgress} size={120} animated>
                       <div className="text-center">
                         <p className="text-xl sm:text-2xl md:text-3xl font-bold">{user.nodeCount}</p>
@@ -167,7 +169,7 @@ export default function DashboardPage() {
                   <div className="flex-1 space-y-4 min-w-0">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-muted-foreground">Node Slots Used</span>
+                        <span className="text-muted-foreground">{t("dashboard.nodeSlotsUsed")}</span>
                         <span className="font-medium">
                           {user.nodeCount}/{MAX_NODES_PER_USER}
                         </span>
@@ -183,7 +185,7 @@ export default function DashboardPage() {
                       <Link href="/nodes" className="flex-1">
                         <Button variant="outline" className="w-full glass bg-transparent">
                           <Box className="w-4 h-4 mr-2" />
-                          Buy Nodes
+                          {t("common.buyNodes")}
                         </Button>
                       </Link>
                     </div>
@@ -197,12 +199,12 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Gift className="w-5 h-5 text-primary" />
-                  Auto Node Upgrade
+                  {t("dashboard.autoNodeUpgrade")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-4 sm:gap-8">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <ProgressRing progress={upgradeProgress} size={120} animated>
                       <div className="text-center px-1">
                         <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold leading-tight">${user.totalDonationUSD.toLocaleString()}</p>
@@ -213,7 +215,7 @@ export default function DashboardPage() {
                   <div className="flex-1 space-y-4 min-w-0">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-muted-foreground">Progress to Free Node</span>
+                        <span className="text-muted-foreground">{t("dashboard.progressToFreeNode")}</span>
                         <span className="font-medium">{Math.round(upgradeProgress)}%</span>
                       </div>
                       <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -226,18 +228,17 @@ export default function DashboardPage() {
                     {hasAutoUpgrade ? (
                       <div className="flex items-center gap-2 text-primary text-sm">
                         <CheckCircle className="w-4 h-4" />
-                        Eligible for auto upgrade!
+                        {t("dashboard.eligibleForUpgrade")}
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">
-                        Donate ${(AUTO_UPGRADE_THRESHOLD - user.totalDonationUSD).toLocaleString()} more to get a free
-                        node
+                        {t("dashboard.donateMore")} ${(AUTO_UPGRADE_THRESHOLD - user.totalDonationUSD).toLocaleString()} {t("dashboard.moreForFreeNode")}
                       </p>
                     )}
                     <Link href="/donate">
                       <Button variant="outline" className="w-full glass bg-transparent">
                         <DollarSign className="w-4 h-4 mr-2" />
-                        Make a Donation
+                        {t("dashboard.makeADonation")}
                       </Button>
                     </Link>
                   </div>
@@ -251,7 +252,7 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Coins className="w-5 h-5 text-[#22d3ee]" />
-                NST Token Rewards
+                {t("dashboard.nstTokenRewards")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -261,24 +262,23 @@ export default function DashboardPage() {
                     <span className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text">{user.nstReward.toLocaleString()}</span>
                   </div>
                   <div>
-                    <h3 className="text-lg sm:text-xl font-semibold">NST Available</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold">{t("dashboard.nstAvailable")}</h3>
                     <p className="text-xs sm:text-sm text-muted-foreground">
-                      {claimEnabled ? "Ready to claim to your wallet" : "Token launch coming soon"}
+                      {claimEnabled ? t("dashboard.readyToClaim") : t("dashboard.tokenLaunchSoon")}
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <GlowButton disabled={!claimEnabled || user.nstReward === 0} glowColor="cyan">
                     <Coins className="w-4 h-4 mr-2" />
-                    {claimEnabled ? "Claim NST" : "Claim Coming Soon"}
+                    {claimEnabled ? t("dashboard.claimNST") : t("common.claimComingSoon")}
                   </GlowButton>
                 </div>
               </div>
               {!claimEnabled && (
                 <div className="mt-4 p-4 rounded-lg bg-secondary/50 text-sm text-muted-foreground">
                   <AlertCircle className="w-4 h-4 inline mr-2" />
-                  NST token claiming will be enabled after the official token launch. Your rewards are securely stored
-                  on-chain.
+                  {t("dashboard.nstClaimInfo")}
                 </div>
               )}
             </CardContent>
@@ -289,38 +289,38 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" />
-                Referral Overview
+                {t("dashboard.referralOverview")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="text-center p-4 rounded-lg bg-secondary/30">
                   <p className="text-lg sm:text-xl md:text-2xl font-bold">{user.directNodeCount}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Node Referrals</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{t("dashboard.nodeReferrals")}</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-secondary/30">
                   <p className="text-lg sm:text-xl md:text-2xl font-bold">${user.directDonationUSD.toLocaleString()}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Referral Donations</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{t("dashboard.referralDonationsLabel")}</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-secondary/30">
                   <p className="text-lg sm:text-xl md:text-2xl font-bold">{Math.floor(user.directDonationUSD / 1000) * 100}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">NST from Donations</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{t("dashboard.nstFromDonations")}</p>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-secondary/30">
                   <p className="text-lg sm:text-xl md:text-2xl font-bold">{user.directNodeCount >= 10 ? "1" : "0"}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Free Nodes Earned</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{t("dashboard.freeNodesEarned")}</p>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   {10 - user.directNodeCount > 0
-                    ? `${10 - user.directNodeCount} more node referrals for a free node`
-                    : "You earned a free node from referrals!"}
+                    ? `${10 - user.directNodeCount} ${t("dashboard.moreNodeReferrals")}`
+                    : t("dashboard.earnedFreeNode")}
                 </p>
                 <Link href="/referral" className="w-full sm:w-auto">
                   <Button variant="outline" className="glass bg-transparent w-full sm:w-auto whitespace-nowrap">
                     <Users className="w-4 h-4 mr-2" />
-                    View Referral Dashboard
+                    {t("dashboard.viewReferralDashboard")}
                   </Button>
                 </Link>
               </div>
@@ -335,10 +335,10 @@ export default function DashboardPage() {
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <Clock className="w-5 h-5 text-muted-foreground" />
-                    Recent Donations
+                    {t("dashboard.recentDonations")}
                   </span>
                   <Link href="/donate" className="text-sm text-primary hover:underline">
-                    View All
+                    {t("common.viewAll")}
                   </Link>
                 </CardTitle>
               </CardHeader>
@@ -346,9 +346,9 @@ export default function DashboardPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Token</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Date</TableHead>
+                      <TableHead>{t("common.token")}</TableHead>
+                      <TableHead>{t("common.amount")}</TableHead>
+                      <TableHead>{t("common.date")}</TableHead>
                       <TableHead className="text-right">TX</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -382,10 +382,10 @@ export default function DashboardPage() {
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <Box className="w-5 h-5 text-muted-foreground" />
-                    Node Acquisitions
+                    {t("dashboard.nodeAcquisitions")}
                   </span>
                   <Link href="/nodes" className="text-sm text-primary hover:underline">
-                    View All
+                    {t("common.viewAll")}
                   </Link>
                 </CardTitle>
               </CardHeader>
@@ -393,9 +393,9 @@ export default function DashboardPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Source</TableHead>
-                      <TableHead>Nodes</TableHead>
-                      <TableHead>Date</TableHead>
+                      <TableHead>{t("common.source")}</TableHead>
+                      <TableHead>{t("common.nodes")}</TableHead>
+                      <TableHead>{t("common.date")}</TableHead>
                       <TableHead className="text-right">TX</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -413,11 +413,11 @@ export default function DashboardPage() {
                                   : "bg-accent/10 text-accent border-accent/20"
                             }
                           >
-                            {purchase.source.charAt(0).toUpperCase() + purchase.source.slice(1)}
+                            {t(`common.${purchase.source}`)}
                           </Badge>
                         </TableCell>
                         <TableCell className="font-medium">
-                          {purchase.count} Node{purchase.count > 1 ? "s" : ""}
+                          {purchase.count} {t("common.nodes")}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {purchase.timestamp.toLocaleDateString()}

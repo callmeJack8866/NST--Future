@@ -14,7 +14,9 @@ import { useWeb3 } from "@/components/providers/web3-provider"
 import { useLanguage } from "@/contexts/language-context"
 import { mockUserData, mockReferrals } from "@/lib/mock-data"
 import { NODE_REFERRAL_REWARD, DONATION_REFERRAL_REWARD, FREE_NODE_REFERRAL_COUNT } from "@/lib/constants"
-import { Users, Wallet, Copy, Check, Share2, Gift, Coins, Box, TrendingUp, LinkIcon, Twitter, Send, MessageCircle } from "lucide-react"
+import { Users, Wallet, Copy, Check, Share2, Gift, Coins, Box, TrendingUp, LinkIcon } from "lucide-react"
+import { FaXTwitter } from "react-icons/fa6"
+import { FaTelegram, FaDiscord } from "react-icons/fa"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 
@@ -122,15 +124,15 @@ export default function ReferralPage() {
                   <span className="truncate">{copied ? t("referral.copied") : t("referral.copyLink")}</span>
                 </Button>
                 <Button variant="outline" className="glass bg-transparent text-xs sm:text-sm" onClick={shareOnTwitter}>
-                  <Twitter className="w-4 h-4 mr-1 sm:mr-2" />
+                  <FaXTwitter className="w-4 h-4 mr-1 sm:mr-2" />
                   <span className="truncate">{t("referral.shareOnX")}</span>
                 </Button>
                 <Button variant="outline" className="glass bg-transparent text-xs sm:text-sm" onClick={shareOnTelegram}>
-                  <Send className="w-4 h-4 mr-1 sm:mr-2" />
+                  <FaTelegram className="w-4 h-4 mr-1 sm:mr-2" />
                   <span className="truncate">{t("referral.telegram")}</span>
                 </Button>
                 <Button variant="outline" className="glass bg-transparent text-xs sm:text-sm" onClick={shareOnDiscord}>
-                  <MessageCircle className="w-4 h-4 mr-1 sm:mr-2" />
+                  <FaDiscord className="w-4 h-4 mr-1 sm:mr-2" />
                   <span className="truncate">{t("referral.discord")}</span>
                 </Button>
               </div>
@@ -188,31 +190,31 @@ export default function ReferralPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t("referral.address")}</TableHead>
-                        <TableHead>{t("referral.donated")}</TableHead>
-                        <TableHead>{t("referral.nodes")}</TableHead>
-                        <TableHead>{t("referral.joined")}</TableHead>
-                        <TableHead className="text-right">{t("common.nstEarned")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("referral.address")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("referral.donated")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("referral.nodes")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("referral.joined")}</TableHead>
+                        <TableHead className="text-right whitespace-nowrap">{t("common.nstEarned")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {mockReferrals.map((referral, i) => (
                         <TableRow key={referral.address}>
-                          <TableCell className="font-mono">{formatAddress(referral.address)}</TableCell>
-                          <TableCell>${referral.totalDonationUSD.toLocaleString()}</TableCell>
-                          <TableCell>
+                          <TableCell className="font-mono text-xs sm:text-sm whitespace-nowrap">{formatAddress(referral.address)}</TableCell>
+                          <TableCell className="whitespace-nowrap">${referral.totalDonationUSD.toLocaleString()}</TableCell>
+                          <TableCell className="whitespace-nowrap">
                             {referral.nodeCount > 0 ? (
-                              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 whitespace-nowrap">
                                 {referral.nodeCount} {t("common.nodes")}
                               </Badge>
                             ) : (
                               <span className="text-muted-foreground">-</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-muted-foreground">
+                          <TableCell className="text-muted-foreground whitespace-nowrap text-xs sm:text-sm">
                             {referral.joinedAt.toLocaleDateString()}
                           </TableCell>
-                          <TableCell className="text-right font-medium text-primary">
+                          <TableCell className="text-right font-medium text-primary whitespace-nowrap">
                             +{referral.earnedNST} NST
                           </TableCell>
                         </TableRow>
@@ -288,7 +290,7 @@ export default function ReferralPage() {
                   </ProgressRing>
                   <p className="mt-4 text-xs sm:text-sm text-muted-foreground text-center">
                     {FREE_NODE_REFERRAL_COUNT - user.directNodeCount > 0
-                      ? `${FREE_NODE_REFERRAL_COUNT - user.directNodeCount} ${t("referral.moreForFreeNode")}`
+                      ? `${t("referral.moreForFreeNode")}`
                       : t("referral.earnedFreeNode")}
                   </p>
                 </CardContent>
@@ -309,7 +311,7 @@ export default function ReferralPage() {
                       <p className="font-medium">{t("referral.nodeReferral")}</p>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {t("referral.nodeReferralDesc")} <span className="text-primary font-semibold">{NODE_REFERRAL_REWARD} NST</span> {t("referral.nodeReferralDesc2")}
+                      {t("referral.nodeReferralDesc")}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-secondary/30">
@@ -318,7 +320,7 @@ export default function ReferralPage() {
                       <p className="font-medium">{t("referral.donationReferral")}</p>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {t("referral.donationReferralDesc")} <span className="text-[#22d3ee] font-semibold">{DONATION_REFERRAL_REWARD} NST</span> {t("referral.donationReferralDesc2")}
+                      {t("referral.donationReferralDesc")}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-secondary/30">
@@ -327,8 +329,7 @@ export default function ReferralPage() {
                       <p className="font-medium">{t("referral.freeNodeMilestone")}</p>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {t("referral.freeNodeMilestoneDesc")} <span className="text-accent font-semibold">{t("common.free")} {t("common.nodes")}</span> {t("referral.freeNodeMilestoneDesc2")}{" "}
-                      {FREE_NODE_REFERRAL_COUNT} {t("referral.freeNodeMilestoneDesc3")}
+                      {t("referral.freeNodeMilestoneDesc")}
                     </p>
                   </div>
                 </CardContent>
@@ -344,6 +345,7 @@ export default function ReferralPage() {
                   <p>{t("referral.tip2")}</p>
                   <p>{t("referral.tip3")}</p>
                   <p>{t("referral.tip4")}</p>
+                  <p>{t("referral.tip5")}</p>
                 </CardContent>
               </Card>
             </div>

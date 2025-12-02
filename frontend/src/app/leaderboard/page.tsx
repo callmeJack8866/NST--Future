@@ -188,7 +188,7 @@ export default function LeaderboardPage() {
                   ) : (
                     <>
                       <Gift className="w-4 h-4 mr-2" />
-                      {t("leaderboard.applyForAirdrop")}
+                      {t("leaderboard.applyButton")}
                     </>
                   )}
                 </GlowButton>
@@ -247,11 +247,11 @@ export default function LeaderboardPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-16">{t("leaderboard.rank")}</TableHead>
-                        <TableHead>{t("leaderboard.address")}</TableHead>
-                        <TableHead>{t("leaderboard.points")}</TableHead>
-                        <TableHead>{t("leaderboard.nodes")}</TableHead>
-                        <TableHead className="text-right">{t("leaderboard.donations")}</TableHead>
+                        <TableHead className="w-12 sm:w-16 whitespace-nowrap">{t("leaderboard.rank")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("leaderboard.address")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("leaderboard.points")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("leaderboard.nodes")}</TableHead>
+                        <TableHead className="text-right whitespace-nowrap">{t("leaderboard.donations")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -260,17 +260,17 @@ export default function LeaderboardPage() {
                           key={entry.address}
                           className={cn(i < 3 && "bg-primary/5", entry.address === user.address && "bg-accent/10")}
                         >
-                          <TableCell className="font-medium">{getRankIcon(entry.rank)}</TableCell>
-                          <TableCell className="font-mono">{formatAddress(entry.address)}</TableCell>
-                          <TableCell>
+                          <TableCell className="font-medium whitespace-nowrap">{getRankIcon(entry.rank)}</TableCell>
+                          <TableCell className="font-mono text-xs sm:text-sm whitespace-nowrap">{formatAddress(entry.address)}</TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <span className="font-semibold text-primary">{entry.points.toLocaleString()}</span>
                           </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="glass">
+                          <TableCell className="whitespace-nowrap">
+                            <Badge variant="outline" className="glass whitespace-nowrap">
                               {entry.nodeCount} {t("common.nodes")}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">${entry.donations.toLocaleString()}</TableCell>
+                          <TableCell className="text-right whitespace-nowrap">${entry.donations.toLocaleString()}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -292,24 +292,24 @@ export default function LeaderboardPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-16">{t("leaderboard.rank")}</TableHead>
-                        <TableHead>{t("leaderboard.address")}</TableHead>
-                        <TableHead>{t("leaderboard.growth")}</TableHead>
-                        <TableHead>{t("leaderboard.points")}</TableHead>
-                        <TableHead className="text-right">{t("leaderboard.nodes")}</TableHead>
+                        <TableHead className="w-12 sm:w-16 whitespace-nowrap">{t("leaderboard.rank")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("leaderboard.address")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("leaderboard.growth")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("leaderboard.points")}</TableHead>
+                        <TableHead className="text-right whitespace-nowrap">{t("leaderboard.nodes")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {mockLeaderboardGrowth.map((entry, i) => (
                         <TableRow key={entry.address} className={cn(i < 3 && "bg-primary/5")}>
-                          <TableCell className="font-medium">{getRankIcon(entry.rank)}</TableCell>
-                          <TableCell className="font-mono">{formatAddress(entry.address)}</TableCell>
-                          <TableCell>
+                          <TableCell className="font-medium whitespace-nowrap">{getRankIcon(entry.rank)}</TableCell>
+                          <TableCell className="font-mono text-xs sm:text-sm whitespace-nowrap">{formatAddress(entry.address)}</TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <span className="font-semibold text-primary">+{entry.growth}%</span>
                           </TableCell>
-                          <TableCell>{entry.points.toLocaleString()}</TableCell>
-                          <TableCell className="text-right">
-                            <Badge variant="outline" className="glass">
+                          <TableCell className="whitespace-nowrap">{entry.points.toLocaleString()}</TableCell>
+                          <TableCell className="text-right whitespace-nowrap">
+                            <Badge variant="outline" className="glass whitespace-nowrap">
                               {entry.nodeCount} {t("common.nodes")}
                             </Badge>
                           </TableCell>

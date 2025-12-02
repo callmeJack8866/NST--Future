@@ -284,11 +284,11 @@ export default function NodesPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t("common.source")}</TableHead>
-                        <TableHead>{t("common.nodes")}</TableHead>
-                        <TableHead>{t("common.cost")}</TableHead>
-                        <TableHead>{t("common.date")}</TableHead>
-                        <TableHead className="text-right">TX</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("common.source")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("common.nodes")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("common.cost")}</TableHead>
+                        <TableHead className="whitespace-nowrap">{t("common.date")}</TableHead>
+                        <TableHead className="text-right whitespace-nowrap">TX</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -308,13 +308,13 @@ export default function NodesPage() {
                             {t(`common.${purchase.source}`)}
                           </Badge>
                         </TableCell>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium whitespace-nowrap">
                           {purchase.count} {t("common.nodes")}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">
                           {purchase.totalUSD > 0 ? `$${purchase.totalUSD.toLocaleString()}` : t("common.free")}
                         </TableCell>
-                          <TableCell className="text-muted-foreground">
+                          <TableCell className="text-muted-foreground whitespace-nowrap">
                             {purchase.timestamp.toLocaleDateString()}
                           </TableCell>
                           <TableCell className="text-right">
@@ -414,7 +414,7 @@ export default function NodesPage() {
                 <CardContent className="space-y-4">
                   <div className="p-3 rounded-lg bg-secondary/30">
                     <p className="font-medium mb-1">{t("nodes.directPurchase")}</p>
-                    <p className="text-sm text-muted-foreground">{t("nodes.directPurchaseDesc")} ${NODE_PRICE.toLocaleString()} {t("nodes.each")}</p>
+                    <p className="text-sm text-muted-foreground">{t("nodes.directPurchaseDesc")} </p>
                   </div>
                   <div className="p-3 rounded-lg bg-secondary/30">
                     <p className="font-medium mb-1">{t("nodes.donationUpgrade")}</p>

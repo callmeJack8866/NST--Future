@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useWeb3 } from "@/components/providers/web3-provider"
+import { useLanguage } from "@/contexts/language-context"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
@@ -29,16 +31,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/donate", label: "Donate", icon: Heart },
-  { href: "/nodes", label: "Nodes", icon: Box },
-  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { href: "/referral", label: "Referral", icon: Users },
+  { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/donate", labelKey: "nav.donate", icon: Heart },
+  { href: "/nodes", labelKey: "nav.nodes", icon: Box },
+  { href: "/leaderboard", labelKey: "nav.leaderboard", icon: Trophy },
+  { href: "/referral", labelKey: "nav.referral", icon: Users },
 ]
 
 export function Navbar() {
   const pathname = usePathname()
   const { address, isConnected, connect, disconnect, chainId } = useWeb3()
+  const { t } = useLanguage()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -77,8 +80,7 @@ export function Navbar() {
               <span className="text-base sm:text-xl font-bold text-primary-foreground">N</span>
             </div>
             <div className="flex flex-col sm:block">
-              <span className="text-sm sm:text-xl font-bold gradient-text leading-tight">NST</span>
-              <span className="text-xs sm:text-xl font-bold gradient-text leading-tight sm:ml-1">Finance</span>
+              <span className="text-xs sm:text-xl font-bold gradient-text leading-tight">{t("nav.logo")}</span>
             </div>
           </Link>
 
@@ -99,7 +101,7 @@ export function Navbar() {
                   )}
                 >
                   <Icon className="w-4 h-4" />
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               )
             })}
@@ -107,6 +109,9 @@ export function Navbar() {
 
           {/* Wallet Connection */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {isConnected && address ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -135,8 +140,8 @@ export function Navbar() {
             ) : (
               <Button onClick={connect} className="bg-primary hover:bg-primary/90 text-primary-foreground glow-green text-xs sm:text-sm px-2 sm:px-4 h-8 sm:h-10">
                 <Wallet className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">Connect</span>
-                <span className="hidden sm:inline ml-1">Wallet</span>
+                <span className="hidden xs:inline">{t("nav.connectWallet").split(" ")[0]}</span>
+                <span className="hidden sm:inline ml-1">{t("nav.connectWallet").split(" ")[1] || ""}</span>
               </Button>
             )}
 
@@ -172,7 +177,7 @@ export function Navbar() {
                     )}
                   >
                     <Icon className="w-5 h-5" />
-                    {item.label}
+                    {t(item.labelKey)}
                   </Link>
                 )
               })}

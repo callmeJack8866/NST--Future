@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { GlowButton } from "@/components/ui/glow-button"
 import { useWeb3 } from "@/components/providers/web3-provider"
+import { useLanguage } from "@/contexts/language-context"
 import { MIN_DONATION, SUPPORTED_TOKENS, AUTO_UPGRADE_THRESHOLD } from "@/lib/constants"
 import { mockUserData, mockDonationHistory } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
@@ -31,6 +32,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function DonatePage() {
   const { isConnected, address, connect } = useWeb3()
+  const { t } = useLanguage()
   const [selectedToken, setSelectedToken] = useState("USDT")
   const [amount, setAmount] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -64,13 +66,13 @@ export default function DonatePage() {
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 animate-float">
                 <Heart className="w-12 h-12 text-primary" />
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Make a Donation</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">{t("donate.makeADonation")}</h1>
               <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-8">
-                Connect your wallet to start donating and earning rewards in the NST ecosystem.
+                {t("donate.connectMessage")}
               </p>
               <GlowButton onClick={connect} size="lg">
                 <Wallet className="w-5 h-5 mr-2" />
-                Connect Wallet
+                {t("common.connectWallet")}
               </GlowButton>
             </div>
           </div>
@@ -87,9 +89,9 @@ export default function DonatePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Donate</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("donate.title")}</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Support the ecosystem and earn points, rewards, and automatic node upgrades.
+              {t("donate.subtitle")}
             </p>
           </div>
 
@@ -100,14 +102,14 @@ export default function DonatePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Heart className="w-5 h-5 text-primary" />
-                    Make a Donation
+                    {t("donate.makeADonation")}
                   </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">Minimum donation is ${MIN_DONATION} USD</CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">{t("donate.minimumDonation")} ${MIN_DONATION} USD</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Token Selection */}
                   <div className="space-y-2">
-                    <Label className="text-sm">Select Token</Label>
+                    <Label className="text-sm">{t("donate.selectToken")}</Label>
                     <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       {SUPPORTED_TOKENS.map((token) => (
                         <button
@@ -133,13 +135,13 @@ export default function DonatePage() {
 
                   {/* Amount Input */}
                   <div className="space-y-2">
-                    <Label htmlFor="amount" className="text-sm">Donation Amount (USD)</Label>
+                    <Label htmlFor="amount" className="text-sm">{t("donate.donationAmount")}</Label>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                       <Input
                         id="amount"
                         type="number"
-                        placeholder="Enter amount"
+                        placeholder={t("donate.enterAmount")}
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         className="pl-9 sm:pl-10 text-base sm:text-lg h-12 sm:h-14 glass"
@@ -148,14 +150,14 @@ export default function DonatePage() {
                     {amount && !isValidAmount && (
                       <p className="text-sm text-destructive flex items-center gap-1">
                         <AlertCircle className="w-4 h-4" />
-                        Minimum donation is ${MIN_DONATION}
+                        {t("donate.minimumError")} ${MIN_DONATION}
                       </p>
                     )}
                   </div>
 
                   {/* Quick Amount Buttons */}
                   <div className="space-y-2">
-                    <Label className="text-sm">Quick Select</Label>
+                    <Label className="text-sm">{t("donate.quickSelect")}</Label>
                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                       {quickAmounts.map((amt) => (
                         <Button
@@ -174,11 +176,11 @@ export default function DonatePage() {
                   {numAmount >= MIN_DONATION && (
                     <Alert className="glass border-primary/50">
                       <Star className="w-4 h-4 text-primary" />
-                      <AlertTitle>Points Preview</AlertTitle>
+                      <AlertTitle>{t("donate.pointsPreview")}</AlertTitle>
                       <AlertDescription>
-                        You will earn{" "}
-                        <span className="font-bold text-primary">{pointsToEarn.toLocaleString()} points</span>
-                        {user.isNodeHolder && <span className="text-primary"> (2x node holder bonus!)</span>}
+                        {t("donate.youWillEarn")}{" "}
+                        <span className="font-bold text-primary">{pointsToEarn.toLocaleString()} {t("common.points")}</span>
+                        {user.isNodeHolder && <span className="text-primary"> {t("donate.nodeHolderBonus")}</span>}
                       </AlertDescription>
                     </Alert>
                   )}
@@ -192,12 +194,12 @@ export default function DonatePage() {
                     {isLoading ? (
                       <>
                         <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
-                        Processing...
+                        {t("common.processing")}
                       </>
                     ) : (
                       <>
                         <Heart className="w-5 h-5 mr-2" />
-                        Donate ${numAmount.toLocaleString() || "0"}
+                        {t("donate.donateButton")} ${numAmount.toLocaleString() || "0"}
                       </>
                     )}
                   </GlowButton>
@@ -209,17 +211,17 @@ export default function DonatePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Clock className="w-5 h-5 text-muted-foreground" />
-                    Your Donation History
+                    {t("donate.yourDonationHistory")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Token</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Points</TableHead>
-                        <TableHead>Date</TableHead>
+                        <TableHead>{t("common.token")}</TableHead>
+                        <TableHead>{t("common.amount")}</TableHead>
+                        <TableHead>{t("common.points")}</TableHead>
+                        <TableHead>{t("common.date")}</TableHead>
                         <TableHead className="text-right">TX</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -256,13 +258,13 @@ export default function DonatePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Gift className="w-5 h-5 text-primary" />
-                    Auto Node Upgrade
+                    {t("donate.autoNodeUpgrade")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-center">
                     <p className="text-2xl sm:text-3xl font-bold gradient-text">${user.totalDonationUSD.toLocaleString()}</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">of ${AUTO_UPGRADE_THRESHOLD.toLocaleString()} goal</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{t("donate.ofGoal")} ${AUTO_UPGRADE_THRESHOLD.toLocaleString()} {t("donate.goal")}</p>
                   </div>
                   <div className="h-3 bg-secondary rounded-full overflow-hidden">
                     <div
@@ -272,8 +274,8 @@ export default function DonatePage() {
                   </div>
                   <p className="text-sm text-muted-foreground text-center">
                     {progressToUpgrade >= 100
-                      ? "🎉 Eligible for free node!"
-                      : `$${(AUTO_UPGRADE_THRESHOLD - user.totalDonationUSD).toLocaleString()} more for free node`}
+                      ? t("donate.eligibleForNode")
+                      : `$${(AUTO_UPGRADE_THRESHOLD - user.totalDonationUSD).toLocaleString()} ${t("donate.moreForNode")}`}
                   </p>
                 </CardContent>
               </Card>
@@ -283,7 +285,7 @@ export default function DonatePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <Info className="w-5 h-5 text-muted-foreground" />
-                    Donation Benefits
+                    {t("donate.donationBenefits")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -292,8 +294,8 @@ export default function DonatePage() {
                       <Star className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">Earn Points</p>
-                      <p className="text-sm text-muted-foreground">1000 points per $1000 donated</p>
+                      <p className="font-medium">{t("donate.earnPoints")}</p>
+                      <p className="text-sm text-muted-foreground">{t("donate.pointsPerDonation")}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -301,8 +303,8 @@ export default function DonatePage() {
                       <TrendingUp className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">2x Node Bonus</p>
-                      <p className="text-sm text-muted-foreground">Node holders earn double points</p>
+                      <p className="font-medium">{t("donate.nodeBonus")}</p>
+                      <p className="text-sm text-muted-foreground">{t("donate.nodeBonusDesc")}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -310,8 +312,8 @@ export default function DonatePage() {
                       <Gift className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">Free Node</p>
-                      <p className="text-sm text-muted-foreground">Auto upgrade at $2000 total</p>
+                      <p className="font-medium">{t("donate.freeNode")}</p>
+                      <p className="text-sm text-muted-foreground">{t("donate.freeNodeDesc")}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -322,29 +324,29 @@ export default function DonatePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <DollarSign className="w-5 h-5 text-muted-foreground" />
-                    Your Stats
+                    {t("donate.yourStats")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">Total Donated</span>
+                    <span className="text-muted-foreground">{t("donate.totalDonated")}</span>
                     <span className="font-medium">${user.totalDonationUSD.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">Total Points</span>
+                    <span className="text-muted-foreground">{t("donate.totalPoints")}</span>
                     <span className="font-medium">{user.points.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Status</span>
+                    <span className="text-muted-foreground">{t("donate.status")}</span>
                     <Badge
                       variant="outline"
                       className={cn(user.isNodeHolder ? "text-primary border-primary" : "text-muted-foreground")}
                     >
-                      {user.isNodeHolder ? "Node Holder" : user.isDonor ? "Donor" : "Regular"}
+                      {user.isNodeHolder ? t("common.nodeHolder") : user.isDonor ? t("common.donor") : t("donate.regular")}
                     </Badge>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Multiplier</span>
+                    <span className="text-muted-foreground">{t("donate.multiplier")}</span>
                     <span className="font-medium text-primary">{user.isNodeHolder ? "2x" : "1x"}</span>
                   </div>
                 </CardContent>

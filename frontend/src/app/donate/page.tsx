@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useAccount } from "wagmi"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -8,52 +10,106 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { GlowButton } from "@/components/ui/glow-button"
-import { useWeb3 } from "@/components/providers/web3-provider"
 import { useLanguage } from "@/contexts/language-context"
 import { MIN_DONATION, SUPPORTED_TOKENS, AUTO_UPGRADE_THRESHOLD } from "@/lib/constants"
-import { mockUserData, mockDonationHistory } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
+import { useDonate, DonationStep } from "@/hooks/useDonate"
+import { useUserInfo, useTokenBalances, useAutoNodeEligibility } from "@/hooks/useUserInfo"
+import { getContracts } from "@/lib/contracts/config"
 import {
   Heart,
   DollarSign,
   AlertCircle,
   CheckCircle,
-  Wallet,
   Info,
   Gift,
   Star,
   TrendingUp,
   Clock,
   ExternalLink,
+  Loader2,
+  RefreshCw,
 } from "lucide-react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
+// Get explorer URL based on chain
+function getExplorerUrl(chainId: number): string {
+  if (chainId === 97) return "https://testnet.bscscan.com"
+  return "https://bscscan.com"
+}
+
 export default function DonatePage() {
-  const { isConnected, address, connect } = useWeb3()
+  const { address, isConnected, chainId } = useAccount()
   const { t } = useLanguage()
+  
+  // Form state
   const [selectedToken, setSelectedToken] = useState("USDT")
   const [amount, setAmount] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const user = mockUserData
+  
+  // Hooks
+  const { donate, step, error, txHash, isLoading, reset } = useDonate()
+  const { userInfo, isLoading: isLoadingUser, refetch: refetchUser } = useUserInfo()
+  const { balances, getBalance, isLoading: isLoadingBalances, refetch: refetchBalances } = useTokenBalances()
+  const { isEligible: isEligibleForAutoNode } = useAutoNodeEligibility()
+  
+  const contracts = getContracts(chainId ?? 97)
+  const explorerUrl = getExplorerUrl(chainId ?? 97)
 
   const numAmount = Number.parseFloat(amount) || 0
   const isValidAmount = numAmount >= MIN_DONATION
-  const pointsToEarn = Math.floor(numAmount / 1000) * 1000 * (user.isNodeHolder ? 2 : 1)
-  const progressToUpgrade = Math.min(((user.totalDonationUSD + numAmount) / AUTO_UPGRADE_THRESHOLD) * 100, 100)
+  
+  // Calculate points to earn (based on user's node holder status)
+  const isNodeHolder = userInfo?.isNodeHolder ?? false
+  const pointsToEarn = Math.floor(numAmount) * (isNodeHolder ? 2 : 1)
+  
+  // Progress to auto upgrade
+  const totalDonated = userInfo?.totalDonationUSD ?? 0
+  const progressToUpgrade = Math.min(((totalDonated + numAmount) / AUTO_UPGRADE_THRESHOLD) * 100, 100)
+
+  // Get selected token balance
+  const selectedTokenBalance = getBalance(selectedToken)
+  const hasInsufficientBalance = selectedTokenBalance && numAmount > Number(selectedTokenBalance.formatted)
 
   const quickAmounts = [100, 250, 500, 1000, 2000, 5000]
 
+  // Handle donation
   const handleDonate = async () => {
-    if (!isValidAmount) return
+    if (!isValidAmount || hasInsufficientBalance) return
 
-    setIsLoading(true)
-    // Simulate transaction
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsLoading(false)
-    setAmount("")
-    alert("Donation successful! (Demo mode)")
+    const tokenInfo = SUPPORTED_TOKENS.find(t => t.symbol === selectedToken)
+    const decimals = tokenInfo?.decimals ?? 18
+
+    const result = await donate(selectedToken, numAmount, decimals)
+    
+    if (result.success) {
+      setAmount("")
+      // Refetch user data after successful donation
+      setTimeout(() => {
+        refetchUser()
+        refetchBalances()
+      }, 2000)
+    }
+  }
+
+  // Reset on disconnect
+  useEffect(() => {
+    if (!isConnected) {
+      reset()
+      setAmount("")
+    }
+  }, [isConnected, reset])
+
+  // Get step message
+  const getStepMessage = (step: DonationStep): string => {
+    switch (step) {
+      case "checking": return "Checking balance and allowance..."
+      case "approving": return "Please approve the token spending..."
+      case "donating": return "Processing your donation..."
+      case "success": return "Donation successful!"
+      case "error": return error || "Transaction failed"
+      default: return ""
+    }
   }
 
   if (!isConnected) {
@@ -70,10 +126,7 @@ export default function DonatePage() {
               <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-8">
                 {t("donate.connectMessage")}
               </p>
-              <GlowButton onClick={connect} size="lg">
-                <Wallet className="w-5 h-5 mr-2" />
-                {t("common.connectWallet")}
-              </GlowButton>
+              <ConnectButton />
             </div>
           </div>
         </main>
@@ -88,11 +141,13 @@ export default function DonatePage() {
       <main className="pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("donate.title")}</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              {t("donate.subtitle")}
-            </p>
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("donate.title")}</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                {t("donate.subtitle")}
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -111,25 +166,37 @@ export default function DonatePage() {
                   <div className="space-y-2">
                     <Label className="text-sm">{t("donate.selectToken")}</Label>
                     <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                      {SUPPORTED_TOKENS.map((token) => (
-                        <button
-                          key={token.symbol}
-                          onClick={() => setSelectedToken(token.symbol)}
-                          className={cn(
-                            "flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all duration-200",
-                            selectedToken === token.symbol
-                              ? "border-primary bg-primary/10"
-                              : "border-border hover:border-primary/50 bg-secondary/30",
-                          )}
-                        >
-                          <span className="text-xl sm:text-2xl">{token.icon}</span>
-                          <div className="text-left min-w-0 flex-1">
-                            <p className="text-sm sm:text-base font-semibold">{token.symbol}</p>
-                            <p className="text-xs text-muted-foreground truncate">{token.name}</p>
-                          </div>
-                          {selectedToken === token.symbol && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />}
-                        </button>
-                      ))}
+                      {SUPPORTED_TOKENS.map((token) => {
+                        const tokenBalance = getBalance(token.symbol)
+                        return (
+                          <button
+                            key={token.symbol}
+                            onClick={() => setSelectedToken(token.symbol)}
+                            className={cn(
+                              "flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all duration-200",
+                              selectedToken === token.symbol
+                                ? "border-primary bg-primary/10"
+                                : "border-border hover:border-primary/50 bg-secondary/30",
+                            )}
+                            disabled={isLoading}
+                          >
+                            <span className="text-xl sm:text-2xl">{token.icon}</span>
+                            <div className="text-left min-w-0 flex-1">
+                              <p className="text-sm sm:text-base font-semibold">{token.symbol}</p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {isLoadingBalances ? (
+                                  "Loading..."
+                                ) : tokenBalance ? (
+                                  `${Number(tokenBalance.formatted).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${token.symbol}`
+                                ) : (
+                                  "0.00"
+                                )}
+                              </p>
+                            </div>
+                            {selectedToken === token.symbol && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />}
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
 
@@ -145,12 +212,19 @@ export default function DonatePage() {
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         className="pl-9 sm:pl-10 text-base sm:text-lg h-12 sm:h-14 glass"
+                        disabled={isLoading}
                       />
                     </div>
                     {amount && !isValidAmount && (
                       <p className="text-sm text-destructive flex items-center gap-1">
                         <AlertCircle className="w-4 h-4" />
                         {t("donate.minimumError")} ${MIN_DONATION}
+                      </p>
+                    )}
+                    {amount && isValidAmount && hasInsufficientBalance && (
+                      <p className="text-sm text-destructive flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        Insufficient {selectedToken} balance
                       </p>
                     )}
                   </div>
@@ -165,6 +239,7 @@ export default function DonatePage() {
                           variant="outline"
                           className={cn("glass text-xs sm:text-sm px-2 sm:px-4", Number.parseFloat(amount) === amt && "border-primary bg-primary/10")}
                           onClick={() => setAmount(amt.toString())}
+                          disabled={isLoading}
                         >
                           ${amt >= 1000 ? `${amt / 1000}k` : amt}
                         </Button>
@@ -180,7 +255,40 @@ export default function DonatePage() {
                       <AlertDescription>
                         {t("donate.youWillEarn")}{" "}
                         <span className="font-bold text-primary">{pointsToEarn.toLocaleString()} {t("common.points")}</span>
-                        {user.isNodeHolder && <span className="text-primary"> {t("donate.nodeHolderBonus")}</span>}
+                        {isNodeHolder && <span className="text-primary"> {t("donate.nodeHolderBonus")}</span>}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Transaction Status */}
+                  {step !== "idle" && (
+                    <Alert className={cn(
+                      "glass",
+                      step === "success" && "border-green-500/50 bg-green-500/10",
+                      step === "error" && "border-destructive/50 bg-destructive/10"
+                    )}>
+                      {step === "success" ? (
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                      ) : step === "error" ? (
+                        <AlertCircle className="w-4 h-4 text-destructive" />
+                      ) : (
+                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                      )}
+                      <AlertTitle>
+                        {step === "success" ? "Success!" : step === "error" ? "Error" : "Processing"}
+                      </AlertTitle>
+                      <AlertDescription className="space-y-2">
+                        <p>{getStepMessage(step)}</p>
+                        {txHash && (
+                          <a 
+                            href={`${explorerUrl}/tx/${txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-primary hover:underline text-sm"
+                          >
+                            View on Explorer <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
                       </AlertDescription>
                     </Alert>
                   )}
@@ -188,13 +296,13 @@ export default function DonatePage() {
                   {/* Donate Button */}
                   <GlowButton
                     className="w-full h-12 sm:h-14 text-base sm:text-lg"
-                    disabled={!isValidAmount || isLoading}
+                    disabled={!isValidAmount || isLoading || hasInsufficientBalance}
                     onClick={handleDonate}
                   >
                     {isLoading ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
-                        {t("common.processing")}
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                        {step === "approving" ? "Approving..." : step === "donating" ? "Donating..." : t("common.processing")}
                       </>
                     ) : (
                       <>
@@ -203,10 +311,18 @@ export default function DonatePage() {
                       </>
                     )}
                   </GlowButton>
+
+                  {/* Network Info */}
+                  <div className="text-center text-xs text-muted-foreground">
+                    <p>Network: {chainId === 97 ? "BSC Testnet" : chainId === 56 ? "BSC Mainnet" : `Chain ${chainId}`}</p>
+                    <p className="font-mono text-[10px] mt-1 break-all">
+                      Contract: {contracts.NST_FINANCE}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
 
-              {/* Donation History */}
+              {/* Recent Activity placeholder - In production, this would fetch from blockchain events */}
               <Card className="glass">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -214,39 +330,11 @@ export default function DonatePage() {
                     {t("donate.yourDonationHistory")}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t("common.token")}</TableHead>
-                        <TableHead>{t("common.amount")}</TableHead>
-                        <TableHead>{t("common.points")}</TableHead>
-                        <TableHead>{t("common.date")}</TableHead>
-                        <TableHead className="text-right">TX</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mockDonationHistory.map((donation) => (
-                        <TableRow key={donation.id}>
-                          <TableCell>
-                            <Badge variant="outline" className="glass">
-                              {donation.token}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="font-medium">${donation.usdValue.toLocaleString()}</TableCell>
-                          <TableCell className="text-primary">+{Math.floor(donation.usdValue / 1000) * 1000}</TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {donation.timestamp.toLocaleDateString()}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <ExternalLink className="w-4 h-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                <CardContent>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p className="text-sm">Donation history will be loaded from blockchain events.</p>
+                    <p className="text-xs mt-2">Your total donations: ${userInfo?.totalDonationUSD.toLocaleString() ?? "0"}</p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -263,19 +351,29 @@ export default function DonatePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-center">
-                    <p className="text-2xl sm:text-3xl font-bold gradient-text">${user.totalDonationUSD.toLocaleString()}</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">{t("donate.ofGoal")} ${AUTO_UPGRADE_THRESHOLD.toLocaleString()} {t("donate.goal")}</p>
+                    {isLoadingUser ? (
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" />
+                    ) : (
+                      <>
+                        <p className="text-2xl sm:text-3xl font-bold gradient-text">${totalDonated.toLocaleString()}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{t("donate.ofGoal")} ${AUTO_UPGRADE_THRESHOLD.toLocaleString()} {t("donate.goal")}</p>
+                      </>
+                    )}
                   </div>
                   <div className="h-3 bg-secondary rounded-full overflow-hidden">
                     <div
                       className="h-full bg-linear-to-r from-primary to-accent transition-all duration-500"
-                      style={{ width: `${progressToUpgrade}%` }}
+                      style={{ width: `${(totalDonated / AUTO_UPGRADE_THRESHOLD) * 100}%` }}
                     />
                   </div>
                   <p className="text-sm text-muted-foreground text-center">
-                    {progressToUpgrade >= 100
+                    {userInfo?.hasAutoNode
+                      ? "✅ You already received your auto node!"
+                      : isEligibleForAutoNode
+                      ? "🎉 You're eligible for a free node!"
+                      : totalDonated >= AUTO_UPGRADE_THRESHOLD
                       ? t("donate.eligibleForNode")
-                      : `$${(AUTO_UPGRADE_THRESHOLD - user.totalDonationUSD).toLocaleString()} ${t("donate.moreForNode")}`}
+                      : `$${(AUTO_UPGRADE_THRESHOLD - totalDonated).toLocaleString()} ${t("donate.moreForNode")}`}
                   </p>
                 </CardContent>
               </Card>
@@ -328,27 +426,49 @@ export default function DonatePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="flex justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">{t("donate.totalDonated")}</span>
-                    <span className="font-medium">${user.totalDonationUSD.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">{t("donate.totalPoints")}</span>
-                    <span className="font-medium">{user.points.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("donate.status")}</span>
-                    <Badge
-                      variant="outline"
-                      className={cn(user.isNodeHolder ? "text-primary border-primary" : "text-muted-foreground")}
-                    >
-                      {user.isNodeHolder ? t("common.nodeHolder") : user.isDonor ? t("common.donor") : t("donate.regular")}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">{t("donate.multiplier")}</span>
-                    <span className="font-medium text-primary">{user.isNodeHolder ? "2x" : "1x"}</span>
-                  </div>
+                  {isLoadingUser ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between text-sm sm:text-base">
+                        <span className="text-muted-foreground">{t("donate.totalDonated")}</span>
+                        <span className="font-medium">${userInfo?.totalDonationUSD.toLocaleString() ?? "0"}</span>
+                      </div>
+                      <div className="flex justify-between text-sm sm:text-base">
+                        <span className="text-muted-foreground">{t("donate.totalPoints")}</span>
+                        <span className="font-medium">{userInfo?.points.toLocaleString() ?? "0"}</span>
+                      </div>
+                      <div className="flex justify-between text-sm sm:text-base">
+                        <span className="text-muted-foreground">Nodes Owned</span>
+                        <span className="font-medium">{userInfo?.totalNodes ?? 0}</span>
+                      </div>
+                      <div className="flex justify-between text-sm sm:text-base">
+                        <span className="text-muted-foreground">NST Rewards</span>
+                        <span className="font-medium">{userInfo?.nstReward.toLocaleString() ?? "0"} NST</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{t("donate.status")}</span>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            userInfo?.isNodeHolder 
+                              ? "text-primary border-primary" 
+                              : userInfo?.isDonor 
+                              ? "text-green-500 border-green-500" 
+                              : "text-muted-foreground"
+                          )}
+                        >
+                          {userInfo?.isNodeHolder ? t("common.nodeHolder") : userInfo?.isDonor ? t("common.donor") : t("donate.regular")}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{t("donate.multiplier")}</span>
+                        <span className="font-medium text-primary">{userInfo?.isNodeHolder ? "2x" : "1x"}</span>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </div>

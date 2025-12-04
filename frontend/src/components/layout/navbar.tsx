@@ -2,9 +2,10 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useAccount } from "wagmi"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { Button } from "@/components/ui/button"
-import { useWeb3 } from "@/components/providers/web3-provider"
 import { useLanguage } from "@/contexts/language-context"
 import { LanguageSwitcher } from "@/components/ui/language-switcher"
 import { cn } from "@/lib/utils"
@@ -16,19 +17,7 @@ import {
   Users,
   Menu,
   X,
-  Wallet,
-  ChevronDown,
-  ExternalLink,
-  Copy,
-  Check,
 } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 const navItems = [
   { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
@@ -40,35 +29,24 @@ const navItems = [
 
 export function Navbar() {
   const pathname = usePathname()
-  const { address, isConnected, connect, disconnect, chainId } = useWeb3()
   const { t } = useLanguage()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const { chainId } = useAccount()
 
-  const formatAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+  // Only show chain badge after mounting to prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const getChainBadge = () => {
+    if (!mounted) return null // Don't render on server
+    if (chainId === 97) return "Testnet"
+    if (chainId === 56) return "Mainnet"
+    return null
   }
 
-  const copyAddress = () => {
-    if (address) {
-      navigator.clipboard.writeText(address)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
-  const getChainName = (id: number | null) => {
-    switch (id) {
-      case 56:
-        return "BSC"
-      case 1:
-        return "ETH"
-      case 137:
-        return "Polygon"
-      default:
-        return "Unknown"
-    }
-  }
+  const chainBadge = getChainBadge()
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-strong">
@@ -79,8 +57,16 @@ export function Navbar() {
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-linear-to-br from-primary to-accent flex items-center justify-center animate-pulse-glow">
               <span className="text-base sm:text-xl font-bold text-primary-foreground">N</span>
             </div>
-            <div className="flex flex-col sm:block">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
               <span className="text-xs sm:text-xl font-bold gradient-text leading-tight">{t("nav.logo")}</span>
+              {chainBadge && (
+                <span className={cn(
+                  "text-[10px] px-1.5 py-0.5 rounded-full font-medium",
+                  chainId === 97 ? "bg-yellow-500/20 text-yellow-500" : "bg-green-500/20 text-green-500"
+                )}>
+                  {chainBadge}
+                </span>
+              )}
             </div>
           </Link>
 
@@ -112,38 +98,111 @@ export function Navbar() {
             {/* Language Switcher */}
             <LanguageSwitcher />
 
-            {isConnected && address ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="glass flex items-center gap-1.5 sm:gap-2 bg-transparent text-xs sm:text-sm px-2 sm:px-4 h-8 sm:h-10">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span className="hidden sm:inline">{getChainName(chainId)}</span>
-                    <span className="font-mono text-xs sm:text-sm">{formatAddress(address)}</span>
-                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 glass-strong">
-                  <DropdownMenuItem onClick={copyAddress} className="cursor-pointer">
-                    {copied ? <Check className="w-4 h-4 mr-2 text-primary" /> : <Copy className="w-4 h-4 mr-2" />}
-                    {copied ? "Copied!" : "Copy Address"}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View on Explorer
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={disconnect} className="cursor-pointer text-destructive">
-                    Disconnect
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button onClick={connect} className="bg-primary hover:bg-primary/90 text-primary-foreground glow-green text-xs sm:text-sm px-2 sm:px-4 h-8 sm:h-10">
-                <Wallet className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">{t("nav.connectWallet").split(" ")[0]}</span>
-                <span className="hidden sm:inline ml-1">{t("nav.connectWallet").split(" ")[1] || ""}</span>
-              </Button>
-            )}
+            {/* RainbowKit Connect Button */}
+            <ConnectButton.Custom>
+              {({
+                account,
+                chain,
+                openAccountModal,
+                openChainModal,
+                openConnectModal,
+                authenticationStatus,
+                mounted,
+              }) => {
+                const ready = mounted && authenticationStatus !== 'loading'
+                const connected =
+                  ready &&
+                  account &&
+                  chain &&
+                  (!authenticationStatus ||
+                    authenticationStatus === 'authenticated')
+
+                return (
+                  <div
+                    {...(!ready && {
+                      'aria-hidden': true,
+                      'style': {
+                        opacity: 0,
+                        pointerEvents: 'none',
+                        userSelect: 'none',
+                      },
+                    })}
+                  >
+                    {(() => {
+                      if (!connected) {
+                        return (
+                          <Button 
+                            onClick={openConnectModal}
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground glow-green text-xs sm:text-sm px-3 sm:px-4 h-8 sm:h-10"
+                          >
+                            Connect Wallet
+                          </Button>
+                        )
+                      }
+
+                      if (chain.unsupported) {
+                        return (
+                          <Button 
+                            onClick={openChainModal}
+                            variant="destructive"
+                            className="text-xs sm:text-sm px-3 sm:px-4 h-8 sm:h-10"
+                          >
+                            Wrong network
+                          </Button>
+                        )
+                      }
+
+                      return (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={openChainModal}
+                            variant="outline"
+                            className="glass bg-transparent text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-10 hidden sm:flex items-center gap-1.5"
+                          >
+                            {chain.hasIcon && (
+                              <div
+                                style={{
+                                  background: chain.iconBackground,
+                                  width: 16,
+                                  height: 16,
+                                  borderRadius: 999,
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                {chain.iconUrl && (
+                                  <img
+                                    alt={chain.name ?? 'Chain icon'}
+                                    src={chain.iconUrl}
+                                    style={{ width: 16, height: 16 }}
+                                  />
+                                )}
+                              </div>
+                            )}
+                            <span className="hidden lg:inline">{chain.name}</span>
+                          </Button>
+
+                          <Button
+                            onClick={openAccountModal}
+                            variant="outline"
+                            className="glass bg-transparent text-xs sm:text-sm px-2 sm:px-4 h-8 sm:h-10 flex items-center gap-1.5"
+                          >
+                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                            <span className="font-mono">
+                              {account.displayName}
+                            </span>
+                            {account.displayBalance && (
+                              <span className="hidden lg:inline text-muted-foreground">
+                                ({account.displayBalance})
+                              </span>
+                            )}
+                          </Button>
+                        </div>
+                      )
+                    })()}
+                  </div>
+                )
+              }}
+            </ConnectButton.Custom>
 
             {/* Mobile Menu Button */}
             <Button

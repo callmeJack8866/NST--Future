@@ -9,38 +9,35 @@ import {
   } from 'typeorm';
   import { User } from '../../users/entities/user.entity';
   
-  export enum NodeType {
-    PUBLIC = 'public',
-    TEAM = 'team',
-    AUTO = 'auto',
-    FREE_REFERRAL = 'free_referral',
+  export enum PointsSource {
+    DONATION = 'donation',
+    REFERRAL = 'referral',
   }
   
-  @Entity('nodes')
-  @Index(['userAddress', 'type'])
-  export class Node {
+  @Entity('points_history')
+  @Index(['userAddress', 'createdAt'])
+  export class PointsHistory {
     @PrimaryGeneratedColumn('uuid')
     id: string;
   
     @Column({ type: 'varchar', length: 42 })
     userAddress: string;
   
-    @ManyToOne(() => User, (user) => user.nodes)
+    @ManyToOne(() => User)
     @JoinColumn({ name: 'userAddress' })
     user: User;
   
+    @Column({ type: 'decimal', precision: 36, scale: 18 })
+    points: string;
+  
     @Column({
       type: 'enum',
-      enum: NodeType,
-      default: NodeType.PUBLIC,
+      enum: PointsSource,
     })
-    type: NodeType;
+    source: PointsSource;
   
     @Column({ type: 'int', default: 1 })
-    count: number;
-  
-    @Column({ type: 'decimal', precision: 36, scale: 18, default: '0' })
-    costUSD: string;
+    multiplier: number;
   
     @Column({ type: 'varchar', length: 66, nullable: true })
     txHash: string;

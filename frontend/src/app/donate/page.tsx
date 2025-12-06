@@ -43,6 +43,9 @@ export default function DonatePage() {
   const { address, isConnected, chainId } = useAccount()
   const { t } = useLanguage()
   
+  // Hydration fix - wait for client mount before rendering wallet-dependent UI
+  const [mounted, setMounted] = useState(false)
+  
   // Form state
   const [selectedToken, setSelectedToken] = useState("USDT")
   const [amount, setAmount] = useState("")
@@ -92,6 +95,11 @@ export default function DonatePage() {
     }
   }
 
+  // Set mounted to true on client
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   // Reset on disconnect
   useEffect(() => {
     if (!isConnected) {
@@ -112,7 +120,7 @@ export default function DonatePage() {
     }
   }
 
-  if (!isConnected) {
+  if (!mounted || !isConnected) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -208,9 +216,16 @@ export default function DonatePage() {
                       <Input
                         id="amount"
                         type="number"
+                        min="0"
                         placeholder={t("donate.enterAmount")}
                         value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          // Only allow non-negative numbers
+                          if (value === "" || Number(value) >= 0) {
+                            setAmount(value)
+                          }
+                        }}
                         className="pl-9 sm:pl-10 text-base sm:text-lg h-12 sm:h-14 glass"
                         disabled={isLoading}
                       />

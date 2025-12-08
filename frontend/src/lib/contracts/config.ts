@@ -3,10 +3,10 @@ import { Address } from 'viem';
 // Contract addresses from deploy.json (BSC Testnet)
 export const CONTRACTS = {
   BSC_TESTNET: {
-    NST_FINANCE: '0xC146a3798F1234583B01a7D2d11EabB81Ad2c54c' as Address,
-    USDT: '0x25cD2009096f95a1d5C6db2aB2De318498B9A446' as Address,
-    USDC: '0xade65A4733B7Afbc641e50795196c23717B3DaC3' as Address,
-    NST: '0x923a101716680B6Ed6AA5C7287bF6D64a0194CC7' as Address,
+    NST_FINANCE: '0x2025cF1312D5692E77FcF8bb5ffAE6621C106E39' as Address,
+    USDT: '0xaB8729c64385E202750c1A08Ac25cA3410E5201d' as Address,
+    USDC: '0x1e7FC218ef637705Ec3aFfEDee9C6CfE31368CBf' as Address,
+    NST: '0x73E3ef5e243133dfd14E4dAc31bdF7c8a36eE7Bc' as Address,
   },
   BSC_MAINNET: {
     NST_FINANCE: '0x1234567890123456789012345678901234567890' as Address, // Update when deployed

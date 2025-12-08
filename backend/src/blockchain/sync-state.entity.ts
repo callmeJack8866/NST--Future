@@ -8,6 +8,12 @@ export class SyncState {
   @Column({ type: 'bigint' })
   lastSyncedBlock: string;
 
+  @Column({ type: 'bigint', nullable: true })
+  lastCatchupBlock: string | null;
+
+  @Column({ type: 'boolean', default: false })
+  isCatchingUp: boolean;
+
   @Column({ type: 'int' })
   chainId: number;
 

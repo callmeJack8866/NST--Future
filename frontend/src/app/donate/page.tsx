@@ -14,7 +14,8 @@ import { useLanguage } from "@/contexts/language-context"
 import { MIN_DONATION, SUPPORTED_TOKENS, AUTO_UPGRADE_THRESHOLD } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import { useDonate, DonationStep } from "@/hooks/useDonate"
-import { useUserInfo, useTokenBalances, useAutoNodeEligibility } from "@/hooks/useUserInfo"
+import { useTokenBalances } from "@/hooks/useUserInfo"
+import { useUserInfoApi, useUserDonations, useAutoNodeEligibilityApi } from "@/hooks/useApi"
 import { getContracts } from "@/lib/contracts/config"
 import {
   Heart,
@@ -50,11 +51,12 @@ export default function DonatePage() {
   const [selectedToken, setSelectedToken] = useState("USDT")
   const [amount, setAmount] = useState("")
   
-  // Hooks
+  // Hooks - use API hooks for user data from backend
   const { donate, step, error, txHash, isLoading, reset } = useDonate()
-  const { userInfo, isLoading: isLoadingUser, refetch: refetchUser } = useUserInfo()
+  const { userInfo, isLoading: isLoadingUser, refetch: refetchUser } = useUserInfoApi()
   const { balances, getBalance, isLoading: isLoadingBalances, refetch: refetchBalances } = useTokenBalances()
-  const { isEligible: isEligibleForAutoNode } = useAutoNodeEligibility()
+  const { isEligible: isEligibleForAutoNode } = useAutoNodeEligibilityApi()
+  const { donations: donationHistory, isLoading: isLoadingDonations, refetch: refetchDonations } = useUserDonations(10)
   
   const contracts = getContracts(chainId ?? 97)
   const explorerUrl = getExplorerUrl(chainId ?? 97)
@@ -91,6 +93,7 @@ export default function DonatePage() {
       setTimeout(() => {
         refetchUser()
         refetchBalances()
+        refetchDonations()
       }, 2000)
     }
   }
@@ -337,19 +340,71 @@ export default function DonatePage() {
                 </CardContent>
               </Card>
 
-              {/* Recent Activity placeholder - In production, this would fetch from blockchain events */}
+              {/* Donation History */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-muted-foreground" />
-                    {t("donate.yourDonationHistory")}
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-muted-foreground" />
+                      {t("donate.yourDonationHistory")}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => refetchDonations()}
+                      disabled={isLoadingDonations}
+                    >
+                      <RefreshCw className={cn("w-4 h-4", isLoadingDonations && "animate-spin")} />
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p className="text-sm">Donation history will be loaded from blockchain events.</p>
-                    <p className="text-xs mt-2">Your total donations: ${userInfo?.totalDonationUSD.toLocaleString() ?? "0"}</p>
-                  </div>
+                  {isLoadingDonations ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  ) : donationHistory.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p className="text-sm">No donations yet.</p>
+                      <p className="text-xs mt-2">Make your first donation to support the project!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {donationHistory.map((donation) => (
+                        <div
+                          key={donation.id}
+                          className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-full bg-primary/10">
+                              <Heart className="w-4 h-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">
+                                ${donation.usdValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {donation.tokenSymbol} • {new Date(donation.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <a
+                            href={`${explorerUrl}/tx/${donation.txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </div>
+                      ))}
+                      {donationHistory.length > 0 && (
+                        <p className="text-center text-xs text-muted-foreground pt-2">
+                          Total donated: ${userInfo?.totalDonationUSD.toLocaleString() ?? "0"}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

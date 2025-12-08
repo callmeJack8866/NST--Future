@@ -3,11 +3,20 @@ import { ConfigService } from '@nestjs/config';
 import { ethers, Contract, Provider, Log, EventLog } from 'ethers';
 import NST_FINANCE_ABI from './abi/nst-finance.json';
 
+// Result type for queryEvents with retry
+export interface QueryEventsResult {
+  events: (Log | EventLog)[];
+  skippedDueToPruning: boolean;
+}
+
 @Injectable()
 export class BlockchainService implements OnModuleInit {
   private readonly logger = new Logger(BlockchainService.name);
   private provider: Provider;
   private contract: Contract;
+
+  private readonly MAX_RETRIES = 3;
+  private readonly RETRY_DELAY_MS = 2000;
 
   constructor(private configService: ConfigService) {}
 
@@ -39,6 +48,9 @@ export class BlockchainService implements OnModuleInit {
     return block?.timestamp || 0;
   }
 
+  /**
+   * Query events (simple version without retry)
+   */
   async queryEvents(
     eventName: string,
     fromBlock: number,
@@ -46,6 +58,63 @@ export class BlockchainService implements OnModuleInit {
   ): Promise<(Log | EventLog)[]> {
     const filter = this.contract.filters[eventName]();
     return this.contract.queryFilter(filter, fromBlock, toBlock);
+  }
+
+  /**
+   * Query events with retry logic and pruned block handling
+   */
+  async queryEventsWithRetry(
+    eventName: string,
+    fromBlock: number,
+    toBlock: number,
+    retries = 0,
+  ): Promise<QueryEventsResult> {
+    try {
+      const filter = this.contract.filters[eventName]();
+      const events = await this.contract.queryFilter(filter, fromBlock, toBlock);
+      return { events, skippedDueToPruning: false };
+    } catch (error: any) {
+      // Check if it's a pruned block error
+      if (this.isPrunedBlockError(error)) {
+        this.logger.warn(
+          `Blocks ${fromBlock}-${toBlock} are pruned for event ${eventName}, skipping...`,
+        );
+        return { events: [], skippedDueToPruning: true };
+      }
+
+      // Retry on other errors
+      if (retries < this.MAX_RETRIES) {
+        this.logger.warn(
+          `Query failed for ${eventName} (${fromBlock}-${toBlock}), retrying (${retries + 1}/${this.MAX_RETRIES})...`,
+        );
+        await this.delay(this.RETRY_DELAY_MS * (retries + 1));
+        return this.queryEventsWithRetry(eventName, fromBlock, toBlock, retries + 1);
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * Check if an error is due to pruned block data
+   */
+  isPrunedBlockError(error: any): boolean {
+    const errorMessage = error?.message || error?.error?.message || '';
+    const errorCode = error?.error?.code || error?.code;
+    
+    return (
+      errorMessage.toLowerCase().includes('pruned') ||
+      errorMessage.includes('-32701') ||
+      errorCode === -32701 ||
+      errorMessage.includes('could not coalesce error')
+    );
+  }
+
+  /**
+   * Delay helper for retry logic
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   // Parse event data helpers

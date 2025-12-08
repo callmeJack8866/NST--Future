@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlockchainService } from './blockchain.service';
 import { IndexerService } from './indexer.service';
+import { SyncStateManagerService } from './services/sync-state-manager.service';
+import { BlockchainEventPollerService } from './services/blockchain-event-poller.service';
 import { SyncState } from './sync-state.entity';
 import { User } from '../users/entities/user.entity';
 import { Donation } from '../donations/entities/donation.entity';
@@ -26,7 +28,12 @@ import { AirdropRound } from '../airdrops/entities/airdrop-round.entity';
       AirdropRound,
     ]),
   ],
-  providers: [BlockchainService, IndexerService],
-  exports: [BlockchainService],
+  providers: [
+    BlockchainService,
+    SyncStateManagerService,
+    BlockchainEventPollerService,
+    IndexerService,
+  ],
+  exports: [BlockchainService, IndexerService],
 })
 export class BlockchainModule {}

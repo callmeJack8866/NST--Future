@@ -1,11 +1,11 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventLog } from 'ethers';
 import { BlockchainService } from './blockchain.service';
-import { SyncState } from './sync-state.entity';
+import { SyncStateManagerService } from './services/sync-state-manager.service';
+import { BlockchainEventPollerService, EventBatchResult } from './services/blockchain-event-poller.service';
 import { User } from '../users/entities/user.entity';
 import { Donation, DonationSource } from '../donations/entities/donation.entity';
 import { Node, NodeType } from '../nodes/entities/node.entity';
@@ -16,17 +16,42 @@ import { LeaderboardSnapshot } from '../leaderboard/entities/leaderboard-snapsho
 import { AirdropRound } from '../airdrops/entities/airdrop-round.entity';
 
 @Injectable()
-export class IndexerService implements OnModuleInit {
+export class IndexerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(IndexerService.name);
-  private isIndexing = false;
-  private readonly SYNC_KEY = 'nst_finance_events';
+  
+  private pollingInterval: NodeJS.Timeout | null = null;
+  private syncStateInterval: NodeJS.Timeout | null = null;
+  
+  private isProcessing = false;
+  private isInitialized = false;
+  private prunedBlocksSkipped = 0;
+
+  private readonly POLLING_INTERVAL_MS = 15000;
+  private readonly SYNC_STATE_SAVE_INTERVAL_MS = 5000;
+
+  // All event types to index
+  private readonly EVENT_NAMES = [
+    'UserRegistered',
+    'DonationReceived',
+    'NodePurchased',
+    'AutoNodeGranted',
+    'NodeReferralReward',
+    'DonationReferralReward',
+    'FreeNodeGranted',
+    'PointsEarned',
+    'NSTClaimed',
+    'SnapshotTaken',
+    'AirdropRoundCreated',
+    'AirdropClaimed',
+    'TeamNodeAllocated',
+  ];
 
   constructor(
     private configService: ConfigService,
     private blockchainService: BlockchainService,
+    private syncStateManager: SyncStateManagerService,
+    private eventPoller: BlockchainEventPollerService,
     private dataSource: DataSource,
-    @InjectRepository(SyncState)
-    private syncStateRepo: Repository<SyncState>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
     @InjectRepository(Donation)
@@ -46,497 +71,497 @@ export class IndexerService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    // Initialize sync state if not exists
-    const syncState = await this.syncStateRepo.findOne({
-      where: { key: this.SYNC_KEY },
-    });
-
-    if (!syncState) {
-      const startBlock = this.configService.get<number>('blockchain.startBlock');
-      await this.syncStateRepo.save({
-        key: this.SYNC_KEY,
-        lastSyncedBlock: startBlock?.toString() || '0',
-        chainId: this.configService.get<number>('blockchain.chainId'),
-      });
-    }
-
-    // Start initial indexing
-    this.startIndexing();
+    await this.initialize();
+    await this.startListening();
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async handleCron() {
-    await this.startIndexing();
+  async onModuleDestroy() {
+    this.stopListening();
+    await this.syncStateManager.save();
   }
 
-  async startIndexing() {
-    if (this.isIndexing) return;
-    this.isIndexing = true;
-
+  private async initialize() {
     try {
-      await this.indexEvents();
+      await this.syncStateManager.initialize();
+      this.isInitialized = true;
+      this.logger.log(`Initialized at block ${this.syncStateManager.getLastProcessedBlock()}`);
     } catch (error) {
-      this.logger.error('Indexing error:', error);
-    } finally {
-      this.isIndexing = false;
+      this.logger.error('Failed to initialize:', error);
+      throw error;
     }
   }
 
-  private async indexEvents() {
-    const syncState = await this.syncStateRepo.findOne({
-      where: { key: this.SYNC_KEY },
-    });
+  isReady(): boolean {
+    return this.isInitialized;
+  }
 
-    const fromBlock = parseInt(syncState?.lastSyncedBlock || '0') + 1;
+  private async startListening() {
+    this.logger.log('Starting event listener...');
+
     const currentBlock = await this.blockchainService.getCurrentBlockNumber();
-    const batchSize = this.configService.get<number>('blockchain.batchSize') || 1000;
+    const lastBlock = this.syncStateManager.getLastProcessedBlock();
 
-    if (fromBlock > currentBlock) return;
+    // Start periodic sync state saving
+    this.syncStateInterval = setInterval(
+      () => this.syncStateManager.save(),
+      this.SYNC_STATE_SAVE_INTERVAL_MS,
+    );
 
-    const toBlock = Math.min(fromBlock + batchSize - 1, currentBlock);
+    // Catch up on missed events (runs in background)
+    if (currentBlock > lastBlock) {
+      this.catchUpOnMissedEvents(lastBlock + 1, currentBlock);
+    }
 
-    this.logger.debug(`Indexing blocks ${fromBlock} to ${toBlock}`);
+    // Start polling for new events
+    this.setupPolling();
+    this.logger.log('Event listener active');
+  }
 
-    // Index all event types
-    await this.indexUserRegistered(fromBlock, toBlock);
-    await this.indexDonationReceived(fromBlock, toBlock);
-    await this.indexNodePurchased(fromBlock, toBlock);
-    await this.indexAutoNodeGranted(fromBlock, toBlock);
-    await this.indexNodeReferralReward(fromBlock, toBlock);
-    await this.indexDonationReferralReward(fromBlock, toBlock);
-    await this.indexFreeNodeGranted(fromBlock, toBlock);
-    await this.indexPointsEarned(fromBlock, toBlock);
-    await this.indexNSTClaimed(fromBlock, toBlock);
-    await this.indexSnapshotTaken(fromBlock, toBlock);
-    await this.indexAirdropRoundCreated(fromBlock, toBlock);
-    await this.indexAirdropClaimed(fromBlock, toBlock);
-    await this.indexTeamNodeAllocated(fromBlock, toBlock);
+  private setupPolling() {
+    this.logger.log(`Polling every ${this.POLLING_INTERVAL_MS}ms`);
+    
+    this.pollingInterval = setInterval(async () => {
+      if (this.isProcessing) return;
+      
+      try {
+        this.isProcessing = true;
+        await this.pollForNewEvents();
+      } catch (error) {
+        this.logger.error('Polling error:', error);
+      } finally {
+        this.isProcessing = false;
+      }
+    }, this.POLLING_INTERVAL_MS);
+  }
+
+  private async pollForNewEvents() {
+    const { results, newBlock, allPruned, anyPruned } = await this.eventPoller.pollNewEvents(
+      this.EVENT_NAMES,
+      this.syncStateManager.getLastProcessedBlock() + 1,
+    );
+
+    if (results.length === 0) return;
+
+    // Process all events
+    await this.processEventResults(results);
+
+    // Log pruning status
+    if (allPruned) {
+      this.prunedBlocksSkipped += (newBlock - this.syncStateManager.getLastProcessedBlock());
+      this.logger.warn(`Batch fully pruned. Total pruned blocks: ${this.prunedBlocksSkipped}`);
+    } else if (anyPruned) {
+      this.logger.warn('Some events in batch were pruned');
+    }
 
     // Update sync state
-    await this.syncStateRepo.update(
-      { key: this.SYNC_KEY },
-      { lastSyncedBlock: toBlock.toString() },
-    );
+    this.syncStateManager.setLastProcessedBlock(newBlock);
+    await this.syncStateManager.save();
   }
 
-  private async indexUserRegistered(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'UserRegistered',
-      fromBlock,
-      toBlock,
-    );
+  private async catchUpOnMissedEvents(fromBlock: number, toBlock: number) {
+    this.syncStateManager.setCatchingUp(true);
+    await this.syncStateManager.save();
 
-    for (const event of events) {
-      const data = this.blockchainService.parseUserRegistered(event as EventLog);
-      
-      await this.dataSource.transaction(async (manager) => {
-        // Create or get user
-        let user = await manager.findOne(User, {
-          where: { address: data.user.toLowerCase() },
-        });
-
-        if (!user) {
-          user = manager.create(User, {
-            address: data.user.toLowerCase(),
-            referrerAddress: data.referrer !== '0x0000000000000000000000000000000000000000'
-              ? data.referrer.toLowerCase()
-              : null,
-          });
-          await manager.save(user);
-        }
-
-        // Create referral record if referrer exists
-        if (data.referrer !== '0x0000000000000000000000000000000000000000') {
-          const existingReferral = await manager.findOne(Referral, {
-            where: { refereeAddress: data.user.toLowerCase() },
-          });
-
-          if (!existingReferral) {
-            const referral = manager.create(Referral, {
-              referrerAddress: data.referrer.toLowerCase(),
-              refereeAddress: data.user.toLowerCase(),
-              txHash: data.txHash,
-              blockNumber: data.blockNumber,
-            });
-            await manager.save(referral);
-          }
-        }
-      });
+    try {
+      await this.eventPoller.catchUp(
+        this.EVENT_NAMES,
+        fromBlock,
+        toBlock,
+        async (block, results) => {
+          // Process events from this batch
+          await this.processEventResults(results);
+          // Update progress
+          await this.syncStateManager.updateCatchupProgress(block);
+        },
+      );
+    } catch (error) {
+      this.logger.error('Catch-up failed:', error);
+    } finally {
+      this.syncStateManager.setCatchingUp(false);
+      await this.syncStateManager.save();
     }
   }
 
-  private async indexDonationReceived(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'DonationReceived',
-      fromBlock,
-      toBlock,
-    );
+  /**
+   * Process all event results from a batch
+   */
+  private async processEventResults(results: EventBatchResult[]): Promise<void> {
+    for (const result of results) {
+      if (result.skippedDueToPruning || result.events.length === 0) {
+        continue;
+      }
 
-    for (const event of events) {
-      const data = this.blockchainService.parseDonationReceived(event as EventLog);
+      for (const event of result.events) {
+        await this.handleEvent(result.eventName, event as EventLog);
+      }
+    }
+  }
 
-      // Check if donation already exists
-      const existingDonation = await this.donationRepo.findOne({
-        where: { txHash: data.txHash },
+  /**
+   * Route events to their handlers
+   */
+  private async handleEvent(eventName: string, event: EventLog): Promise<void> {
+    try {
+      switch (eventName) {
+        case 'UserRegistered':
+          await this.handleUserRegistered(event);
+          break;
+        case 'DonationReceived':
+          await this.handleDonationReceived(event);
+          break;
+        case 'NodePurchased':
+          await this.handleNodePurchased(event);
+          break;
+        case 'AutoNodeGranted':
+          await this.handleAutoNodeGranted(event);
+          break;
+        case 'NodeReferralReward':
+          await this.handleNodeReferralReward(event);
+          break;
+        case 'DonationReferralReward':
+          await this.handleDonationReferralReward(event);
+          break;
+        case 'FreeNodeGranted':
+          await this.handleFreeNodeGranted(event);
+          break;
+        case 'PointsEarned':
+          await this.handlePointsEarned(event);
+          break;
+        case 'NSTClaimed':
+          await this.handleNSTClaimed(event);
+          break;
+        case 'SnapshotTaken':
+          await this.handleSnapshotTaken(event);
+          break;
+        case 'AirdropRoundCreated':
+          await this.handleAirdropRoundCreated(event);
+          break;
+        case 'AirdropClaimed':
+          await this.handleAirdropClaimed(event);
+          break;
+        case 'TeamNodeAllocated':
+          await this.handleTeamNodeAllocated(event);
+          break;
+      }
+    } catch (error) {
+      this.logger.error(`Error handling ${eventName} event:`, error);
+    }
+  }
+
+  private stopListening() {
+    this.logger.log('Stopping event listener...');
+    if (this.pollingInterval) clearInterval(this.pollingInterval);
+    if (this.syncStateInterval) clearInterval(this.syncStateInterval);
+  }
+
+  async getSyncStatus() {
+    const currentBlock = await this.blockchainService.getCurrentBlockNumber();
+    const status = await this.syncStateManager.getStatus(currentBlock);
+    
+    return {
+      ...status,
+      prunedBlocksSkipped: this.prunedBlocksSkipped,
+      isReady: this.isInitialized,
+    };
+  }
+
+  // ==================== Event Handlers ====================
+
+  private async handleUserRegistered(event: EventLog) {
+    const data = this.blockchainService.parseUserRegistered(event);
+    
+    await this.dataSource.transaction(async (manager) => {
+      let user = await manager.findOne(User, {
+        where: { address: data.user.toLowerCase() },
       });
 
-      if (existingDonation) continue;
-
-      await this.dataSource.transaction(async (manager) => {
-        // Ensure user exists
-        await this.ensureUserExists(manager, data.user.toLowerCase());
-
-        // Get token symbol (map address to symbol)
-        const tokenSymbol = this.getTokenSymbol(data.token);
-
-        // Create donation record
-        const donation = manager.create(Donation, {
-          userAddress: data.user.toLowerCase(),
-          tokenAddress: data.token.toLowerCase(),
-          tokenSymbol,
-          amount: data.amount,
-          usdValue: data.usdValue,
-          txHash: data.txHash,
-          blockNumber: data.blockNumber,
-          chainId: this.configService.get<number>('blockchain.chainId'),
-          source: DonationSource.DONATION,
+      if (!user) {
+        user = manager.create(User, {
+          address: data.user.toLowerCase(),
           referrerAddress: data.referrer !== '0x0000000000000000000000000000000000000000'
             ? data.referrer.toLowerCase()
             : null,
         });
-        await manager.save(donation);
+        await manager.save(user);
+      }
 
-        // Update user stats
-        await manager.increment(
-          User,
-          { address: data.user.toLowerCase() },
-          'totalDonationUSD',
-          parseFloat(data.usdValue) / 1e18,
-        );
-      });
-    }
-  }
-
-  private async indexNodePurchased(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'NodePurchased',
-      fromBlock,
-      toBlock,
-    );
-
-    for (const event of events) {
-      const data = this.blockchainService.parseNodePurchased(event as EventLog);
-
-      await this.dataSource.transaction(async (manager) => {
-        await this.ensureUserExists(manager, data.user.toLowerCase());
-
-        // Create node record
-        const node = manager.create(Node, {
-          userAddress: data.user.toLowerCase(),
-          type: NodeType.PUBLIC,
-          count: data.count,
-          costUSD: data.totalCost,
-          txHash: data.txHash,
-          blockNumber: data.blockNumber,
+      if (data.referrer !== '0x0000000000000000000000000000000000000000') {
+        const existingReferral = await manager.findOne(Referral, {
+          where: { refereeAddress: data.user.toLowerCase() },
         });
-        await manager.save(node);
 
-        // Update user node count
-        await manager.increment(
-          User,
-          { address: data.user.toLowerCase() },
-          'nodeCount',
-          data.count,
-        );
-      });
-    }
+        if (!existingReferral) {
+          const referral = manager.create(Referral, {
+            referrerAddress: data.referrer.toLowerCase(),
+            refereeAddress: data.user.toLowerCase(),
+            txHash: data.txHash,
+            blockNumber: data.blockNumber,
+          });
+          await manager.save(referral);
+        }
+      }
+    });
   }
 
-  private async indexAutoNodeGranted(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'AutoNodeGranted',
-      fromBlock,
-      toBlock,
-    );
+  private async handleDonationReceived(event: EventLog) {
+    const data = this.blockchainService.parseDonationReceived(event);
 
-    for (const event of events) {
-      const data = this.blockchainService.parseAutoNodeGranted(event as EventLog);
+    const existingDonation = await this.donationRepo.findOne({
+      where: { txHash: data.txHash },
+    });
 
-      await this.dataSource.transaction(async (manager) => {
-        // Create auto node record
-        const node = manager.create(Node, {
-          userAddress: data.user.toLowerCase(),
-          type: NodeType.AUTO,
-          count: 1,
-          costUSD: '0',
-          txHash: data.txHash,
-          blockNumber: data.blockNumber,
-        });
-        await manager.save(node);
+    if (existingDonation) return;
 
-        // Update user
-        await manager.update(
-          User,
-          { address: data.user.toLowerCase() },
-          { hasAutoNode: true },
-        );
-        await manager.increment(
-          User,
-          { address: data.user.toLowerCase() },
-          'nodeCount',
-          1,
-        );
+    await this.dataSource.transaction(async (manager) => {
+      await this.ensureUserExists(manager, data.user.toLowerCase());
+
+      const tokenSymbol = this.getTokenSymbol(data.token);
+
+      const donation = manager.create(Donation, {
+        userAddress: data.user.toLowerCase(),
+        tokenAddress: data.token.toLowerCase(),
+        tokenSymbol,
+        amount: data.amount,
+        usdValue: data.usdValue,
+        txHash: data.txHash,
+        blockNumber: data.blockNumber,
+        chainId: this.configService.get<number>('blockchain.chainId'),
+        source: DonationSource.DONATION,
+        referrerAddress: data.referrer !== '0x0000000000000000000000000000000000000000'
+          ? data.referrer.toLowerCase()
+          : null,
       });
-    }
+      await manager.save(donation);
+
+      await manager.increment(
+        User,
+        { address: data.user.toLowerCase() },
+        'totalDonationUSD',
+        parseFloat(data.usdValue) / 1e18,
+      );
+    });
   }
 
-  private async indexNodeReferralReward(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'NodeReferralReward',
-      fromBlock,
-      toBlock,
-    );
+  private async handleNodePurchased(event: EventLog) {
+    const data = this.blockchainService.parseNodePurchased(event);
 
-    for (const event of events) {
-      const data = this.blockchainService.parseNodeReferralReward(event as EventLog);
+    await this.dataSource.transaction(async (manager) => {
+      await this.ensureUserExists(manager, data.user.toLowerCase());
 
-      await this.dataSource.transaction(async (manager) => {
-        // Create reward record
-        const reward = manager.create(NstReward, {
-          userAddress: data.referrer.toLowerCase(),
-          amount: data.reward,
-          source: RewardSource.NODE_REFERRAL,
-          sourceAddress: data.referee.toLowerCase(),
-          txHash: data.txHash,
-          blockNumber: data.blockNumber,
-        });
-        await manager.save(reward);
-
-        // Update referrer stats
-        await manager.increment(
-          User,
-          { address: data.referrer.toLowerCase() },
-          'directNodeCount',
-          1,
-        );
-      });
-    }
-  }
-
-  private async indexDonationReferralReward(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'DonationReferralReward',
-      fromBlock,
-      toBlock,
-    );
-
-    for (const event of events) {
-      const data = this.blockchainService.parseDonationReferralReward(event as EventLog);
-
-      const reward = this.nstRewardRepo.create({
-        userAddress: data.referrer.toLowerCase(),
-        amount: data.reward,
-        source: RewardSource.DONATION_REFERRAL,
+      const node = manager.create(Node, {
+        userAddress: data.user.toLowerCase(),
+        type: NodeType.PUBLIC,
+        count: data.count,
+        costUSD: data.totalCost,
         txHash: data.txHash,
         blockNumber: data.blockNumber,
       });
-      await this.nstRewardRepo.save(reward);
-    }
-  }
+      await manager.save(node);
 
-  private async indexFreeNodeGranted(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'FreeNodeGranted',
-      fromBlock,
-      toBlock,
-    );
-
-    for (const event of events) {
-      const data = this.blockchainService.parseFreeNodeGranted(event as EventLog);
-
-      await this.dataSource.transaction(async (manager) => {
-        // Create free node record
-        const node = manager.create(Node, {
-          userAddress: data.referrer.toLowerCase(),
-          type: NodeType.FREE_REFERRAL,
-          count: 1,
-          costUSD: '0',
-          txHash: data.txHash,
-          blockNumber: data.blockNumber,
-        });
-        await manager.save(node);
-
-        // Update user node count
-        await manager.increment(
-          User,
-          { address: data.referrer.toLowerCase() },
-          'nodeCount',
-          1,
-        );
-      });
-    }
-  }
-
-  private async indexPointsEarned(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'PointsEarned',
-      fromBlock,
-      toBlock,
-    );
-
-    for (const event of events) {
-      const data = this.blockchainService.parsePointsEarned(event as EventLog);
-
-      await this.dataSource.transaction(async (manager) => {
-        // Create points history record
-        const pointsHistory = manager.create(PointsHistory, {
-          userAddress: data.user.toLowerCase(),
-          points: data.points,
-          source: data.source === 'donation' ? PointsSource.DONATION : PointsSource.REFERRAL,
-          txHash: data.txHash,
-          blockNumber: data.blockNumber,
-        });
-        await manager.save(pointsHistory);
-
-        // Update user points
-        const user = await manager.findOne(User, {
-          where: { address: data.user.toLowerCase() },
-        });
-        if (user) {
-          const currentPoints = BigInt(user.points || '0');
-          const newPoints = currentPoints + BigInt(data.points);
-          await manager.update(
-            User,
-            { address: data.user.toLowerCase() },
-            { points: newPoints.toString() },
-          );
-        }
-      });
-    }
-  }
-
-  private async indexNSTClaimed(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'NSTClaimed',
-      fromBlock,
-      toBlock,
-    );
-
-    for (const event of events) {
-      const data = this.blockchainService.parseNSTClaimed(event as EventLog);
-
-      await this.userRepo.update(
+      await manager.increment(
+        User,
         { address: data.user.toLowerCase() },
-        { nstReward: '0' },
+        'nodeCount',
+        data.count,
       );
-    }
+    });
   }
 
-  private async indexSnapshotTaken(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'SnapshotTaken',
-      fromBlock,
-      toBlock,
-    );
+  private async handleAutoNodeGranted(event: EventLog) {
+    const data = this.blockchainService.parseAutoNodeGranted(event);
 
-    for (const event of events) {
-      const data = this.blockchainService.parseSnapshotTaken(event as EventLog);
-      this.logger.log(`Snapshot taken for round ${data.round}`);
-      // Additional snapshot processing can be added here
-    }
-  }
-
-  private async indexAirdropRoundCreated(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'AirdropRoundCreated',
-      fromBlock,
-      toBlock,
-    );
-
-    for (const event of events) {
-      const data = this.blockchainService.parseAirdropRoundCreated(event as EventLog);
-
-      const existingRound = await this.airdropRoundRepo.findOne({
-        where: { round: data.round },
+    await this.dataSource.transaction(async (manager) => {
+      const node = manager.create(Node, {
+        userAddress: data.user.toLowerCase(),
+        type: NodeType.AUTO,
+        count: 1,
+        costUSD: '0',
+        txHash: data.txHash,
+        blockNumber: data.blockNumber,
       });
+      await manager.save(node);
 
-      if (!existingRound) {
-        const airdropRound = this.airdropRoundRepo.create({
-          round: data.round,
-          airdropAmount: data.airdropAmount,
-          eligibleUsers: [],
-          blockNumber: data.blockNumber,
-        });
-        await this.airdropRoundRepo.save(airdropRound);
-      }
-    }
+      await manager.update(
+        User,
+        { address: data.user.toLowerCase() },
+        { hasAutoNode: true },
+      );
+      await manager.increment(
+        User,
+        { address: data.user.toLowerCase() },
+        'nodeCount',
+        1,
+      );
+    });
   }
 
-  private async indexAirdropClaimed(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'AirdropClaimed',
-      fromBlock,
-      toBlock,
-    );
+  private async handleNodeReferralReward(event: EventLog) {
+    const data = this.blockchainService.parseNodeReferralReward(event);
 
-    for (const event of events) {
-      const data = this.blockchainService.parseAirdropClaimed(event as EventLog);
-
-      const airdropRound = await this.airdropRoundRepo.findOne({
-        where: { round: data.round },
+    await this.dataSource.transaction(async (manager) => {
+      const reward = manager.create(NstReward, {
+        userAddress: data.referrer.toLowerCase(),
+        amount: data.reward,
+        source: RewardSource.NODE_REFERRAL,
+        sourceAddress: data.referee.toLowerCase(),
+        txHash: data.txHash,
+        blockNumber: data.blockNumber,
       });
+      await manager.save(reward);
 
-      if (airdropRound) {
-        airdropRound.claimedUsers.push(data.user.toLowerCase());
-        await this.airdropRoundRepo.save(airdropRound);
-      }
-    }
+      await manager.increment(
+        User,
+        { address: data.referrer.toLowerCase() },
+        'directNodeCount',
+        1,
+      );
+    });
   }
 
-  private async indexTeamNodeAllocated(fromBlock: number, toBlock: number) {
-    const events = await this.blockchainService.queryEvents(
-      'TeamNodeAllocated',
-      fromBlock,
-      toBlock,
-    );
+  private async handleDonationReferralReward(event: EventLog) {
+    const data = this.blockchainService.parseDonationReferralReward(event);
 
-    for (const event of events) {
-      const data = this.blockchainService.parseTeamNodeAllocated(event as EventLog);
+    const reward = this.nstRewardRepo.create({
+      userAddress: data.referrer.toLowerCase(),
+      amount: data.reward,
+      source: RewardSource.DONATION_REFERRAL,
+      txHash: data.txHash,
+      blockNumber: data.blockNumber,
+    });
+    await this.nstRewardRepo.save(reward);
+  }
 
-      await this.dataSource.transaction(async (manager) => {
-        await this.ensureUserExists(manager, data.teamMember.toLowerCase());
+  private async handleFreeNodeGranted(event: EventLog) {
+    const data = this.blockchainService.parseFreeNodeGranted(event);
 
-        // Create team node record
-        const node = manager.create(Node, {
-          userAddress: data.teamMember.toLowerCase(),
-          type: NodeType.TEAM,
-          count: data.count,
-          costUSD: '0',
-          txHash: data.txHash,
-          blockNumber: data.blockNumber,
-        });
-        await manager.save(node);
+    await this.dataSource.transaction(async (manager) => {
+      const node = manager.create(Node, {
+        userAddress: data.referrer.toLowerCase(),
+        type: NodeType.FREE_REFERRAL,
+        count: 1,
+        costUSD: '0',
+        txHash: data.txHash,
+        blockNumber: data.blockNumber,
+      });
+      await manager.save(node);
 
-        // Update user
+      await manager.increment(
+        User,
+        { address: data.referrer.toLowerCase() },
+        'nodeCount',
+        1,
+      );
+    });
+  }
+
+  private async handlePointsEarned(event: EventLog) {
+    const data = this.blockchainService.parsePointsEarned(event);
+
+    await this.dataSource.transaction(async (manager) => {
+      const pointsHistory = manager.create(PointsHistory, {
+        userAddress: data.user.toLowerCase(),
+        points: data.points,
+        source: data.source === 'donation' ? PointsSource.DONATION : PointsSource.REFERRAL,
+        txHash: data.txHash,
+        blockNumber: data.blockNumber,
+      });
+      await manager.save(pointsHistory);
+
+      const user = await manager.findOne(User, {
+        where: { address: data.user.toLowerCase() },
+      });
+      if (user) {
+        const currentPoints = BigInt(user.points || '0');
+        const newPoints = currentPoints + BigInt(data.points);
         await manager.update(
           User,
-          { address: data.teamMember.toLowerCase() },
-          {
-            isTeamMember: true,
-            teamNodeUnlockTime: data.unlockTime,
-          },
+          { address: data.user.toLowerCase() },
+          { points: newPoints.toString() },
         );
-        await manager.increment(
-          User,
-          { address: data.teamMember.toLowerCase() },
-          'teamNodeCount',
-          data.count,
-        );
+      }
+    });
+  }
+
+  private async handleNSTClaimed(event: EventLog) {
+    const data = this.blockchainService.parseNSTClaimed(event);
+
+    await this.userRepo.update(
+      { address: data.user.toLowerCase() },
+      { nstReward: '0' },
+    );
+  }
+
+  private async handleSnapshotTaken(event: EventLog) {
+    const data = this.blockchainService.parseSnapshotTaken(event);
+    this.logger.log(`Snapshot taken for round ${data.round}`);
+  }
+
+  private async handleAirdropRoundCreated(event: EventLog) {
+    const data = this.blockchainService.parseAirdropRoundCreated(event);
+
+    const existingRound = await this.airdropRoundRepo.findOne({
+      where: { round: data.round },
+    });
+
+    if (!existingRound) {
+      const airdropRound = this.airdropRoundRepo.create({
+        round: data.round,
+        airdropAmount: data.airdropAmount,
+        eligibleUsers: [],
+        blockNumber: data.blockNumber,
       });
+      await this.airdropRoundRepo.save(airdropRound);
     }
   }
 
-  // Helper methods
+  private async handleAirdropClaimed(event: EventLog) {
+    const data = this.blockchainService.parseAirdropClaimed(event);
+
+    const airdropRound = await this.airdropRoundRepo.findOne({
+      where: { round: data.round },
+    });
+
+    if (airdropRound) {
+      airdropRound.claimedUsers.push(data.user.toLowerCase());
+      await this.airdropRoundRepo.save(airdropRound);
+    }
+  }
+
+  private async handleTeamNodeAllocated(event: EventLog) {
+    const data = this.blockchainService.parseTeamNodeAllocated(event);
+
+    await this.dataSource.transaction(async (manager) => {
+      await this.ensureUserExists(manager, data.teamMember.toLowerCase());
+
+      const node = manager.create(Node, {
+        userAddress: data.teamMember.toLowerCase(),
+        type: NodeType.TEAM,
+        count: data.count,
+        costUSD: '0',
+        txHash: data.txHash,
+        blockNumber: data.blockNumber,
+      });
+      await manager.save(node);
+
+      await manager.update(
+        User,
+        { address: data.teamMember.toLowerCase() },
+        {
+          isTeamMember: true,
+          teamNodeUnlockTime: data.unlockTime,
+        },
+      );
+      await manager.increment(
+        User,
+        { address: data.teamMember.toLowerCase() },
+        'teamNodeCount',
+        data.count,
+      );
+    });
+  }
+
+  // ==================== Helper Methods ====================
+
   private async ensureUserExists(manager: any, address: string) {
     let user = await manager.findOne(User, { where: { address } });
     if (!user) {

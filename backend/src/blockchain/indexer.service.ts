@@ -317,12 +317,17 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
 
       const tokenSymbol = this.getTokenSymbol(data.token);
 
+      // Convert raw blockchain values (18 decimals) to human-readable format
+      // to avoid numeric field overflow in decimal(36,18) columns
+      const amountHuman = (parseFloat(data.amount) / 1e18).toString();
+      const usdValueHuman = (parseFloat(data.usdValue) / 1e18).toString();
+
       const donation = manager.create(Donation, {
         userAddress: data.user.toLowerCase(),
         tokenAddress: data.token.toLowerCase(),
         tokenSymbol,
-        amount: data.amount,
-        usdValue: data.usdValue,
+        amount: amountHuman,
+        usdValue: usdValueHuman,
         txHash: data.txHash,
         blockNumber: data.blockNumber,
         chainId: this.configService.get<number>('blockchain.chainId'),
@@ -337,7 +342,7 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
         User,
         { address: data.user.toLowerCase() },
         'totalDonationUSD',
-        parseFloat(data.usdValue) / 1e18,
+        parseFloat(usdValueHuman),
       );
     });
   }
@@ -348,11 +353,14 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
     await this.dataSource.transaction(async (manager) => {
       await this.ensureUserExists(manager, data.user.toLowerCase());
 
+      // Convert raw blockchain value (18 decimals) to human-readable format
+      const costUSDHuman = (parseFloat(data.totalCost) / 1e18).toString();
+
       const node = manager.create(Node, {
         userAddress: data.user.toLowerCase(),
         type: NodeType.PUBLIC,
         count: data.count,
-        costUSD: data.totalCost,
+        costUSD: costUSDHuman,
         txHash: data.txHash,
         blockNumber: data.blockNumber,
       });
@@ -399,9 +407,12 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
     const data = this.blockchainService.parseNodeReferralReward(event);
 
     await this.dataSource.transaction(async (manager) => {
+      // Convert raw blockchain value (18 decimals) to human-readable format
+      const rewardHuman = (parseFloat(data.reward) / 1e18).toString();
+
       const reward = manager.create(NstReward, {
         userAddress: data.referrer.toLowerCase(),
-        amount: data.reward,
+        amount: rewardHuman,
         source: RewardSource.NODE_REFERRAL,
         sourceAddress: data.referee.toLowerCase(),
         txHash: data.txHash,
@@ -421,9 +432,12 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
   private async handleDonationReferralReward(event: EventLog) {
     const data = this.blockchainService.parseDonationReferralReward(event);
 
+    // Convert raw blockchain value (18 decimals) to human-readable format
+    const rewardHuman = (parseFloat(data.reward) / 1e18).toString();
+
     const reward = this.nstRewardRepo.create({
       userAddress: data.referrer.toLowerCase(),
-      amount: data.reward,
+      amount: rewardHuman,
       source: RewardSource.DONATION_REFERRAL,
       txHash: data.txHash,
       blockNumber: data.blockNumber,
@@ -458,9 +472,12 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
     const data = this.blockchainService.parsePointsEarned(event);
 
     await this.dataSource.transaction(async (manager) => {
+      // Convert raw blockchain value (18 decimals) to human-readable format
+      const pointsHuman = (parseFloat(data.points) / 1e18).toString();
+
       const pointsHistory = manager.create(PointsHistory, {
         userAddress: data.user.toLowerCase(),
-        points: data.points,
+        points: pointsHuman,
         source: data.source === 'donation' ? PointsSource.DONATION : PointsSource.REFERRAL,
         txHash: data.txHash,
         blockNumber: data.blockNumber,
@@ -471,8 +488,8 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
         where: { address: data.user.toLowerCase() },
       });
       if (user) {
-        const currentPoints = BigInt(user.points || '0');
-        const newPoints = currentPoints + BigInt(data.points);
+        const currentPoints = parseFloat(user.points || '0');
+        const newPoints = currentPoints + parseFloat(pointsHuman);
         await manager.update(
           User,
           { address: data.user.toLowerCase() },
@@ -572,8 +589,8 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
   }
 
   private getTokenSymbol(tokenAddress: string): string {
-    const usdtAddress = '0x25cD2009096f95a1d5C6db2aB2De318498B9A446'.toLowerCase();
-    const usdcAddress = '0xade65A4733B7Afbc641e50795196c23717B3DaC3'.toLowerCase();
+    const usdtAddress = this.configService.get<string>('blockchain.usdtAddress')?.toLowerCase();
+    const usdcAddress = this.configService.get<string>('blockchain.usdcAddress')?.toLowerCase();
     
     if (tokenAddress.toLowerCase() === usdtAddress) return 'USDT';
     if (tokenAddress.toLowerCase() === usdcAddress) return 'USDC';

@@ -11,6 +11,9 @@ async function bootstrap() {
   const port = configService.get<number>('port');
   const frontendUrl = configService.get<string>('frontend.url');
 
+  // Set global API prefix
+  app.setGlobalPrefix('api');
+
   // Enable CORS
   app.enableCors({
     origin: [
@@ -46,11 +49,11 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('docs', app, document);
 
   await app.listen(port || 3003);
   console.log(`🚀 NST Finance API running on http://localhost:${port}`);
-  console.log(`📚 Swagger documentation: http://localhost:${port}/api`);
+  console.log(`📚 Swagger documentation: http://localhost:${port}/docs`);
 }
 
 bootstrap();

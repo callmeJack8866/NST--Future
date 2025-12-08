@@ -42,10 +42,10 @@ export class StatsService {
 
     return {
       totalUsers,
-      totalDonationsUSD: (parseFloat(totalDonationsUSD) / 1e18).toFixed(2),
+      totalDonationsUSD: parseFloat(totalDonationsUSD).toFixed(2),
       totalNodesIssued,
       publicNodesRemaining: Math.max(0, publicNodesRemaining),
-      totalPointsDistributed: (parseFloat(totalPointsDistributed) / 1e18).toFixed(2),
+      totalPointsDistributed: parseFloat(totalPointsDistributed).toFixed(2),
     };
   }
 

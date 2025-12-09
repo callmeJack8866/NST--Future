@@ -1,14 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useAccount } from "wagmi"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { GlowButton } from "@/components/ui/glow-button"
-import { ScrollReveal } from "@/components/ui/scroll-reveal"
-import { useWeb3 } from "@/components/providers/web3-provider"
 import { useLanguage } from "@/contexts/language-context"
-import { mockLeaderboardPoints, mockLeaderboardGrowth, mockUserData } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 import {
   Trophy,
@@ -22,28 +22,44 @@ import {
   CheckCircle,
   XCircle,
   Sparkles,
+  Loader2,
+  RefreshCw,
 } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  useUserInfoApi,
+  useLeaderboardPointsApi,
+  useLeaderboardGrowthApi,
+  useUserLeaderboardRank,
+} from "@/hooks/useApi"
 
 export default function LeaderboardPage() {
-  const { isConnected, address, connect } = useWeb3()
+  const { address, isConnected } = useAccount()
   const { t } = useLanguage()
+  const [mounted, setMounted] = useState(false)
   const [isApplying, setIsApplying] = useState(false)
   const [applyResult, setApplyResult] = useState<"success" | "failed" | null>(null)
-  const user = mockUserData
 
-  // Check if user is in top 20
-  const userPointsRank = mockLeaderboardPoints.findIndex((entry) => entry.points <= user.points) + 1
-  const userGrowthRank =
-    mockLeaderboardGrowth.findIndex(
-      (entry) => entry.growth <= 150, // User's mock growth
-    ) + 1
+  // API hooks
+  const { userInfo, isLoading: isLoadingUser } = useUserInfoApi()
+  const { entries: pointsLeaderboard, isLoading: isLoadingPoints, refetch: refetchPoints } = useLeaderboardPointsApi(20)
+  const { entries: growthLeaderboard, isLoading: isLoadingGrowth, refetch: refetchGrowth } = useLeaderboardGrowthApi(20)
+  const { userPointsRank, userGrowthRank, isEligiblePoints, isEligibleGrowth, isEligible } = useUserLeaderboardRank()
 
-  const isEligiblePoints = userPointsRank > 0 && userPointsRank <= 20
-  const isEligibleGrowth = userGrowthRank > 0 && userGrowthRank <= 20
-  const isEligible = isEligiblePoints || isEligibleGrowth
+  const isLoading = isLoadingPoints || isLoadingGrowth
+  const userPoints = userInfo?.points ?? 0
+
+  // Hydration fix
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const refetchAll = () => {
+    refetchPoints()
+    refetchGrowth()
+  }
 
   const handleApplyForAirdrop = async () => {
     setIsApplying(true)
@@ -64,6 +80,24 @@ export default function LeaderboardPage() {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`
   }
 
+  // Loading state during hydration
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="pt-24 pb-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+              <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+              <p className="text-muted-foreground">Loading...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
   if (!isConnected) {
     return (
       <div className="min-h-screen bg-background">
@@ -78,10 +112,7 @@ export default function LeaderboardPage() {
               <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-8">
                 {t("leaderboard.connectMessage")}
               </p>
-              <GlowButton onClick={connect} size="lg">
-                <Wallet className="w-5 h-5 mr-2" />
-                {t("common.connectWallet")}
-              </GlowButton>
+              <ConnectButton />
             </div>
           </div>
         </main>
@@ -96,11 +127,22 @@ export default function LeaderboardPage() {
       <main className="pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("leaderboard.title")}</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              {t("leaderboard.subtitle")}
-            </p>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">{t("leaderboard.title")}</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                {t("leaderboard.subtitle")}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={refetchAll}
+              disabled={isLoading}
+            >
+              <RefreshCw className={cn("w-4 h-4 mr-2", isLoading && "animate-spin")} />
+              Refresh
+            </Button>
           </div>
 
           {/* Your Stats & Airdrop Application */}
@@ -113,32 +155,38 @@ export default function LeaderboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-3 sm:p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0s' }}>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text">{user.points.toLocaleString()}</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">{t("leaderboard.totalPoints")}</p>
+                {isLoadingUser ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   </div>
-                  <div className="p-3 sm:p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.2s' }}>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-bold">
-                      {isEligiblePoints ? (
-                        <span className="text-primary">#{userPointsRank}</span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">{t("leaderboard.pointsRank")}</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="p-3 sm:p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0s' }}>
+                      <p className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text">{Math.round(userPoints).toLocaleString()}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{t("leaderboard.totalPoints")}</p>
+                    </div>
+                    <div className="p-3 sm:p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.2s' }}>
+                      <p className="text-xl sm:text-2xl md:text-3xl font-bold">
+                        {userPointsRank > 0 ? (
+                          <span className={isEligiblePoints ? "text-primary" : "text-muted-foreground"}>#{userPointsRank}</span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{t("leaderboard.pointsRank")}</p>
+                    </div>
+                    <div className="p-3 sm:p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.4s' }}>
+                      <p className="text-xl sm:text-2xl md:text-3xl font-bold">
+                        {userGrowthRank > 0 ? (
+                          <span className={isEligibleGrowth ? "text-primary" : "text-muted-foreground"}>#{userGrowthRank}</span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{t("leaderboard.growthRank")}</p>
+                    </div>
                   </div>
-                  <div className="p-3 sm:p-4 rounded-xl bg-secondary/30 text-center hover-lift animate-float-slow cursor-pointer" style={{ animationDelay: '0.4s' }}>
-                    <p className="text-xl sm:text-2xl md:text-3xl font-bold">
-                      {isEligibleGrowth ? (
-                        <span className="text-primary">#{userGrowthRank}</span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">{t("leaderboard.growthRank")}</p>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
@@ -201,7 +249,7 @@ export default function LeaderboardPage() {
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <Calendar className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <Calendar className="w-5 h-5 text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-sm sm:text-base font-medium">{t("leaderboard.nextSnapshot")}</p>
                     <p className="text-xs sm:text-sm text-muted-foreground">{t("leaderboard.snapshotDate")}</p>
@@ -244,37 +292,55 @@ export default function LeaderboardPage() {
                   <CardDescription className="text-xs sm:text-sm">{t("leaderboard.topByPointsDesc")}</CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12 sm:w-16 whitespace-nowrap">{t("leaderboard.rank")}</TableHead>
-                        <TableHead className="whitespace-nowrap">{t("leaderboard.address")}</TableHead>
-                        <TableHead className="whitespace-nowrap">{t("leaderboard.points")}</TableHead>
-                        <TableHead className="whitespace-nowrap">{t("leaderboard.nodes")}</TableHead>
-                        <TableHead className="text-right whitespace-nowrap">{t("leaderboard.donations")}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mockLeaderboardPoints.map((entry, i) => (
-                        <TableRow
-                          key={entry.address}
-                          className={cn(i < 3 && "bg-primary/5", entry.address === user.address && "bg-accent/10")}
-                        >
-                          <TableCell className="font-medium whitespace-nowrap">{getRankIcon(entry.rank)}</TableCell>
-                          <TableCell className="font-mono text-xs sm:text-sm whitespace-nowrap">{formatAddress(entry.address)}</TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            <span className="font-semibold text-primary">{entry.points.toLocaleString()}</span>
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            <Badge variant="outline" className="glass whitespace-nowrap">
-                              {entry.nodeCount} {t("common.nodes")}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right whitespace-nowrap">${entry.donations.toLocaleString()}</TableCell>
+                  {isLoadingPoints ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                  ) : pointsLeaderboard.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p className="text-sm">No leaderboard data yet.</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12 sm:w-16 whitespace-nowrap">{t("leaderboard.rank")}</TableHead>
+                          <TableHead className="whitespace-nowrap">{t("leaderboard.address")}</TableHead>
+                          <TableHead className="whitespace-nowrap">{t("leaderboard.points")}</TableHead>
+                          <TableHead className="whitespace-nowrap">{t("leaderboard.nodes")}</TableHead>
+                          <TableHead className="text-right whitespace-nowrap">{t("leaderboard.donations")}</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {pointsLeaderboard.map((entry, i) => (
+                          <TableRow
+                            key={entry.address}
+                            className={cn(
+                              i < 3 && "bg-primary/5", 
+                              address && entry.address.toLowerCase() === address.toLowerCase() && "bg-accent/10"
+                            )}
+                          >
+                            <TableCell className="font-medium whitespace-nowrap">{getRankIcon(entry.rank)}</TableCell>
+                            <TableCell className="font-mono text-xs sm:text-sm whitespace-nowrap">
+                              {formatAddress(entry.address)}
+                              {address && entry.address.toLowerCase() === address.toLowerCase() && (
+                                <Badge variant="outline" className="ml-2 text-xs">You</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              <span className="font-semibold text-primary">{Math.round(entry.points).toLocaleString()}</span>
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              <Badge variant="outline" className="glass whitespace-nowrap">
+                                {entry.nodeCount} {t("common.nodes")}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right whitespace-nowrap">${Math.round(entry.donations).toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -289,34 +355,50 @@ export default function LeaderboardPage() {
                   <CardDescription className="text-xs sm:text-sm">{t("leaderboard.topByGrowthDesc")}</CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12 sm:w-16 whitespace-nowrap">{t("leaderboard.rank")}</TableHead>
-                        <TableHead className="whitespace-nowrap">{t("leaderboard.address")}</TableHead>
-                        <TableHead className="whitespace-nowrap">{t("leaderboard.growth")}</TableHead>
-                        <TableHead className="whitespace-nowrap">{t("leaderboard.points")}</TableHead>
-                        <TableHead className="text-right whitespace-nowrap">{t("leaderboard.nodes")}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mockLeaderboardGrowth.map((entry, i) => (
-                        <TableRow key={entry.address} className={cn(i < 3 && "bg-primary/5")}>
-                          <TableCell className="font-medium whitespace-nowrap">{getRankIcon(entry.rank)}</TableCell>
-                          <TableCell className="font-mono text-xs sm:text-sm whitespace-nowrap">{formatAddress(entry.address)}</TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            <span className="font-semibold text-primary">+{entry.growth}%</span>
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">{entry.points.toLocaleString()}</TableCell>
-                          <TableCell className="text-right whitespace-nowrap">
-                            <Badge variant="outline" className="glass whitespace-nowrap">
-                              {entry.nodeCount} {t("common.nodes")}
-                            </Badge>
-                          </TableCell>
+                  {isLoadingGrowth ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                  ) : growthLeaderboard.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p className="text-sm">No growth data yet.</p>
+                      <p className="text-xs mt-1">Growth is calculated after the first snapshot.</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12 sm:w-16 whitespace-nowrap">{t("leaderboard.rank")}</TableHead>
+                          <TableHead className="whitespace-nowrap">{t("leaderboard.address")}</TableHead>
+                          <TableHead className="whitespace-nowrap">{t("leaderboard.growth")}</TableHead>
+                          <TableHead className="whitespace-nowrap">{t("leaderboard.points")}</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {growthLeaderboard.map((entry, i) => (
+                          <TableRow 
+                            key={entry.address} 
+                            className={cn(
+                              i < 3 && "bg-primary/5",
+                              address && entry.address.toLowerCase() === address.toLowerCase() && "bg-accent/10"
+                            )}
+                          >
+                            <TableCell className="font-medium whitespace-nowrap">{getRankIcon(entry.rank)}</TableCell>
+                            <TableCell className="font-mono text-xs sm:text-sm whitespace-nowrap">
+                              {formatAddress(entry.address)}
+                              {address && entry.address.toLowerCase() === address.toLowerCase() && (
+                                <Badge variant="outline" className="ml-2 text-xs">You</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              <span className="font-semibold text-primary">+{entry.growth.toFixed(1)}%</span>
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">{Math.round(entry.points).toLocaleString()}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

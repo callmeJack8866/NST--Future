@@ -207,5 +207,50 @@ export async function getUserReferrer(address: string): Promise<ApiResponse<stri
   return fetchApi<string | null>(`/referrals/user/${address.toLowerCase()}/referrer`)
 }
 
+// Leaderboard API
+export interface LeaderboardPointsEntry {
+  address: string
+  points: string
+  nodeCount: number
+  totalDonationUSD: string
+}
+
+export interface LeaderboardGrowthEntry {
+  address: string
+  points: string
+  lastSnapshotPoints: string
+  growthPercentage: number
+}
+
+export interface LeaderboardDonorsEntry {
+  address: string
+  totalDonationUSD: string
+  nodeCount: number
+  points: string
+}
+
+export interface LeaderboardReferrersEntry {
+  address: string
+  directNodeCount: number
+  directDonationUSD: string
+  nodeCount: number
+}
+
+export async function getLeaderboardPoints(limit = 20): Promise<ApiResponse<LeaderboardPointsEntry[]>> {
+  return fetchApi<LeaderboardPointsEntry[]>(`/leaderboard/points?limit=${limit}`)
+}
+
+export async function getLeaderboardGrowth(limit = 20): Promise<ApiResponse<LeaderboardGrowthEntry[]>> {
+  return fetchApi<LeaderboardGrowthEntry[]>(`/leaderboard/growth?limit=${limit}`)
+}
+
+export async function getLeaderboardDonors(limit = 20): Promise<ApiResponse<LeaderboardDonorsEntry[]>> {
+  return fetchApi<LeaderboardDonorsEntry[]>(`/leaderboard/donors?limit=${limit}`)
+}
+
+export async function getLeaderboardReferrers(limit = 20): Promise<ApiResponse<LeaderboardReferrersEntry[]>> {
+  return fetchApi<LeaderboardReferrersEntry[]>(`/leaderboard/referrers?limit=${limit}`)
+}
+
 export { API_BASE_URL }
 

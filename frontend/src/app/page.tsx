@@ -9,11 +9,15 @@ import { AnimatedCounter } from "@/components/ui/animated-counter"
 import { GlowButton } from "@/components/ui/glow-button"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { useLanguage } from "@/contexts/language-context"
-import { mockGlobalStats } from "@/lib/mock-data"
+import { useGlobalStatsApi } from "@/hooks/useApi"
+import { GLOBAL_NODE_SUPPLY } from "@/lib/constants"
 import { ArrowRight, Shield, Coins, Users, TrendingUp, Zap, Globe, Lock, ChevronRight, Heart } from "lucide-react"
 
 export default function HomePage() {
   const { t } = useLanguage()
+  
+  // Fetch real stats from backend
+  const { globalStats, isLoading: isLoadingStats } = useGlobalStatsApi()
 
   const features = [
     {
@@ -39,10 +43,10 @@ export default function HomePage() {
   ]
 
   const stats = [
-    { labelKey: "stats.totalDonations", value: mockGlobalStats.totalDonations, prefix: "$" },
-    { labelKey: "stats.activeNodes", value: mockGlobalStats.totalNodes, suffix: "/100" },
-    { labelKey: "stats.totalUsers", value: mockGlobalStats.totalUsers },
-    { labelKey: "stats.nstDistributed", value: mockGlobalStats.totalNSTDistributed },
+    { labelKey: "stats.totalDonations", value: Math.round(globalStats?.totalDonationsUSD ?? 0), prefix: "$" },
+    { labelKey: "stats.activeNodes", value: globalStats?.totalNodesIssued ?? 0, suffix: `/${GLOBAL_NODE_SUPPLY}` },
+    { labelKey: "stats.totalUsers", value: globalStats?.totalUsers ?? 0 },
+    { labelKey: "stats.nstDistributed", value: Math.round(globalStats?.totalPointsDistributed ?? 0) },
   ]
 
   return (
@@ -65,47 +69,47 @@ export default function HomePage() {
             <span className="text-sm text-muted-foreground">{t("hero.badge")}</span>
           </div>
 
-          {/* UPDATE: Better responsive sizing for Chinese text */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 leading-tight">
-            <span className="block mb-2">{t("hero.title1")}</span>
-            <span className="gradient-text block leading-tight">{t("hero.title2")}</span>
+          {/* Hero Title - Compact and user-friendly */}
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 leading-snug">
+            <span className="block mb-1">{t("hero.title1")}</span>
+            <span className="gradient-text block text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-snug font-semibold">{t("hero.title2")}</span>
           </h1>
 
-          {/* UPDATE: Better text sizing and spacing for Chinese */}
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200 leading-relaxed px-4">
+          {/* Subtitle - Clean and readable */}
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200 leading-relaxed px-4">
             {t("hero.subtitle")}
           </p>
 
-          {/* UPDATE: Better button spacing on mobile */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 px-4">
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300 px-4">
             <Link href="/dashboard" className="w-full sm:w-auto">
-              <GlowButton size="lg" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 whitespace-nowrap">
-                <Zap className="w-5 h-5 mr-2" />
+              <GlowButton size="default" className="w-full sm:w-auto text-sm sm:text-base px-5 sm:px-6 whitespace-nowrap">
+                <Zap className="w-4 h-4 mr-2" />
                 {t("hero.launchApp")}
               </GlowButton>
             </Link>
             <Link href="/donate" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 glass bg-transparent whitespace-nowrap">
-                <Heart className="w-5 h-5 mr-2" />
+              <Button size="default" variant="outline" className="w-full sm:w-auto text-sm sm:text-base px-5 sm:px-6 glass bg-transparent whitespace-nowrap">
+                <Heart className="w-4 h-4 mr-2" />
                 {t("hero.startDonating")}
               </Button>
             </Link>
           </div>
 
-          {/* Quick Stats - UPDATE: Better mobile layout */}
+          {/* Quick Stats - Compact design */}
           <ScrollReveal delay={0.3}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-20 px-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-12 px-2">
               {stats.map((stat, i) => (
                 <ScrollReveal 
                   key={i}
                   delay={0.4 + i * 0.1}
                   direction="up"
                 >
-                  <div className="glass rounded-xl p-3 sm:p-4 md:p-6 hover-lift animate-float-slow cursor-pointer">
-                    <p className="text-lg sm:text-xl md:text-3xl font-bold gradient-text">
+                  <div className="glass rounded-xl p-3 sm:p-4 hover-lift cursor-pointer">
+                    <p className="text-base sm:text-lg md:text-2xl font-bold gradient-text">
                       <AnimatedCounter value={stat.value} prefix={stat.prefix} suffix={stat.suffix} />
                     </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-tight">{t(stat.labelKey)}</p>
+                    <p className="text-xs text-muted-foreground mt-1 leading-tight">{t(stat.labelKey)}</p>
                   </div>
                 </ScrollReveal>
               ))}
@@ -147,7 +151,7 @@ export default function HomePage() {
                 <Card className="glass hover:glass-strong transition-all duration-300 group cursor-pointer hover-lift h-full">
                   <CardContent className="p-5 sm:p-6 md:p-8 h-full flex flex-col">
                     <div className="flex items-start gap-3 sm:gap-4 flex-1">
-                      <div className="p-2.5 sm:p-3 rounded-xl bg-primary/10 text-primary group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 animate-glow-pulse flex-shrink-0">
+                      <div className="p-2.5 sm:p-3 rounded-xl bg-primary/10 text-primary group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 animate-glow-pulse shrink-0">
                         <feature.icon className="w-5 h-5 sm:w-6 sm:h-6" />
                       </div>
                       <div className="min-w-0 flex-1">

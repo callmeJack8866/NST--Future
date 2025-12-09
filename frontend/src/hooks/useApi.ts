@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useAccount } from "wagmi"
 import {
   getUserDashboard,
@@ -939,6 +939,186 @@ export function useUserReferrerApi() {
     isLoading,
     error,
     refetch: fetchReferrer,
+  }
+}
+
+// ============================================================================
+// Leaderboard Hooks
+// ============================================================================
+
+import {
+  getLeaderboardPoints,
+  getLeaderboardGrowth,
+  getLeaderboardDonors,
+  getLeaderboardReferrers,
+  LeaderboardPointsEntry,
+  LeaderboardGrowthEntry,
+  LeaderboardDonorsEntry,
+  LeaderboardReferrersEntry,
+} from "@/lib/api/client"
+
+export interface LeaderboardEntry {
+  rank: number
+  address: string
+  points: number
+  nodeCount: number
+  donations: number
+}
+
+export interface LeaderboardGrowthItem {
+  rank: number
+  address: string
+  growth: number
+  points: number
+  nodeCount: number
+}
+
+function transformLeaderboardPoints(data: LeaderboardPointsEntry[], userAddress?: string): LeaderboardEntry[] {
+  return data.map((entry, index) => ({
+    rank: index + 1,
+    address: entry.address,
+    points: parseFloat(entry.points) || 0,
+    nodeCount: entry.nodeCount,
+    donations: parseFloat(entry.totalDonationUSD) || 0,
+  }))
+}
+
+function transformLeaderboardGrowth(data: LeaderboardGrowthEntry[]): LeaderboardGrowthItem[] {
+  return data.map((entry, index) => ({
+    rank: index + 1,
+    address: entry.address,
+    growth: entry.growthPercentage || 0,
+    points: parseFloat(entry.points) || 0,
+    nodeCount: 0, // Not provided by growth endpoint
+  }))
+}
+
+/**
+ * Hook to fetch points leaderboard from the backend API
+ */
+export function useLeaderboardPointsApi(limit = 20) {
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchLeaderboard = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getLeaderboardPoints(limit)
+      
+      if (response.error) {
+        setError(response.error)
+        setEntries([])
+      } else if (response.data) {
+        setEntries(transformLeaderboardPoints(response.data))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch leaderboard")
+      setEntries([])
+    } finally {
+      setIsLoading(false)
+    }
+  }, [limit])
+
+  useEffect(() => {
+    fetchLeaderboard()
+  }, [fetchLeaderboard])
+
+  return {
+    entries,
+    isLoading,
+    error,
+    refetch: fetchLeaderboard,
+  }
+}
+
+/**
+ * Hook to fetch growth leaderboard from the backend API
+ */
+export function useLeaderboardGrowthApi(limit = 20) {
+  const [entries, setEntries] = useState<LeaderboardGrowthItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchLeaderboard = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getLeaderboardGrowth(limit)
+      
+      if (response.error) {
+        setError(response.error)
+        setEntries([])
+      } else if (response.data) {
+        setEntries(transformLeaderboardGrowth(response.data))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch leaderboard")
+      setEntries([])
+    } finally {
+      setIsLoading(false)
+    }
+  }, [limit])
+
+  useEffect(() => {
+    fetchLeaderboard()
+  }, [fetchLeaderboard])
+
+  return {
+    entries,
+    isLoading,
+    error,
+    refetch: fetchLeaderboard,
+  }
+}
+
+/**
+ * Hook to get user's rank in the leaderboard
+ */
+export function useUserLeaderboardRank() {
+  const { address, isConnected } = useAccount()
+  const { entries: pointsEntries, isLoading: isLoadingPoints } = useLeaderboardPointsApi(100)
+  const { entries: growthEntries, isLoading: isLoadingGrowth } = useLeaderboardGrowthApi(100)
+
+  const userPointsRank = useMemo(() => {
+    if (!address || !isConnected || pointsEntries.length === 0) return 0
+    const index = pointsEntries.findIndex(
+      (entry) => entry.address.toLowerCase() === address.toLowerCase()
+    )
+    return index >= 0 ? index + 1 : 0
+  }, [address, isConnected, pointsEntries])
+
+  const userGrowthRank = useMemo(() => {
+    if (!address || !isConnected || growthEntries.length === 0) return 0
+    const index = growthEntries.findIndex(
+      (entry) => entry.address.toLowerCase() === address.toLowerCase()
+    )
+    return index >= 0 ? index + 1 : 0
+  }, [address, isConnected, growthEntries])
+
+  const userPoints = useMemo(() => {
+    if (!address || !isConnected || pointsEntries.length === 0) return 0
+    const entry = pointsEntries.find(
+      (entry) => entry.address.toLowerCase() === address.toLowerCase()
+    )
+    return entry?.points ?? 0
+  }, [address, isConnected, pointsEntries])
+
+  const isEligiblePoints = userPointsRank > 0 && userPointsRank <= 20
+  const isEligibleGrowth = userGrowthRank > 0 && userGrowthRank <= 20
+  const isEligible = isEligiblePoints || isEligibleGrowth
+
+  return {
+    userPointsRank,
+    userGrowthRank,
+    userPoints,
+    isEligiblePoints,
+    isEligibleGrowth,
+    isEligible,
+    isLoading: isLoadingPoints || isLoadingGrowth,
   }
 }
 

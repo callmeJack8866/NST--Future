@@ -20,8 +20,15 @@ import {
   FREE_NODE_REFERRAL_COUNT,
 } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-import { useBuyNode, useNodeStats, NodePurchaseStep } from "@/hooks/useNode"
-import { useUserInfo, useTokenBalances, useGlobalStats } from "@/hooks/useUserInfo"
+import { useBuyNode, NodePurchaseStep } from "@/hooks/useNode"
+import { useTokenBalances } from "@/hooks/useUserInfo"
+import { 
+  useUserInfoApi, 
+  useGlobalStatsApi, 
+  useNodeStatsApi,
+  useUserNodesApi,
+  useRecentNodePurchasesApi,
+} from "@/hooks/useApi"
 import { getContracts } from "@/lib/contracts/config"
 import {
   Box,
@@ -39,6 +46,8 @@ import {
   Clock,
   ExternalLink,
   Loader2,
+  RefreshCw,
+  TrendingUp,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -60,12 +69,14 @@ export default function NodesPage() {
   const [selectedToken, setSelectedToken] = useState("USDT")
   const [nodeCount, setNodeCount] = useState(1)
   
-  // Hooks
+  // Hooks - use API hooks for data from backend
   const { buyNode, step, error, txHash, isLoading, reset } = useBuyNode()
-  const { userInfo, isLoading: isLoadingUser, refetch: refetchUser } = useUserInfo()
+  const { userInfo, isLoading: isLoadingUser, refetch: refetchUser } = useUserInfoApi()
   const { balances, getBalance, isLoading: isLoadingBalances, refetch: refetchBalances } = useTokenBalances()
-  const { globalStats, isLoading: isLoadingGlobal, refetch: refetchGlobal } = useGlobalStats()
-  const { nodeStats, isLoading: isLoadingNodeStats, refetch: refetchNodeStats } = useNodeStats()
+  const { globalStats, isLoading: isLoadingGlobal, refetch: refetchGlobal } = useGlobalStatsApi()
+  const { nodeStats, isLoading: isLoadingNodeStats, refetch: refetchNodeStats } = useNodeStatsApi()
+  const { nodes: userNodes, refetch: refetchUserNodes } = useUserNodesApi()
+  const { purchases: recentPurchases, isLoading: isLoadingPurchases, refetch: refetchPurchases } = useRecentNodePurchasesApi(10)
   
   const contracts = getContracts(chainId ?? 97)
   const explorerUrl = getExplorerUrl(chainId ?? 97)
@@ -106,6 +117,8 @@ export default function NodesPage() {
         refetchBalances()
         refetchGlobal()
         refetchNodeStats()
+        refetchUserNodes()
+        refetchPurchases()
       }, 2000)
     }
   }
@@ -500,6 +513,69 @@ export default function NodesPage() {
                           💝 Donor
                         </Badge>
                       )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Recent Node Purchases */}
+              <Card className="glass">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-muted-foreground" />
+                      Recent Node Purchases
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => refetchPurchases()}
+                      disabled={isLoadingPurchases}
+                    >
+                      <RefreshCw className={cn("w-4 h-4", isLoadingPurchases && "animate-spin")} />
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingPurchases ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  ) : recentPurchases.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p className="text-sm">No recent node purchases.</p>
+                      <p className="text-xs mt-2">Be the first to purchase a node!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {recentPurchases.map((purchase, index) => (
+                        <div
+                          key={`${purchase.txHash}-${index}`}
+                          className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-full bg-primary/10">
+                              <Box className="w-4 h-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">
+                                {purchase.count} Node{purchase.count > 1 ? "s" : ""} - ${purchase.costUSD.toLocaleString()}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {purchase.userAddress.slice(0, 6)}...{purchase.userAddress.slice(-4)} • {new Date(purchase.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <a
+                            href={`${explorerUrl}/tx/${purchase.txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </CardContent>

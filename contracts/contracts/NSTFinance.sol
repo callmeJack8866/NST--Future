@@ -269,8 +269,8 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         
         IERC20(token).safeTransferFrom(msg.sender, treasury, tokenAmount);
         
-        user.totalDonationUSD += totalCost;
-        totalDonationsUSD += totalCost;
+        // user.totalDonationUSD += totalCost;
+        // totalDonationsUSD += totalCost;
         
         // Award points
         _awardDonationPoints(msg.sender, totalCost);

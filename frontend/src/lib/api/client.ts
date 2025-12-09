@@ -122,5 +122,54 @@ export async function getNodeStats(): Promise<ApiResponse<NodeStatsResponse>> {
   return fetchApi<NodeStatsResponse>("/stats/nodes")
 }
 
+// Nodes API
+export interface NodeResponse {
+  id: string
+  userAddress: string
+  type: "public" | "team" | "auto" | "free_referral"
+  count: number
+  costUSD: string
+  txHash: string | null
+  blockNumber: number | null
+  createdAt: string
+}
+
+export interface NodeSummaryResponse {
+  public: number
+  team: number
+  auto: number
+  freeReferral: number
+  total: number
+}
+
+export interface NodeHolderResponse {
+  userAddress: string
+  totalNodes: string
+}
+
+export interface RecentNodePurchaseResponse {
+  userAddress: string
+  count: number
+  costUSD: string
+  txHash: string
+  createdAt: string
+}
+
+export async function getUserNodes(address: string): Promise<ApiResponse<NodeResponse[]>> {
+  return fetchApi<NodeResponse[]>(`/nodes/user/${address.toLowerCase()}`)
+}
+
+export async function getUserNodeSummary(address: string): Promise<ApiResponse<NodeSummaryResponse>> {
+  return fetchApi<NodeSummaryResponse>(`/nodes/user/${address.toLowerCase()}/summary`)
+}
+
+export async function getRecentNodePurchases(limit = 20): Promise<ApiResponse<RecentNodePurchaseResponse[]>> {
+  return fetchApi<RecentNodePurchaseResponse[]>(`/nodes/recent?limit=${limit}`)
+}
+
+export async function getNodeHolders(): Promise<ApiResponse<NodeHolderResponse[]>> {
+  return fetchApi<NodeHolderResponse[]>(`/nodes/holders`)
+}
+
 export { API_BASE_URL }
 

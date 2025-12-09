@@ -1,7 +1,6 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
-import { AirdropRound } from './entities/airdrop-round.entity';
+import { Repository } from 'typeorm';
 import { RankingRound } from './entities/ranking-round.entity';
 import { User } from '../users/entities/user.entity';
 
@@ -29,83 +28,16 @@ export interface PreparedAirdropData {
 @Injectable()
 export class AirdropsService {
   constructor(
-    @InjectRepository(AirdropRound)
-    private airdropRoundRepo: Repository<AirdropRound>,
     @InjectRepository(RankingRound)
     private rankingRoundRepo: Repository<RankingRound>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
   ) {}
 
-  // ============ Legacy Airdrop Round Methods ============
-
-  async getAllRounds() {
-    return this.airdropRoundRepo.find({
-      order: { round: 'DESC' },
-    });
-  }
-
-  async getActiveRounds() {
-    return this.airdropRoundRepo.find({
-      where: { isActive: true },
-      order: { round: 'DESC' },
-    });
-  }
-
-  async getRoundById(round: number) {
-    return this.airdropRoundRepo.findOne({
-      where: { round },
-    });
-  }
-
-  async checkEligibility(address: string, round: number) {
-    const airdropRound = await this.airdropRoundRepo.findOne({
-      where: { round },
-    });
-
-    if (!airdropRound) {
-      return {
-        eligible: false,
-        claimed: false,
-        reason: 'Round not found',
-      };
-    }
-
-    const normalizedAddress = address.toLowerCase();
-    const isEligible = airdropRound.eligibleUsers.includes(normalizedAddress);
-    const hasClaimed = airdropRound.claimedUsers.includes(normalizedAddress);
-
-    return {
-      eligible: isEligible,
-      claimed: hasClaimed,
-      amount: airdropRound.airdropAmount,
-      isActive: airdropRound.isActive,
-    };
-  }
-
-  async getUserAirdropHistory(address: string) {
-    const rounds = await this.airdropRoundRepo.find({
-      order: { round: 'DESC' },
-    });
-
-    const normalizedAddress = address.toLowerCase();
-
-    return rounds.map((round) => ({
-      round: round.round,
-      amount: round.airdropAmount,
-      eligible: round.eligibleUsers.includes(normalizedAddress),
-      claimed: round.claimedUsers.includes(normalizedAddress),
-      isActive: round.isActive,
-      createdAt: round.createdAt,
-    }));
-  }
-
-  // ============ Ranking Airdrop Methods ============
-
   /**
    * Get all ranking rounds
    */
-  async getAllRankingRounds() {
+  async getAllRankingRounds(): Promise<RankingRound[]> {
     try {
       return await this.rankingRoundRepo.find({
         order: { round: 'DESC' },
@@ -119,7 +51,7 @@ export class AirdropsService {
   /**
    * Get ranking round by number
    */
-  async getRankingRoundById(round: number) {
+  async getRankingRoundById(round: number): Promise<RankingRound | null> {
     try {
       return await this.rankingRoundRepo.findOne({
         where: { round },
@@ -147,7 +79,7 @@ export class AirdropsService {
 
   /**
    * Prepare airdrop data based on current rankings
-   * This calculates growth % and cumulative points for all users
+   * Calculates growth % and cumulative points for all users
    * Returns Top 20 for each category
    */
   async prepareAirdropData(): Promise<PreparedAirdropData> {
@@ -155,7 +87,6 @@ export class AirdropsService {
     try {
       currentRound = await this.getCurrentRankingRound();
     } catch (err) {
-      // Table might not exist yet
       console.log('Could not get current ranking round:', err.message);
     }
     const nextRound = currentRound + 1;
@@ -181,7 +112,7 @@ export class AirdropsService {
         if (previousPoints > 0) {
           growthPercentage = ((currentPoints - previousPoints) / previousPoints) * 100;
         } else if (currentPoints > 0) {
-          // New users with points get 100% growth (or we can exclude them)
+          // New users with points get 100% growth
           growthPercentage = 100;
         }
 
@@ -219,7 +150,7 @@ export class AirdropsService {
 
   /**
    * Process a new ranking round (admin only)
-   * This saves the ranking data and prepares for smart contract call
+   * Saves the ranking data to database
    */
   async processRankingRound(
     growthAirdropAmount: string,
@@ -229,7 +160,6 @@ export class AirdropsService {
   ): Promise<RankingRound> {
     const preparedData = await this.prepareAirdropData();
 
-    // Create ranking round
     const rankingRound = this.rankingRoundRepo.create({
       round: preparedData.round,
       growthAirdropAmount,
@@ -290,8 +220,8 @@ export class AirdropsService {
       .set({
         lastSnapshotPoints: () => 'points',
       })
-      .where('address IN (:...addresses)', { 
-        addresses: addresses.map((a) => a.toLowerCase()) 
+      .where('address IN (:...addresses)', {
+        addresses: addresses.map((a) => a.toLowerCase()),
       })
       .execute();
 
@@ -326,12 +256,11 @@ export class AirdropsService {
     const hasClaimedGrowth = rankingRound.growthClaimedUsers.includes(normalizedAddress);
     const hasClaimedCumulative = rankingRound.cumulativeClaimedUsers.includes(normalizedAddress);
 
-    // Get rank position
-    const growthPosition = isInGrowthTop20 
-      ? rankingRound.topGrowthUsers.indexOf(normalizedAddress) + 1 
+    const growthPosition = isInGrowthTop20
+      ? rankingRound.topGrowthUsers.indexOf(normalizedAddress) + 1
       : 0;
-    const cumulativePosition = isInCumulativeTop20 
-      ? rankingRound.topCumulativeUsers.indexOf(normalizedAddress) + 1 
+    const cumulativePosition = isInCumulativeTop20
+      ? rankingRound.topCumulativeUsers.indexOf(normalizedAddress) + 1
       : 0;
 
     return {
@@ -350,7 +279,7 @@ export class AirdropsService {
   }
 
   /**
-   * Get user's ranking history
+   * Get user's ranking history across all rounds
    */
   async getUserRankingHistory(address: string) {
     const rounds = await this.rankingRoundRepo.find({
@@ -367,11 +296,11 @@ export class AirdropsService {
         round: round.round,
         isInGrowthTop20,
         isInCumulativeTop20,
-        growthPosition: isInGrowthTop20 
-          ? round.topGrowthUsers.indexOf(normalizedAddress) + 1 
+        growthPosition: isInGrowthTop20
+          ? round.topGrowthUsers.indexOf(normalizedAddress) + 1
           : 0,
-        cumulativePosition: isInCumulativeTop20 
-          ? round.topCumulativeUsers.indexOf(normalizedAddress) + 1 
+        cumulativePosition: isInCumulativeTop20
+          ? round.topCumulativeUsers.indexOf(normalizedAddress) + 1
           : 0,
         hasClaimedGrowth: round.growthClaimedUsers.includes(normalizedAddress),
         hasClaimedCumulative: round.cumulativeClaimedUsers.includes(normalizedAddress),
@@ -384,9 +313,10 @@ export class AirdropsService {
   }
 
   /**
-   * Mark user as claimed for growth airdrop (called by indexer when claim event detected)
+   * Mark user as claimed for growth airdrop
+   * Called by indexer when claim event is detected
    */
-  async markGrowthClaimed(address: string, round: number) {
+  async markGrowthClaimed(address: string, round: number): Promise<void> {
     const rankingRound = await this.rankingRoundRepo.findOne({
       where: { round },
     });
@@ -404,8 +334,9 @@ export class AirdropsService {
 
   /**
    * Mark user as claimed for cumulative airdrop
+   * Called by indexer when claim event is detected
    */
-  async markCumulativeClaimed(address: string, round: number) {
+  async markCumulativeClaimed(address: string, round: number): Promise<void> {
     const rankingRound = await this.rankingRoundRepo.findOne({
       where: { round },
     });
@@ -424,7 +355,7 @@ export class AirdropsService {
   /**
    * Close a ranking round (disable claims)
    */
-  async closeRankingRound(round: number) {
+  async closeRankingRound(round: number): Promise<void> {
     const rankingRound = await this.rankingRoundRepo.findOne({
       where: { round },
     });
@@ -467,6 +398,7 @@ export class AirdropsService {
 
   /**
    * Get data formatted for smart contract call
+   * Pads arrays to 20 addresses as required by contract
    */
   async getContractCallData(): Promise<{
     topGrowthUsers: string[];
@@ -474,7 +406,6 @@ export class AirdropsService {
   }> {
     const preparedData = await this.prepareAirdropData();
 
-    // Pad to 20 addresses (smart contract expects exactly 20)
     const topGrowthUsers = [...preparedData.topGrowthUsers.map((u) => u.address)];
     const topCumulativeUsers = [...preparedData.topCumulativeUsers.map((u) => u.address)];
 

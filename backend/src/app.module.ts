@@ -12,7 +12,6 @@ import { Referral } from './referrals/entities/referral.entity';
 import { NstReward } from './rewards/entities/nst-reward.entity';
 import { PointsHistory } from './rewards/entities/points-history.entity';
 import { LeaderboardSnapshot } from './leaderboard/entities/leaderboard-snapshot.entity';
-import { AirdropRound } from './airdrops/entities/airdrop-round.entity';
 import { RankingRound } from './airdrops/entities/ranking-round.entity';
 import { SyncState } from './blockchain/sync-state.entity';
 
@@ -50,7 +49,6 @@ import { StatsModule } from './stats/stats.module';
           NstReward,
           PointsHistory,
           LeaderboardSnapshot,
-          AirdropRound,
           RankingRound,
           SyncState,
         ],

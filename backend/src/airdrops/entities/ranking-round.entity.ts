@@ -6,11 +6,6 @@ import {
   Index,
 } from 'typeorm';
 
-export enum RankingType {
-  GROWTH = 'growth',
-  CUMULATIVE = 'cumulative',
-}
-
 @Entity('ranking_rounds')
 @Index(['round'], { unique: true })
 export class RankingRound {
@@ -50,7 +45,6 @@ export class RankingRound {
   @Column({ type: 'int', nullable: true })
   blockNumber: number;
 
-  // Snapshot data at the time of processing
   @Column({ type: 'jsonb', nullable: true })
   snapshotData: {
     growthRankings: Array<{
@@ -68,4 +62,3 @@ export class RankingRound {
   @CreateDateColumn()
   createdAt: Date;
 }
-

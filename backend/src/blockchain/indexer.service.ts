@@ -40,7 +40,6 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
     'FreeNodeGranted',
     'PointsEarned',
     'NSTClaimed',
-    'SnapshotTaken',
     'AirdropRoundCreated',
     'AirdropClaimed',
     'TeamNodeAllocated',
@@ -229,9 +228,6 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
           break;
         case 'NSTClaimed':
           await this.handleNSTClaimed(event);
-          break;
-        case 'SnapshotTaken':
-          await this.handleSnapshotTaken(event);
           break;
         case 'AirdropRoundCreated':
           await this.handleAirdropRoundCreated(event);
@@ -517,25 +513,43 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
     );
   }
 
-  private async handleSnapshotTaken(event: EventLog) {
-    const data = this.blockchainService.parseSnapshotTaken(event);
-    this.logger.log(`Snapshot taken for round ${data.round}`);
-  }
-
   private async handleAirdropRoundCreated(event: EventLog) {
     const data = this.blockchainService.parseAirdropRoundCreated(event);
     this.logger.log(`Airdrop round ${data.round} created on-chain`);
 
-    const existingRound = await this.rankingRoundRepo.findOne({
-      where: { round: data.round },
-    });
+    await this.dataSource.transaction(async (manager) => {
+      let rankingRound = await manager.findOne(RankingRound, {
+        where: { round: data.round },
+      });
 
-    if (existingRound && !existingRound.txHash) {
-      existingRound.txHash = data.txHash;
-      existingRound.blockNumber = data.blockNumber;
-      existingRound.isProcessed = true;
-      await this.rankingRoundRepo.save(existingRound);
-    }
+      if (rankingRound) {
+        // Update existing round with blockchain data
+        rankingRound.txHash = data.txHash;
+        rankingRound.blockNumber = data.blockNumber;
+        rankingRound.isProcessed = true;
+        await manager.save(rankingRound);
+        this.logger.log(`Updated existing ranking round ${data.round} with tx data`);
+      } else {
+        // Create new round from blockchain event
+        // Note: This handles cases where the round was created directly on-chain
+        // without going through the API first
+        const newRound = manager.create(RankingRound, {
+          round: data.round,
+          growthAirdropAmount: (parseFloat(data.growthRewardPerUser) / 1e18).toString(),
+          cumulativeAirdropAmount: (parseFloat(data.pointsRewardPerUser) / 1e18).toString(),
+          txHash: data.txHash,
+          blockNumber: data.blockNumber,
+          isProcessed: true,
+          isActive: true,
+          topGrowthUsers: [],
+          topCumulativeUsers: [],
+          growthClaimedUsers: [],
+          cumulativeClaimedUsers: [],
+        });
+        await manager.save(newRound);
+        this.logger.log(`Created new ranking round ${data.round} from blockchain event`);
+      }
+    });
   }
 
   private async handleAirdropClaimed(event: EventLog) {

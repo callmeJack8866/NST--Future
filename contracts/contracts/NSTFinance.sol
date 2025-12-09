@@ -433,19 +433,23 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         if (!airdropRound.isActive) revert RoundNotActive();
         
         uint256 totalReward = 0;
+        uint256 growthAmountClaimed = 0;
+        uint256 pointsAmountClaimed = 0;
         
         // Check and claim growth reward
         bool isInGrowthTop20 = _isInRanking(topGrowthUsers[round], msg.sender);
         if (isInGrowthTop20 && !hasClaimedGrowth[msg.sender][round]) {
             hasClaimedGrowth[msg.sender][round] = true;
-            totalReward += airdropRound.growthRewardPerUser;
+            growthAmountClaimed = airdropRound.growthRewardPerUser;
+            totalReward += growthAmountClaimed;
         }
         
         // Check and claim points reward
         bool isInPointsTop20 = _isInRanking(topPointsUsers[round], msg.sender);
         if (isInPointsTop20 && !hasClaimedPoints[msg.sender][round]) {
             hasClaimedPoints[msg.sender][round] = true;
-            totalReward += airdropRound.pointsRewardPerUser;
+            pointsAmountClaimed = airdropRound.pointsRewardPerUser;
+            totalReward += pointsAmountClaimed;
         }
         
         if (totalReward == 0) {
@@ -460,8 +464,8 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         emit AirdropClaimed(
             msg.sender,
             round,
-            isInGrowthTop20 && !hasClaimedGrowth[msg.sender][round] ? 0 : airdropRound.growthRewardPerUser,
-            isInPointsTop20 && !hasClaimedPoints[msg.sender][round] ? 0 : airdropRound.pointsRewardPerUser
+            growthAmountClaimed,
+            pointsAmountClaimed
         );
     }
     

@@ -207,15 +207,6 @@ export class BlockchainService implements OnModuleInit {
     };
   }
 
-  parseSnapshotTaken(event: EventLog) {
-    return {
-      round: Number(event.args[0]),
-      timestamp: Number(event.args[1]),
-      txHash: event.transactionHash,
-      blockNumber: event.blockNumber,
-    };
-  }
-
   parseAirdropRoundCreated(event: EventLog) {
     return {
       round: Number(event.args[0]),

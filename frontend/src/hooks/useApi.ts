@@ -13,6 +13,9 @@ import {
   getUserNodeSummary,
   getRecentNodePurchases,
   getNodeHolders,
+  getReferralsByReferrer,
+  getReferralStats,
+  getUserReferrer,
   type UserDashboardResponse,
   type DonationResponse,
   type ReferralResponse,
@@ -22,6 +25,9 @@ import {
   type NodeSummaryResponse,
   type RecentNodePurchaseResponse,
   type NodeHolderResponse,
+  type ReferralDetailResponse,
+  type ReferralStatsResponse,
+  type ReferralRecordResponse,
 } from "@/lib/api/client"
 
 // ============================================================================
@@ -722,6 +728,217 @@ export function useNodeHoldersApi() {
     isLoading,
     error,
     refetch: fetchHolders,
+  }
+}
+
+// ============================================================================
+// Referral Types
+// ============================================================================
+
+export interface ReferralDetail {
+  address: string
+  totalDonationUSD: number
+  nodeCount: number
+  joinedAt: Date
+}
+
+export interface ReferralStats {
+  totalReferrals: number
+  directNodeCount: number
+  directDonationUSD: number
+  referrals: ReferralDetail[]
+}
+
+export interface ReferralRecord {
+  id: string
+  referrerAddress: string
+  refereeAddress: string
+  txHash: string | null
+  blockNumber: number | null
+  boundAt: Date
+}
+
+// ============================================================================
+// Referral Transform Functions
+// ============================================================================
+
+function transformReferralDetail(data: ReferralDetailResponse): ReferralDetail {
+  return {
+    address: data.address,
+    totalDonationUSD: parseFloat(data.totalDonationUSD) || 0,
+    nodeCount: data.nodeCount,
+    joinedAt: new Date(data.joinedAt),
+  }
+}
+
+function transformReferralStats(data: ReferralStatsResponse): ReferralStats {
+  return {
+    totalReferrals: data.totalReferrals,
+    directNodeCount: data.directNodeCount,
+    directDonationUSD: parseFloat(data.directDonationUSD) || 0,
+    referrals: data.referrals.map(transformReferralDetail),
+  }
+}
+
+function transformReferralRecord(data: ReferralRecordResponse): ReferralRecord {
+  return {
+    id: data.id,
+    referrerAddress: data.referrerAddress,
+    refereeAddress: data.refereeAddress,
+    txHash: data.txHash,
+    blockNumber: data.blockNumber,
+    boundAt: new Date(data.boundAt),
+  }
+}
+
+// ============================================================================
+// Referral Hooks
+// ============================================================================
+
+/**
+ * Hook to fetch referral statistics from the backend API
+ */
+export function useReferralStatsApi() {
+  const { address, isConnected } = useAccount()
+  const [stats, setStats] = useState<ReferralStats | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchStats = useCallback(async () => {
+    if (!address || !isConnected) {
+      setStats(null)
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getReferralStats(address)
+      
+      if (response.error) {
+        setError(response.error)
+        setStats(null)
+      } else if (response.data) {
+        setStats(transformReferralStats(response.data))
+      } else {
+        // No referral stats (user not found)
+        setStats({
+          totalReferrals: 0,
+          directNodeCount: 0,
+          directDonationUSD: 0,
+          referrals: [],
+        })
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch referral stats")
+      setStats(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [address, isConnected])
+
+  useEffect(() => {
+    fetchStats()
+  }, [fetchStats])
+
+  return {
+    stats,
+    isLoading,
+    error,
+    refetch: fetchStats,
+  }
+}
+
+/**
+ * Hook to fetch referral records from the backend API
+ */
+export function useReferralRecordsApi() {
+  const { address, isConnected } = useAccount()
+  const [records, setRecords] = useState<ReferralRecord[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchRecords = useCallback(async () => {
+    if (!address || !isConnected) {
+      setRecords([])
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getReferralsByReferrer(address)
+      
+      if (response.error) {
+        setError(response.error)
+      } else if (response.data) {
+        setRecords(response.data.map(transformReferralRecord))
+      } else {
+        setRecords([])
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch referral records")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [address, isConnected])
+
+  useEffect(() => {
+    fetchRecords()
+  }, [fetchRecords])
+
+  return {
+    records,
+    isLoading,
+    error,
+    refetch: fetchRecords,
+  }
+}
+
+/**
+ * Hook to fetch user's referrer from the backend API
+ */
+export function useUserReferrerApi() {
+  const { address, isConnected } = useAccount()
+  const [referrer, setReferrer] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchReferrer = useCallback(async () => {
+    if (!address || !isConnected) {
+      setReferrer(null)
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getUserReferrer(address)
+      
+      if (response.error) {
+        setError(response.error)
+      } else {
+        setReferrer(response.data)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch referrer")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [address, isConnected])
+
+  useEffect(() => {
+    fetchReferrer()
+  }, [fetchReferrer])
+
+  return {
+    referrer,
+    isLoading,
+    error,
+    refetch: fetchReferrer,
   }
 }
 

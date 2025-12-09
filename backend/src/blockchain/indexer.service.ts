@@ -434,6 +434,7 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
 
     // Convert raw blockchain value (18 decimals) to human-readable format
     const rewardHuman = (parseFloat(data.reward) / 1e18).toString();
+    const donationAmountHuman = parseFloat(data.donationAmount) / 1e18;
 
     const reward = this.nstRewardRepo.create({
       userAddress: data.referrer.toLowerCase(),
@@ -442,6 +443,14 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
       txHash: data.txHash,
       blockNumber: data.blockNumber,
     });
+
+    // Increment directDonationUSD instead of replacing it
+    await this.userRepo.increment(
+      { address: data.referrer.toLowerCase() },
+      'directDonationUSD',
+      donationAmountHuman
+    );
+
     await this.nstRewardRepo.save(reward);
   }
 

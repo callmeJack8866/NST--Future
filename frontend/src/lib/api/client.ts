@@ -171,5 +171,41 @@ export async function getNodeHolders(): Promise<ApiResponse<NodeHolderResponse[]
   return fetchApi<NodeHolderResponse[]>(`/nodes/holders`)
 }
 
+// Referrals API
+export interface ReferralDetailResponse {
+  address: string
+  totalDonationUSD: string
+  nodeCount: number
+  joinedAt: string
+}
+
+export interface ReferralStatsResponse {
+  totalReferrals: number
+  directNodeCount: number
+  directDonationUSD: string
+  referrals: ReferralDetailResponse[]
+}
+
+export interface ReferralRecordResponse {
+  id: string
+  referrerAddress: string
+  refereeAddress: string
+  txHash: string | null
+  blockNumber: number | null
+  boundAt: string
+}
+
+export async function getReferralsByReferrer(address: string): Promise<ApiResponse<ReferralRecordResponse[]>> {
+  return fetchApi<ReferralRecordResponse[]>(`/referrals/user/${address.toLowerCase()}`)
+}
+
+export async function getReferralStats(address: string): Promise<ApiResponse<ReferralStatsResponse>> {
+  return fetchApi<ReferralStatsResponse>(`/referrals/user/${address.toLowerCase()}/stats`)
+}
+
+export async function getUserReferrer(address: string): Promise<ApiResponse<string | null>> {
+  return fetchApi<string | null>(`/referrals/user/${address.toLowerCase()}/referrer`)
+}
+
 export { API_BASE_URL }
 

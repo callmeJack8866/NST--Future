@@ -33,6 +33,9 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     // Points system
     uint256 public constant POINTS_PER_USD = 1 * 10**18;
     uint256 public constant NODE_HOLDER_MULTIPLIER = 2;
+    
+    // Ranking system
+    uint256 public constant TOP_RANKERS_COUNT = 20;
 
     // ============ State Variables ============
     
@@ -63,6 +66,14 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         bool isActive;
     }
     
+    struct RankingRound {
+        uint256 roundNumber;
+        uint256 timestamp;
+        uint256 growthAirdropAmount;      // Airdrop per user for growth ranking
+        uint256 cumulativeAirdropAmount;  // Airdrop per user for cumulative ranking
+        bool processed;
+    }
+    
     mapping(address => UserInfo) public users;
     mapping(address => bool) public isUser;
     mapping(address => TeamNodeInfo) public teamNodes; // Team node tracking
@@ -73,6 +84,15 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     mapping(uint256 => AirdropRound) public airdropRounds;
     uint256 public currentAirdropRound;
     uint256 public lastSnapshotTimestamp;
+    
+    // Ranking System (Monthly Top 20)
+    mapping(uint256 => RankingRound) public rankingRounds;
+    mapping(uint256 => address[20]) public topGrowthUsers;      // Top 20 by growth % per round
+    mapping(uint256 => address[20]) public topCumulativeUsers;  // Top 20 by total points per round
+    mapping(address => mapping(uint256 => bool)) public hasClaimedGrowthRanking;
+    mapping(address => mapping(uint256 => bool)) public hasClaimedCumulativeRanking;
+    uint256 public currentRankingRound;
+    uint256 public lastRankingTimestamp;
     
     // Supported stablecoins
     mapping(address => bool) public supportedTokens;
@@ -127,6 +147,18 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     event AirdropRoundCreated(uint256 indexed round, uint256 airdropAmount, uint256 totalEligible);
     event AirdropEligibilitySet(address indexed user, uint256 indexed round, bool eligible);
     event AirdropClaimed(address indexed user, uint256 indexed round, uint256 amount);
+    
+    // v1.2 Ranking Events
+    event RankingRoundProcessed(
+        uint256 indexed round,
+        uint256 timestamp,
+        uint256 growthAirdropAmount,
+        uint256 cumulativeAirdropAmount
+    );
+    event TopGrowthRankersSet(uint256 indexed round, address[20] rankers);
+    event TopCumulativeRankersSet(uint256 indexed round, address[20] rankers);
+    event RankingAirdropClaimed(address indexed user, uint256 indexed round, uint256 amount, string rankingType);
+    event SnapshotPointsUpdated(uint256 indexed round, uint256 usersUpdated);
 
     // ============ Errors ============
     
@@ -148,6 +180,12 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     error TeamNodesLocked();
     error NotTeamMember();
     error AlreadyTeamMember();
+    
+    // Ranking errors
+    error RankingNotProcessed();
+    error NotInTopRankers();
+    error RankingAlreadyClaimed();
+    error InvalidRankingRound();
 
     // ============ Constructor ============
     
@@ -424,6 +462,129 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         airdropRounds[round].isActive = false;
     }
 
+    // ============ Monthly Ranking System ============
+    
+    /**
+     * @notice Process a ranking round with Top 20 Growth and Top 20 Cumulative users
+     * @dev Called by admin on 10th and 20th of each month. Rankings calculated off-chain.
+     * @param _topGrowthUsers Top 20 users by growth percentage (sorted, highest first)
+     * @param _topCumulativeUsers Top 20 users by cumulative points (sorted, highest first)
+     * @param growthAirdropAmount NST amount per user for growth ranking
+     * @param cumulativeAirdropAmount NST amount per user for cumulative ranking
+     */
+    function processRankingRound(
+        address[20] calldata _topGrowthUsers,
+        address[20] calldata _topCumulativeUsers,
+        uint256 growthAirdropAmount,
+        uint256 cumulativeAirdropAmount
+    ) external onlyOwner {
+        currentRankingRound++;
+        lastRankingTimestamp = block.timestamp;
+        
+        // Store ranking round data
+        RankingRound storage round = rankingRounds[currentRankingRound];
+        round.roundNumber = currentRankingRound;
+        round.timestamp = block.timestamp;
+        round.growthAirdropAmount = growthAirdropAmount;
+        round.cumulativeAirdropAmount = cumulativeAirdropAmount;
+        round.processed = true;
+        
+        // Store top rankers
+        topGrowthUsers[currentRankingRound] = _topGrowthUsers;
+        topCumulativeUsers[currentRankingRound] = _topCumulativeUsers;
+        
+        // Auto-update snapshot points for all ranked users
+        _updateSnapshotPointsForRankers(_topGrowthUsers);
+        _updateSnapshotPointsForRankers(_topCumulativeUsers);
+        
+        emit RankingRoundProcessed(
+            currentRankingRound,
+            block.timestamp,
+            growthAirdropAmount,
+            cumulativeAirdropAmount
+        );
+        emit TopGrowthRankersSet(currentRankingRound, _topGrowthUsers);
+        emit TopCumulativeRankersSet(currentRankingRound, _topCumulativeUsers);
+    }
+    
+    /**
+     * @notice Internal function to update snapshot points for ranked users
+     */
+    function _updateSnapshotPointsForRankers(address[20] memory rankers) internal {
+        uint256 updated = 0;
+        for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
+            if (rankers[i] != address(0)) {
+                users[rankers[i]].lastSnapshotPoints = users[rankers[i]].points;
+                updated++;
+            }
+        }
+        emit SnapshotPointsUpdated(currentRankingRound, updated);
+    }
+    
+    /**
+     * @notice Batch update snapshot points for non-ranked users
+     * @dev Call this after processRankingRound to reset baseline for everyone
+     */
+    function batchUpdateSnapshotPoints(address[] calldata userAddresses) external onlyOwner {
+        for (uint256 i = 0; i < userAddresses.length; i++) {
+            users[userAddresses[i]].lastSnapshotPoints = users[userAddresses[i]].points;
+        }
+    }
+    
+    /**
+     * @notice Claim growth ranking airdrop
+     * @param round The ranking round number
+     */
+    function claimGrowthRankingAirdrop(uint256 round) external nonReentrant {
+        if (round == 0 || round > currentRankingRound) revert InvalidRankingRound();
+        
+        RankingRound storage rankingRound = rankingRounds[round];
+        if (!rankingRound.processed) revert RankingNotProcessed();
+        if (hasClaimedGrowthRanking[msg.sender][round]) revert RankingAlreadyClaimed();
+        
+        // Check if user is in top growth rankers
+        bool isRanker = false;
+        for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
+            if (topGrowthUsers[round][i] == msg.sender) {
+                isRanker = true;
+                break;
+            }
+        }
+        if (!isRanker) revert NotInTopRankers();
+        
+        hasClaimedGrowthRanking[msg.sender][round] = true;
+        nstToken.safeTransfer(msg.sender, rankingRound.growthAirdropAmount);
+        
+        emit RankingAirdropClaimed(msg.sender, round, rankingRound.growthAirdropAmount, "growth");
+    }
+    
+    /**
+     * @notice Claim cumulative ranking airdrop
+     * @param round The ranking round number
+     */
+    function claimCumulativeRankingAirdrop(uint256 round) external nonReentrant {
+        if (round == 0 || round > currentRankingRound) revert InvalidRankingRound();
+        
+        RankingRound storage rankingRound = rankingRounds[round];
+        if (!rankingRound.processed) revert RankingNotProcessed();
+        if (hasClaimedCumulativeRanking[msg.sender][round]) revert RankingAlreadyClaimed();
+        
+        // Check if user is in top cumulative rankers
+        bool isRanker = false;
+        for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
+            if (topCumulativeUsers[round][i] == msg.sender) {
+                isRanker = true;
+                break;
+            }
+        }
+        if (!isRanker) revert NotInTopRankers();
+        
+        hasClaimedCumulativeRanking[msg.sender][round] = true;
+        nstToken.safeTransfer(msg.sender, rankingRound.cumulativeAirdropAmount);
+        
+        emit RankingAirdropClaimed(msg.sender, round, rankingRound.cumulativeAirdropAmount, "cumulative");
+    }
+
     // ============ NST Reward Functions ============
     
     function claimNST() external nonReentrant {
@@ -569,6 +730,103 @@ contract NSTFinance is Ownable, ReentrancyGuard {
             info.nodeCount < MAX_NODES_PER_USER &&
             publicNodesIssued < MAX_PUBLIC_NODES
         );
+    }
+    
+    // ============ Ranking View Functions ============
+    
+    /**
+     * @notice Get ranking round details
+     */
+    function getRankingRound(uint256 round) external view returns (
+        uint256 roundNumber,
+        uint256 timestamp,
+        uint256 growthAirdropAmount,
+        uint256 cumulativeAirdropAmount,
+        bool processed
+    ) {
+        RankingRound memory r = rankingRounds[round];
+        return (r.roundNumber, r.timestamp, r.growthAirdropAmount, r.cumulativeAirdropAmount, r.processed);
+    }
+    
+    /**
+     * @notice Get top growth users for a round
+     */
+    function getTopGrowthUsers(uint256 round) external view returns (address[20] memory) {
+        return topGrowthUsers[round];
+    }
+    
+    /**
+     * @notice Get top cumulative users for a round
+     */
+    function getTopCumulativeUsers(uint256 round) external view returns (address[20] memory) {
+        return topCumulativeUsers[round];
+    }
+    
+    /**
+     * @notice Check user's ranking claim status for a round
+     */
+    function checkRankingClaimStatus(address user, uint256 round) external view returns (
+        bool isInGrowthTop20,
+        bool isInCumulativeTop20,
+        bool hasClaimedGrowth,
+        bool hasClaimedCumulative,
+        uint256 growthAmount,
+        uint256 cumulativeAmount
+    ) {
+        // Check if in growth top 20
+        for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
+            if (topGrowthUsers[round][i] == user) {
+                isInGrowthTop20 = true;
+                break;
+            }
+        }
+        
+        // Check if in cumulative top 20
+        for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
+            if (topCumulativeUsers[round][i] == user) {
+                isInCumulativeTop20 = true;
+                break;
+            }
+        }
+        
+        RankingRound memory r = rankingRounds[round];
+        
+        return (
+            isInGrowthTop20,
+            isInCumulativeTop20,
+            hasClaimedGrowthRanking[user][round],
+            hasClaimedCumulativeRanking[user][round],
+            r.growthAirdropAmount,
+            r.cumulativeAirdropAmount
+        );
+    }
+    
+    /**
+     * @notice Get user's rank position in a round (0 = not ranked, 1-20 = position)
+     */
+    function getUserRankPosition(address user, uint256 round) external view returns (
+        uint256 growthPosition,
+        uint256 cumulativePosition
+    ) {
+        for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
+            if (topGrowthUsers[round][i] == user) {
+                growthPosition = i + 1;
+            }
+            if (topCumulativeUsers[round][i] == user) {
+                cumulativePosition = i + 1;
+            }
+        }
+        return (growthPosition, cumulativePosition);
+    }
+    
+    /**
+     * @notice Get ranking system stats
+     */
+    function getRankingStats() external view returns (
+        uint256 _currentRankingRound,
+        uint256 _lastRankingTimestamp
+    ) {
+        return (currentRankingRound, lastRankingTimestamp);
     }
 
     // ============ Admin Functions ============

@@ -119,7 +119,7 @@ export default function NodesPage() {
         refetchNodeStats()
         refetchUserNodes()
         refetchPurchases()
-      }, 2000)
+      }, 5000)
     }
   }
 

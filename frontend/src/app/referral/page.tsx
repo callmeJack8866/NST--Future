@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useAccount } from "wagmi"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
+import { toast } from "sonner"
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -36,7 +37,7 @@ export default function ReferralPage() {
     setMounted(true)
   }, [])
 
-  const referralLink = `https://nst.finance?ref=${address || "0x..."}`
+  const referralLink = `https://net.finance?ref=${address || "0x..."}`
   
   // Calculate values from API data
   const directNodeCount = referralStats?.directNodeCount ?? userInfo?.directNodeCount ?? 0
@@ -52,6 +53,9 @@ export default function ReferralPage() {
   const copyLink = () => {
     navigator.clipboard.writeText(referralLink)
     setCopied(true)
+    toast.success("Referral link copied to clipboard!", {
+      description: "Share it with your friends to earn rewards!"
+    })
     setTimeout(() => setCopied(false), 2000)
   }
 
@@ -73,7 +77,9 @@ export default function ReferralPage() {
     navigator.clipboard.writeText(
       `Join me on NST Finance - the most transparent donation ecosystem in Web3! 🚀\n\nEarn rewards through donations, node ownership, and referrals.\n\n${referralLink}`
     )
-    alert("Link copied! Paste it in your Discord server or DMs.")
+    toast.success("Link copied!", {
+      description: "Paste it in your Discord server or DMs."
+    })
   }
 
   const formatAddress = (addr: string) => {

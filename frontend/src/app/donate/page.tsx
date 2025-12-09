@@ -94,7 +94,7 @@ export default function DonatePage() {
         refetchUser()
         refetchBalances()
         refetchDonations()
-      }, 2000)
+      }, 5000)
     }
   }
 

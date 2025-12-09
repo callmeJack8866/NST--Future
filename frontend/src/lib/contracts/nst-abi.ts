@@ -1,552 +1,1792 @@
-export const NST_FINANCE_ABI = [
-  // Constructor
+export const NST_FINANCE_ABI =  [
   {
-    inputs: [{ internalType: "address", name: "_treasury", type: "address" }],
-    stateMutability: "nonpayable",
-    type: "constructor",
-  },
-  // Errors
-  { inputs: [], name: "AlreadyClaimed", type: "error" },
-  { inputs: [], name: "ClaimNotEnabled", type: "error" },
-  { inputs: [], name: "InsufficientBalance", type: "error" },
-  { inputs: [], name: "InvalidAmount", type: "error" },
-  { inputs: [], name: "InvalidRound", type: "error" },
-  { inputs: [], name: "InvalidToken", type: "error" },
-  { inputs: [], name: "NodeLimitReached", type: "error" },
-  { inputs: [], name: "NoRewardsToClaim", type: "error" },
-  { inputs: [], name: "NotEligible", type: "error" },
-  { inputs: [], name: "PublicNodeLimitReached", type: "error" },
-  { inputs: [], name: "RoundNotActive", type: "error" },
-  { inputs: [], name: "TeamNodeLimitReached", type: "error" },
-  { inputs: [], name: "ZeroAddress", type: "error" },
-  // Events
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "user", type: "address" },
-      { indexed: true, internalType: "uint256", name: "round", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "growthAmount", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "pointsAmount", type: "uint256" },
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_treasury",
+        "type": "address"
+      }
     ],
-    name: "AirdropClaimed",
-    type: "event",
+    "stateMutability": "nonpayable",
+    "type": "constructor"
   },
   {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "uint256", name: "round", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "growthRewardPerUser", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "pointsRewardPerUser", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "timestamp", type: "uint256" },
+    "inputs": [],
+    "name": "AlreadyClaimed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ClaimNotEnabled",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InsufficientBalance",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidReferrer",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidRound",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidToken",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NoRewardsToClaim",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NodeLimitReached",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotEligible",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
     ],
-    name: "AirdropRoundCreated",
-    type: "event",
+    "name": "OwnableInvalidOwner",
+    "type": "error"
   },
   {
-    anonymous: false,
-    inputs: [{ indexed: true, internalType: "uint256", name: "round", type: "uint256" }],
-    name: "AirdropRoundClosed",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "user", type: "address" },
-      { indexed: false, internalType: "uint256", name: "nodeNumber", type: "uint256" },
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
     ],
-    name: "AutoNodeGranted",
-    type: "event",
+    "name": "OwnableUnauthorizedAccount",
+    "type": "error"
   },
   {
-    anonymous: false,
-    inputs: [{ indexed: false, internalType: "bool", name: "enabled", type: "bool" }],
-    name: "ClaimEnabled",
-    type: "event",
+    "inputs": [],
+    "name": "PublicNodeLimitReached",
+    "type": "error"
   },
   {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "user", type: "address" },
-      { indexed: true, internalType: "address", name: "token", type: "address" },
-      { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "usdValue", type: "uint256" },
-      { indexed: true, internalType: "address", name: "referrer", type: "address" },
+    "inputs": [],
+    "name": "ReentrancyGuardReentrantCall",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "RoundNotActive",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
     ],
-    name: "DonationReceived",
-    type: "event",
+    "name": "SafeERC20FailedOperation",
+    "type": "error"
   },
   {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "referrer", type: "address" },
-      { indexed: false, internalType: "uint256", name: "reward", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "donationAmount", type: "uint256" },
+    "inputs": [],
+    "name": "TeamNodeLimitReached",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroAddress",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "growthAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "pointsAmount",
+        "type": "uint256"
+      }
     ],
-    name: "DonationReferralReward",
-    type: "event",
+    "name": "AirdropClaimed",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "referrer", type: "address" },
-      { indexed: false, internalType: "uint256", name: "nodeNumber", type: "uint256" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
     ],
-    name: "FreeNodeGranted",
-    type: "event",
+    "name": "AirdropRoundClosed",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "user", type: "address" },
-      { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "growthRewardPerUser",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "pointsRewardPerUser",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
     ],
-    name: "NSTClaimed",
-    type: "event",
+    "name": "AirdropRoundCreated",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [{ indexed: true, internalType: "address", name: "nstToken", type: "address" }],
-    name: "NSTTokenSet",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "user", type: "address" },
-      { indexed: false, internalType: "uint256", name: "count", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "totalCost", type: "uint256" },
-      { indexed: true, internalType: "address", name: "referrer", type: "address" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "nodeNumber",
+        "type": "uint256"
+      }
     ],
-    name: "NodePurchased",
-    type: "event",
+    "name": "AutoNodeGranted",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "referrer", type: "address" },
-      { indexed: true, internalType: "address", name: "referee", type: "address" },
-      { indexed: false, internalType: "uint256", name: "reward", type: "uint256" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
     ],
-    name: "NodeReferralReward",
-    type: "event",
+    "name": "ClaimEnabled",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "previousOwner", type: "address" },
-      { indexed: true, internalType: "address", name: "newOwner", type: "address" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "usdValue",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      }
     ],
-    name: "OwnershipTransferred",
-    type: "event",
+    "name": "DonationReceived",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "user", type: "address" },
-      { indexed: false, internalType: "uint256", name: "points", type: "uint256" },
-      { indexed: false, internalType: "string", name: "source", type: "string" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "reward",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "donationAmount",
+        "type": "uint256"
+      }
     ],
-    name: "PointsEarned",
-    type: "event",
+    "name": "DonationReferralReward",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [{ indexed: false, internalType: "uint256", name: "usersUpdated", type: "uint256" }],
-    name: "SnapshotPointsUpdated",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "teamMember", type: "address" },
-      { indexed: false, internalType: "uint256", name: "count", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "unlockTime", type: "uint256" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "nodeNumber",
+        "type": "uint256"
+      }
     ],
-    name: "TeamNodeAllocated",
-    type: "event",
+    "name": "FreeNodeGranted",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "token", type: "address" },
-      { indexed: false, internalType: "uint8", name: "decimals", type: "uint8" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
     ],
-    name: "TokenAdded",
-    type: "event",
+    "name": "NSTClaimed",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [{ indexed: true, internalType: "address", name: "token", type: "address" }],
-    name: "TokenRemoved",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "oldTreasury", type: "address" },
-      { indexed: true, internalType: "address", name: "newTreasury", type: "address" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "nstToken",
+        "type": "address"
+      }
     ],
-    name: "TreasuryUpdated",
-    type: "event",
+    "name": "NSTTokenSet",
+    "type": "event"
   },
   {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "user", type: "address" },
-      { indexed: true, internalType: "address", name: "referrer", type: "address" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "count",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalCost",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      }
     ],
-    name: "UserRegistered",
-    type: "event",
+    "name": "NodePurchased",
+    "type": "event"
   },
-  // Constants
-  { inputs: [], name: "AUTO_NODE_THRESHOLD", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "DONATION_REFERRAL_REWARD_PER_1000", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "FREE_NODE_REFERRAL_THRESHOLD", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "MAX_NODES_PER_USER", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "MAX_PUBLIC_NODES", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "MAX_TOTAL_NODES", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "MINIMUM_DONATION", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "NODE_HOLDER_MULTIPLIER", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "NODE_PRICE", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "NODE_REFERRAL_REWARD", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "POINTS_PER_USD", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "TEAM_LOCK_DURATION", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "TEAM_RESERVED_NODES", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "TOP_RANKERS_COUNT", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  // State Variables
-  { inputs: [], name: "claimEnabled", outputs: [{ internalType: "bool", name: "", type: "bool" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "currentRound", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "deploymentTime", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "nstToken", outputs: [{ internalType: "contract IERC20", name: "", type: "address" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "owner", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "publicNodesIssued", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "teamNodesIssued", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "totalDonationsUSD", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "totalNodesIssued", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "totalPointsDistributed", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "totalUsers", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-  { inputs: [], name: "treasury", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
-  // User Functions
   {
-    inputs: [
-      { internalType: "address", name: "token", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-      { internalType: "address", name: "referrerHint", type: "address" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "referee",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "reward",
+        "type": "uint256"
+      }
     ],
-    name: "donate",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "name": "NodeReferralReward",
+    "type": "event"
   },
   {
-    inputs: [
-      { internalType: "address", name: "token", type: "address" },
-      { internalType: "uint256", name: "nodeCount", type: "uint256" },
-      { internalType: "address", name: "referrerHint", type: "address" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
     ],
-    name: "buyNode",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "name": "OwnershipTransferred",
+    "type": "event"
   },
   {
-    inputs: [{ internalType: "uint256", name: "round", type: "uint256" }],
-    name: "claimAirdrop",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "claimNSTRewards",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  // Admin Functions
-  {
-    inputs: [
-      { internalType: "address[20]", name: "_topGrowthUsers", type: "address[20]" },
-      { internalType: "address[20]", name: "_topPointsUsers", type: "address[20]" },
-      { internalType: "uint256", name: "growthRewardPerUser", type: "uint256" },
-      { internalType: "uint256", name: "pointsRewardPerUser", type: "uint256" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "points",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "source",
+        "type": "string"
+      }
     ],
-    name: "createAirdropRound",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "name": "PointsEarned",
+    "type": "event"
   },
   {
-    inputs: [{ internalType: "uint256", name: "round", type: "uint256" }],
-    name: "closeAirdropRound",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address[]", name: "userAddresses", type: "address[]" }],
-    name: "batchUpdateSnapshots",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "teamMember", type: "address" },
-      { internalType: "uint256", name: "nodeCount", type: "uint256" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "usersUpdated",
+        "type": "uint256"
+      }
     ],
-    name: "allocateTeamNodes",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "name": "SnapshotPointsUpdated",
+    "type": "event"
   },
   {
-    inputs: [
-      { internalType: "address", name: "token", type: "address" },
-      { internalType: "uint8", name: "decimals", type: "uint8" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "teamMember",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "count",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "unlockTime",
+        "type": "uint256"
+      }
     ],
-    name: "addSupportedToken",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    "name": "TeamNodeAllocated",
+    "type": "event"
   },
   {
-    inputs: [{ internalType: "address", name: "token", type: "address" }],
-    name: "removeSupportedToken",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "_nstToken", type: "address" }],
-    name: "setNSTToken",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "bool", name: "_enabled", type: "bool" }],
-    name: "setClaimEnabled",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "_treasury", type: "address" }],
-    name: "setTreasury",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
-    name: "emergencyWithdrawNST",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "renounceOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "newOwner", type: "address" }],
-    name: "transferOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  // View Functions
-  {
-    inputs: [{ internalType: "address", name: "user", type: "address" }],
-    name: "getUserInfo",
-    outputs: [
-      { internalType: "uint256", name: "totalDonationUSD", type: "uint256" },
-      { internalType: "uint256", name: "nodeCount", type: "uint256" },
-      { internalType: "address", name: "referrer", type: "address" },
-      { internalType: "uint256", name: "directNodeCount", type: "uint256" },
-      { internalType: "uint256", name: "directDonationUSD", type: "uint256" },
-      { internalType: "uint256", name: "nstReward", type: "uint256" },
-      { internalType: "bool", name: "hasAutoNode", type: "bool" },
-      { internalType: "uint256", name: "points", type: "uint256" },
-      { internalType: "uint256", name: "lastSnapshotPoints", type: "uint256" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "decimals",
+        "type": "uint8"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "TokenAdded",
+    "type": "event"
   },
   {
-    inputs: [],
-    name: "getGlobalStats",
-    outputs: [
-      { internalType: "uint256", name: "_totalNodesIssued", type: "uint256" },
-      { internalType: "uint256", name: "_totalDonationsUSD", type: "uint256" },
-      { internalType: "uint256", name: "_totalUsers", type: "uint256" },
-      { internalType: "uint256", name: "nodesRemaining", type: "uint256" },
-      { internalType: "uint256", name: "_totalPointsDistributed", type: "uint256" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "TokenRemoved",
+    "type": "event"
   },
   {
-    inputs: [],
-    name: "getNodeStats",
-    outputs: [
-      { internalType: "uint256", name: "_publicNodesIssued", type: "uint256" },
-      { internalType: "uint256", name: "_teamNodesIssued", type: "uint256" },
-      { internalType: "uint256", name: "publicNodesRemaining", type: "uint256" },
-      { internalType: "uint256", name: "teamNodesRemaining", type: "uint256" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oldTreasury",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newTreasury",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "TreasuryUpdated",
+    "type": "event"
   },
   {
-    inputs: [{ internalType: "address", name: "user", type: "address" }],
-    name: "getTotalNodeCount",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "user", type: "address" }],
-    name: "getUserPointsGrowth",
-    outputs: [{ internalType: "uint256", name: "growthBasisPoints", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "user", type: "address" }],
-    name: "isEligibleForAutoNode",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "teamMember", type: "address" }],
-    name: "areTeamNodesUnlocked",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getCurrentRound",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "round", type: "uint256" }],
-    name: "getAirdropRound",
-    outputs: [
-      { internalType: "uint256", name: "roundNumber", type: "uint256" },
-      { internalType: "uint256", name: "timestamp", type: "uint256" },
-      { internalType: "uint256", name: "growthRewardPerUser", type: "uint256" },
-      { internalType: "uint256", name: "pointsRewardPerUser", type: "uint256" },
-      { internalType: "uint256", name: "totalDistributed", type: "uint256" },
-      { internalType: "bool", name: "isActive", type: "bool" },
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "name": "UserRegistered",
+    "type": "event"
   },
   {
-    inputs: [{ internalType: "uint256", name: "round", type: "uint256" }],
-    name: "getTopGrowthUsers",
-    outputs: [{ internalType: "address[20]", name: "", type: "address[20]" }],
-    stateMutability: "view",
-    type: "function",
+    "inputs": [],
+    "name": "AUTO_NODE_THRESHOLD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [{ internalType: "uint256", name: "round", type: "uint256" }],
-    name: "getTopPointsUsers",
-    outputs: [{ internalType: "address[20]", name: "", type: "address[20]" }],
-    stateMutability: "view",
-    type: "function",
+    "inputs": [],
+    "name": "DONATION_REFERRAL_REWARD_PER_1000",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
-      { internalType: "address", name: "user", type: "address" },
-      { internalType: "uint256", name: "round", type: "uint256" },
+    "inputs": [],
+    "name": "FREE_NODE_REFERRAL_THRESHOLD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "checkAirdropStatus",
-    outputs: [
-      { internalType: "bool", name: "isInGrowthTop20", type: "bool" },
-      { internalType: "bool", name: "isInPointsTop20", type: "bool" },
-      { internalType: "bool", name: "hasClaimedGrowthReward", type: "bool" },
-      { internalType: "bool", name: "hasClaimedPointsReward", type: "bool" },
-      { internalType: "uint256", name: "growthReward", type: "uint256" },
-      { internalType: "uint256", name: "pointsReward", type: "uint256" },
-      { internalType: "uint256", name: "totalClaimable", type: "uint256" },
-    ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
-      { internalType: "address", name: "user", type: "address" },
-      { internalType: "uint256", name: "round", type: "uint256" },
+    "inputs": [],
+    "name": "MAX_NODES_PER_USER",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "getUserRankPosition",
-    outputs: [
-      { internalType: "uint256", name: "growthPosition", type: "uint256" },
-      { internalType: "uint256", name: "pointsPosition", type: "uint256" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  // Mapping Getters
-  { inputs: [{ internalType: "address", name: "", type: "address" }], name: "isUser", outputs: [{ internalType: "bool", name: "", type: "bool" }], stateMutability: "view", type: "function" },
-  { inputs: [{ internalType: "address", name: "", type: "address" }], name: "supportedTokens", outputs: [{ internalType: "bool", name: "", type: "bool" }], stateMutability: "view", type: "function" },
-  { inputs: [{ internalType: "address", name: "", type: "address" }], name: "tokenDecimals", outputs: [{ internalType: "uint8", name: "", type: "uint8" }], stateMutability: "view", type: "function" },
-  {
-    inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "users",
-    outputs: [
-      { internalType: "uint256", name: "totalDonationUSD", type: "uint256" },
-      { internalType: "uint256", name: "nodeCount", type: "uint256" },
-      { internalType: "uint256", name: "teamNodeCount", type: "uint256" },
-      { internalType: "address", name: "referrer", type: "address" },
-      { internalType: "uint256", name: "directNodeCount", type: "uint256" },
-      { internalType: "uint256", name: "directDonationUSD", type: "uint256" },
-      { internalType: "uint256", name: "nstReward", type: "uint256" },
-      { internalType: "bool", name: "hasAutoNode", type: "bool" },
-      { internalType: "uint256", name: "points", type: "uint256" },
-      { internalType: "uint256", name: "lastSnapshotPoints", type: "uint256" },
-    ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [{ internalType: "address", name: "", type: "address" }],
-    name: "teamNodes",
-    outputs: [
-      { internalType: "uint256", name: "count", type: "uint256" },
-      { internalType: "uint256", name: "unlockTime", type: "uint256" },
-      { internalType: "bool", name: "isTeamMember", type: "bool" },
+    "inputs": [],
+    "name": "MAX_PUBLIC_NODES",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
-      { internalType: "address", name: "", type: "address" },
-      { internalType: "uint256", name: "", type: "uint256" },
+    "inputs": [],
+    "name": "MAX_TOTAL_NODES",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "hasClaimedGrowth",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-    inputs: [
-      { internalType: "address", name: "", type: "address" },
-      { internalType: "uint256", name: "", type: "uint256" },
+    "inputs": [],
+    "name": "MINIMUM_DONATION",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
-    name: "hasClaimedPoints",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function",
+    "stateMutability": "view",
+    "type": "function"
   },
+  {
+    "inputs": [],
+    "name": "NODE_HOLDER_MULTIPLIER",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "NODE_PRICE",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "NODE_REFERRAL_REWARD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "POINTS_PER_USD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "TEAM_LOCK_DURATION",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "TEAM_RESERVED_NODES",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "TOP_RANKERS_COUNT",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "decimals",
+        "type": "uint8"
+      }
+    ],
+    "name": "addSupportedToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "airdropRounds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "roundNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "growthRewardPerUser",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pointsRewardPerUser",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalDistributed",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isActive",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "teamMember",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "nodeCount",
+        "type": "uint256"
+      }
+    ],
+    "name": "allocateTeamNodes",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "teamMember",
+        "type": "address"
+      }
+    ],
+    "name": "areTeamNodesUnlocked",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "userAddresses",
+        "type": "address[]"
+      }
+    ],
+    "name": "batchUpdateSnapshots",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "nodeCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "referrerHint",
+        "type": "address"
+      }
+    ],
+    "name": "buyNode",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "checkAirdropStatus",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isInGrowthTop20",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "isInPointsTop20",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "hasClaimedGrowthReward",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "hasClaimedPointsReward",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "growthReward",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pointsReward",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalClaimable",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimAirdrop",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "claimEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "claimNSTRewards",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "closeAirdropRound",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[20]",
+        "name": "_topGrowthUsers",
+        "type": "address[20]"
+      },
+      {
+        "internalType": "address[20]",
+        "name": "_topPointsUsers",
+        "type": "address[20]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "growthRewardPerUser",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pointsRewardPerUser",
+        "type": "uint256"
+      }
+    ],
+    "name": "createAirdropRound",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "currentRound",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "deploymentTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "referrerHint",
+        "type": "address"
+      }
+    ],
+    "name": "donate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "emergencyWithdrawNST",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAirdropRound",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "roundNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "growthRewardPerUser",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pointsRewardPerUser",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalDistributed",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isActive",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getCurrentRound",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getGlobalStats",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_totalNodesIssued",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalDonationsUSD",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalUsers",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "nodesRemaining",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalPointsDistributed",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getNodeStats",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_publicNodesIssued",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_teamNodesIssued",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "publicNodesRemaining",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "teamNodesRemaining",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTopGrowthUsers",
+    "outputs": [
+      {
+        "internalType": "address[20]",
+        "name": "",
+        "type": "address[20]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTopPointsUsers",
+    "outputs": [
+      {
+        "internalType": "address[20]",
+        "name": "",
+        "type": "address[20]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getTotalNodeCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getUserInfo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalDonationUSD",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "nodeCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "directNodeCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "directDonationUSD",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "nstReward",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "hasAutoNode",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "points",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastSnapshotPoints",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "getUserPointsGrowth",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "growthBasisPoints",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "getUserRankPosition",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "growthPosition",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pointsPosition",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "hasClaimedGrowth",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "hasClaimedPoints",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "isEligibleForAutoNode",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "isUser",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nstToken",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "publicNodesIssued",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "removeSupportedToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "setClaimEnabled",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_nstToken",
+        "type": "address"
+      }
+    ],
+    "name": "setNSTToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_treasury",
+        "type": "address"
+      }
+    ],
+    "name": "setTreasury",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "supportedTokens",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "teamNodes",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "count",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "unlockTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isTeamMember",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "teamNodesIssued",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "tokenDecimals",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "topGrowthUsers",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "topPointsUsers",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalDonationsUSD",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalNodesIssued",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalPointsDistributed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalUsers",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "treasury",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "users",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalDonationUSD",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "nodeCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "teamNodeCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "referrer",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "directNodeCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "directDonationUSD",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "nstReward",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "hasAutoNode",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "points",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "lastSnapshotPoints",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ] as const;

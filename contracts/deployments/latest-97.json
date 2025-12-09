@@ -6,18 +6,18 @@
   },
   "contracts": {
     "NSTFinance": {
-      "address": "0x2025cF1312D5692E77FcF8bb5ffAE6621C106E39"
+      "address": "0x7afd3415E2aFFf6FC63f5D3d491d425274B77592"
     },
     "USDT": {
-      "address": "0xaB8729c64385E202750c1A08Ac25cA3410E5201d",
+      "address": "0x0D2bD51872384C5c1Dc169581a2A8Aa9Df701Db7",
       "decimals": 18
     },
     "USDC": {
-      "address": "0x1e7FC218ef637705Ec3aFfEDee9C6CfE31368CBf",
+      "address": "0x3c1b8f4712B6282d4ace3361EC618A4cAA2D3A2b",
       "decimals": 18
     },
     "NST": {
-      "address": "0x73E3ef5e243133dfd14E4dAc31bdF7c8a36eE7Bc",
+      "address": "0xCDc3c52D3Bca569bD6cbe5C87510c91C541C2Bb7",
       "decimals": 18
     }
   },
@@ -38,9 +38,9 @@
   },
   "deployment": {
     "deployer": "0xEc50dfEd7a7de26C1a94D4684FcF8e43C89f3DD1",
-    "blockNumber": 77231002,
-    "blockTimestamp": 1765165224,
-    "timestamp": "2025-12-08T03:40:25.135Z",
-    "transactionHash": "0x11a755452bccc3bbacc49909a722931d7e319a24e46ca68d6c959e8aca8e5033"
+    "blockNumber": 77524301,
+    "blockTimestamp": 1765297223,
+    "timestamp": "2025-12-09T16:20:23.667Z",
+    "transactionHash": "0x8bb4cca69d0980d48103c4725e9d54b80955b93ff0f928db4aa7347a008c4c22"
   }
 }

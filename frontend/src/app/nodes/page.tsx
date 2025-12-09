@@ -68,6 +68,7 @@ export default function NodesPage() {
   // Form state
   const [selectedToken, setSelectedToken] = useState("USDT")
   const [nodeCount, setNodeCount] = useState(1)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   
   // Hooks - use API hooks for data from backend
   const { buyNode, step, error, txHash, isLoading, reset } = useBuyNode()
@@ -100,6 +101,50 @@ export default function NodesPage() {
   const selectedTokenBalance = getBalance(selectedToken)
   const hasInsufficientBalance = selectedTokenBalance && totalCost > Number(selectedTokenBalance.formatted)
 
+  // Refetch data with multiple retry attempts (backend indexer needs time to process)
+  const refetchDataWithRetry = async () => {
+    setIsRefreshing(true)
+    
+    // Retry multiple times with increasing delays
+    const delays = [3000, 5000, 8000, 12000, 15000] // Total: ~43 seconds
+    
+    for (let i = 0; i < delays.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, delays[i]))
+      
+      // Refetch all data
+      await Promise.all([
+        refetchUser(),
+        refetchBalances(),
+        refetchGlobal(),
+        refetchNodeStats(),
+        refetchUserNodes(),
+        refetchPurchases()
+      ])
+      
+      // Check if data has been updated
+      if (i < delays.length - 1) {
+        // Continue to next retry
+        console.log(`Refetch attempt ${i + 1} completed, waiting for indexer...`)
+      }
+    }
+    
+    setIsRefreshing(false)
+  }
+
+  // Manual refresh function
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true)
+    await Promise.all([
+      refetchUser(),
+      refetchBalances(),
+      refetchGlobal(),
+      refetchNodeStats(),
+      refetchUserNodes(),
+      refetchPurchases()
+    ])
+    setIsRefreshing(false)
+  }
+
   // Handle purchase
   const handlePurchase = async () => {
     if (nodeCount <= 0 || nodeCount > maxPurchasable || hasInsufficientBalance) return
@@ -111,15 +156,8 @@ export default function NodesPage() {
     
     if (result.success) {
       setNodeCount(1)
-      // Refetch all data after successful purchase
-      setTimeout(() => {
-        refetchUser()
-        refetchBalances()
-        refetchGlobal()
-        refetchNodeStats()
-        refetchUserNodes()
-        refetchPurchases()
-      }, 5000)
+      // Start refetching data with retry mechanism
+      refetchDataWithRetry()
     }
   }
 
@@ -410,6 +448,11 @@ export default function NodesPage() {
                       </AlertTitle>
                       <AlertDescription className="space-y-2">
                         <p>{getStepMessage(step)}</p>
+                        {step === "success" && isRefreshing && (
+                          <p className="text-xs text-muted-foreground">
+                            Refreshing your stats... This may take 30-60 seconds while the transaction is indexed.
+                          </p>
+                        )}
                         {txHash && (
                           <a 
                             href={`${explorerUrl}/tx/${txHash}`}
@@ -456,9 +499,19 @@ export default function NodesPage() {
               {/* Your Stats Card */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-muted-foreground" />
-                    Your Node Stats
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-muted-foreground" />
+                      Your Node Stats
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleManualRefresh}
+                      disabled={isRefreshing || isLoadingUser}
+                    >
+                      <RefreshCw className={cn("w-4 h-4", (isRefreshing || isLoadingUser) && "animate-spin")} />
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -587,9 +640,14 @@ export default function NodesPage() {
               {/* Global Supply */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <Zap className="w-5 h-5 text-primary" />
-                    {t("nodes.globalSupply")}
+                  <CardTitle className="flex items-center justify-between text-base sm:text-lg">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-primary" />
+                      {t("nodes.globalSupply")}
+                    </div>
+                    {isRefreshing && (
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center">
@@ -690,9 +748,14 @@ export default function NodesPage() {
               {/* Platform Stats */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <Coins className="w-5 h-5 text-muted-foreground" />
-                    Platform Stats
+                  <CardTitle className="flex items-center justify-between text-base sm:text-lg">
+                    <div className="flex items-center gap-2">
+                      <Coins className="w-5 h-5 text-muted-foreground" />
+                      Platform Stats
+                    </div>
+                    {isRefreshing && (
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">

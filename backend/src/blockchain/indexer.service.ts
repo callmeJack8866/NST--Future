@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -6,6 +6,7 @@ import { EventLog } from 'ethers';
 import { BlockchainService } from './blockchain.service';
 import { SyncStateManagerService } from './services/sync-state-manager.service';
 import { BlockchainEventPollerService, EventBatchResult } from './services/blockchain-event-poller.service';
+import { AirdropsService } from '../airdrops/airdrops.service';
 import { User } from '../users/entities/user.entity';
 import { Donation, DonationSource } from '../donations/entities/donation.entity';
 import { Node, NodeType } from '../nodes/entities/node.entity';
@@ -50,6 +51,8 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
     private blockchainService: BlockchainService,
     private syncStateManager: SyncStateManagerService,
     private eventPoller: BlockchainEventPollerService,
+    @Inject(forwardRef(() => AirdropsService))
+    private airdropsService: AirdropsService,
     private dataSource: DataSource,
     @InjectRepository(User)
     private userRepo: Repository<User>,
@@ -518,37 +521,73 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
     this.logger.log(`Airdrop round ${data.round} created on-chain`);
 
     await this.dataSource.transaction(async (manager) => {
-      let rankingRound = await manager.findOne(RankingRound, {
+      // Check if round already exists (should not in normal flow)
+      const existingRound = await manager.findOne(RankingRound, {
         where: { round: data.round },
       });
 
-      if (rankingRound) {
-        // Update existing round with blockchain data
-        rankingRound.txHash = data.txHash;
-        rankingRound.blockNumber = data.blockNumber;
-        rankingRound.isProcessed = true;
-        await manager.save(rankingRound);
-        this.logger.log(`Updated existing ranking round ${data.round} with tx data`);
+      // Filter out zero addresses and normalize
+      const topGrowthUsers = data.topGrowthUsers
+        .filter((addr: string) => addr !== '0x0000000000000000000000000000000000000000')
+        .map((addr: string) => addr.toLowerCase());
+      
+      const topCumulativeUsers = data.topCumulativeUsers
+        .filter((addr: string) => addr !== '0x0000000000000000000000000000000000000000')
+        .map((addr: string) => addr.toLowerCase());
+
+      // Get enriched ranking data with points information
+      const enrichedData = await this.airdropsService.enrichRankingAddresses(
+        data.topGrowthUsers,
+        data.topCumulativeUsers,
+      );
+
+      if (existingRound) {
+        // Update existing round (unlikely case)
+        this.logger.log(`Updating existing ranking round ${data.round}`);
+        existingRound.growthAirdropAmount = (parseFloat(data.growthRewardPerUser) / 1e18).toString();
+        existingRound.cumulativeAirdropAmount = (parseFloat(data.pointsRewardPerUser) / 1e18).toString();
+        existingRound.topGrowthUsers = topGrowthUsers;
+        existingRound.topCumulativeUsers = topCumulativeUsers;
+        existingRound.txHash = data.txHash;
+        existingRound.blockNumber = data.blockNumber;
+        existingRound.isProcessed = true;
+        existingRound.isActive = true;
+        existingRound.snapshotData = enrichedData;
+        await manager.save(existingRound);
       } else {
-        // Create new round from blockchain event
-        // Note: This handles cases where the round was created directly on-chain
-        // without going through the API first
+        // Create new round from blockchain event (normal case)
+        this.logger.log(`Creating ranking round ${data.round} from blockchain event`);
         const newRound = manager.create(RankingRound, {
           round: data.round,
           growthAirdropAmount: (parseFloat(data.growthRewardPerUser) / 1e18).toString(),
           cumulativeAirdropAmount: (parseFloat(data.pointsRewardPerUser) / 1e18).toString(),
+          topGrowthUsers,
+          topCumulativeUsers,
           txHash: data.txHash,
           blockNumber: data.blockNumber,
           isProcessed: true,
           isActive: true,
-          topGrowthUsers: [],
-          topCumulativeUsers: [],
           growthClaimedUsers: [],
           cumulativeClaimedUsers: [],
+          snapshotData: enrichedData,
         });
         await manager.save(newRound);
-        this.logger.log(`Created new ranking round ${data.round} from blockchain event`);
       }
+
+      // Update snapshot points for all ranked users
+      // This marks their current points as baseline for next round
+      const allRankedUsers = [...new Set([...topGrowthUsers, ...topCumulativeUsers])];
+      if (allRankedUsers.length > 0) {
+        await manager
+          .createQueryBuilder()
+          .update(User)
+          .set({ lastSnapshotPoints: () => 'points' })
+          .where('address IN (:...addresses)', { addresses: allRankedUsers })
+          .execute();
+        this.logger.log(`Updated snapshots for ${allRankedUsers.length} ranked users`);
+      }
+
+      this.logger.log(`Airdrop round ${data.round} processed successfully`);
     });
   }
 

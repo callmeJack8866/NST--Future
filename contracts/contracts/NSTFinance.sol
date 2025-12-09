@@ -133,6 +133,8 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     // Airdrop Events
     event AirdropRoundCreated(
         uint256 indexed round,
+        address[20] growthUsers,
+        address[20] pointsUsers,
         uint256 growthRewardPerUser,
         uint256 pointsRewardPerUser,
         uint256 timestamp
@@ -390,6 +392,8 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         
         emit AirdropRoundCreated(
             currentRound,
+            _topGrowthUsers,
+            _topPointsUsers,
             growthRewardPerUser,
             pointsRewardPerUser,
             block.timestamp
@@ -618,7 +622,9 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         uint256 growthRewardPerUser,
         uint256 pointsRewardPerUser,
         uint256 totalDistributed,
-        bool isActive
+        bool isActive,
+        address[20] memory _topGrowthUsers,
+        address[20] memory _topPointsUsers
     ) {
         AirdropRound memory r = airdropRounds[round];
         return (
@@ -627,7 +633,9 @@ contract NSTFinance is Ownable, ReentrancyGuard {
             r.growthRewardPerUser,
             r.pointsRewardPerUser,
             r.totalDistributed,
-            r.isActive
+            r.isActive,
+            _topGrowthUsers,
+            _topPointsUsers
         );
     }
     

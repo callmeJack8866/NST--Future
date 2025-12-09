@@ -159,31 +159,9 @@ export function useRankingStats() {
 
 // ============ API Actions ============
 
-export async function processRankingRoundApi(
-  growthAirdropAmount: string,
-  cumulativeAirdropAmount: string,
-  txHash?: string
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/airdrops/ranking/process`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        growthAirdropAmount,
-        cumulativeAirdropAmount,
-        txHash,
-      }),
-    })
-    
-    if (response.ok) {
-      return { success: true }
-    } else {
-      return { success: false, error: "Failed to process round" }
-    }
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Failed to process" }
-  }
-}
+// NOTE: processRankingRoundApi has been removed
+// New flow: Admin calls smart contract createAirdropRound() → Indexer syncs from blockchain event
+// No manual API calls needed to create rounds
 
 export async function closeRankingRoundApi(round: number): Promise<{ success: boolean; error?: string }> {
   try {
@@ -203,18 +181,55 @@ export async function closeRankingRoundApi(round: number): Promise<{ success: bo
 
 export async function updateAllSnapshotsApi(): Promise<{ success: boolean; usersUpdated?: number; error?: string }> {
   try {
+    console.log('Calling API:', `${API_BASE_URL}/airdrops/ranking/update-snapshots`)
     const response = await fetch(`${API_BASE_URL}/airdrops/ranking/update-snapshots`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
+    
+    console.log('API Response status:', response.status)
     
     if (response.ok) {
       const data = await response.json()
+      console.log('API Response data:', data)
       return { success: true, usersUpdated: data.usersUpdated }
     } else {
-      return { success: false, error: "Failed to update snapshots" }
+      const errorText = await response.text()
+      console.error('API Error response:', errorText)
+      return { success: false, error: `Failed to update snapshots: ${response.status} ${errorText}` }
     }
   } catch (err) {
+    console.error('API Exception:', err)
     return { success: false, error: err instanceof Error ? err.message : "Failed to update" }
+  }
+}
+
+export async function resetAllSnapshotsApi(): Promise<{ success: boolean; usersUpdated?: number; error?: string }> {
+  try {
+    console.log('Calling API:', `${API_BASE_URL}/airdrops/ranking/reset-snapshots`)
+    const response = await fetch(`${API_BASE_URL}/airdrops/ranking/reset-snapshots`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    
+    console.log('API Response status:', response.status)
+    
+    if (response.ok) {
+      const data = await response.json()
+      console.log('API Response data:', data)
+      return { success: true, usersUpdated: data.usersUpdated }
+    } else {
+      const errorText = await response.text()
+      console.error('API Error response:', errorText)
+      return { success: false, error: `Failed to reset snapshots: ${response.status} ${errorText}` }
+    }
+  } catch (err) {
+    console.error('API Exception:', err)
+    return { success: false, error: err instanceof Error ? err.message : "Failed to reset" }
   }
 }
 

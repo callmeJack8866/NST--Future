@@ -99,6 +99,10 @@ export class AirdropsService {
     // Filter users with points > 0
     const usersWithPoints = users.filter((user) => {
       const points = parseFloat(user.points) || 0;
+
+      console.log('user.address - 1111111111111', user.address);
+      console.log('points - 2222222222222', points);
+      
       return points > 0;
     });
 
@@ -149,47 +153,86 @@ export class AirdropsService {
   }
 
   /**
-   * Process a new ranking round (admin only)
-   * Saves the ranking data to database
+   * Get enriched ranking data for blockchain addresses
+   * Used by indexer to enrich contract event data with snapshot details
    */
-  async processRankingRound(
-    growthAirdropAmount: string,
-    cumulativeAirdropAmount: string,
-    txHash?: string,
-    blockNumber?: number,
-  ): Promise<RankingRound> {
-    const preparedData = await this.prepareAirdropData();
+  async enrichRankingAddresses(
+    topGrowthAddresses: string[],
+    topCumulativeAddresses: string[],
+  ): Promise<{
+    growthRankings: Array<{
+      address: string;
+      previousPoints: number;
+      currentPoints: number;
+      growthPercentage: number;
+    }>;
+    cumulativeRankings: Array<{
+      address: string;
+      totalPoints: number;
+    }>;
+  }> {
+    const enrichedGrowth: Array<{
+      address: string;
+      previousPoints: number;
+      currentPoints: number;
+      growthPercentage: number;
+    }> = [];
+    
+    const enrichedCumulative: Array<{
+      address: string;
+      totalPoints: number;
+    }> = [];
 
-    const rankingRound = this.rankingRoundRepo.create({
-      round: preparedData.round,
-      growthAirdropAmount,
-      cumulativeAirdropAmount,
-      topGrowthUsers: preparedData.topGrowthUsers.map((u) => u.address),
-      topCumulativeUsers: preparedData.topCumulativeUsers.map((u) => u.address),
-      isProcessed: true,
-      isActive: true,
-      txHash,
-      blockNumber,
-      snapshotData: {
-        growthRankings: preparedData.topGrowthUsers.map((u) => ({
-          address: u.address,
-          previousPoints: u.previousPoints,
-          currentPoints: u.currentPoints,
-          growthPercentage: u.growthPercentage,
-        })),
-        cumulativeRankings: preparedData.topCumulativeUsers.map((u) => ({
-          address: u.address,
-          totalPoints: u.totalPoints,
-        })),
-      },
-    });
+    // Enrich growth rankings
+    for (const address of topGrowthAddresses) {
+      // Skip zero addresses
+      if (address === '0x0000000000000000000000000000000000000000') continue;
+      
+      const user = await this.userRepo.findOne({
+        where: { address: address.toLowerCase() },
+      });
 
-    await this.rankingRoundRepo.save(rankingRound);
+      if (user) {
+        const currentPoints = parseFloat(user.points) || 0;
+        const previousPoints = parseFloat(user.lastSnapshotPoints) || 0;
+        
+        let growthPercentage = 0;
+        if (previousPoints > 0) {
+          growthPercentage = ((currentPoints - previousPoints) / previousPoints) * 100;
+        } else if (currentPoints > 0) {
+          growthPercentage = 100;
+        }
 
-    // Update lastSnapshotPoints for all users (reset baseline for next round)
-    await this.updateAllUserSnapshots();
+        enrichedGrowth.push({
+          address: address.toLowerCase(),
+          previousPoints,
+          currentPoints,
+          growthPercentage,
+        });
+      }
+    }
 
-    return rankingRound;
+    // Enrich cumulative rankings
+    for (const address of topCumulativeAddresses) {
+      // Skip zero addresses
+      if (address === '0x0000000000000000000000000000000000000000') continue;
+      
+      const user = await this.userRepo.findOne({
+        where: { address: address.toLowerCase() },
+      });
+
+      if (user) {
+        enrichedCumulative.push({
+          address: address.toLowerCase(),
+          totalPoints: parseFloat(user.points) || 0,
+        });
+      }
+    }
+
+    return {
+      growthRankings: enrichedGrowth,
+      cumulativeRankings: enrichedCumulative,
+    };
   }
 
   /**
@@ -226,6 +269,32 @@ export class AirdropsService {
       .execute();
 
     return result.affected || 0;
+  }
+
+  /**
+   * Reset lastSnapshotPoints to 0 for all users
+   * This allows all users to show growth in the next round
+   */
+  async resetAllSnapshots(): Promise<number> {
+    console.log('resetAllSnapshots - Starting reset to 0...');
+    try {
+      const result = await this.userRepo
+        .createQueryBuilder()
+        .update(User)
+        .set({
+          lastSnapshotPoints: '0',
+        })
+        .execute();
+
+      console.log('resetAllSnapshots - Reset complete:', {
+        affected: result.affected,
+      });
+
+      return result.affected || 0;
+    } catch (err) {
+      console.error('resetAllSnapshots - Error:', err.message);
+      throw err;
+    }
   }
 
   /**

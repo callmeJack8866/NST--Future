@@ -2,13 +2,6 @@ import { Controller, Get, Post, Param, Query, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AirdropsService } from './airdrops.service';
 
-class ProcessRankingRoundDto {
-  growthAirdropAmount: string;
-  cumulativeAirdropAmount: string;
-  txHash?: string;
-  blockNumber?: number;
-}
-
 @ApiTags('airdrops')
 @Controller('airdrops')
 export class AirdropsController {
@@ -47,14 +40,14 @@ export class AirdropsController {
   }
 
   @Get('ranking/prepare')
-  @ApiOperation({ summary: 'Preview airdrop data before processing' })
+  @ApiOperation({ summary: '[Admin] Preview airdrop data before calling smart contract' })
   @ApiResponse({ status: 200, description: 'Prepared airdrop data with rankings' })
   async prepareAirdropData() {
     return this.airdropsService.prepareAirdropData();
   }
 
   @Get('ranking/contract-data')
-  @ApiOperation({ summary: 'Get data formatted for smart contract call' })
+  @ApiOperation({ summary: '[Admin] Get data formatted for smart contract call (20-padded)' })
   @ApiResponse({ status: 200, description: 'Contract call data with padded addresses' })
   async getContractCallData() {
     return this.airdropsService.getContractCallData();
@@ -83,19 +76,8 @@ export class AirdropsController {
   }
 
   // ============ Admin Endpoints ============
-
-  @Post('ranking/process')
-  @ApiOperation({ summary: '[Admin] Process a new ranking round' })
-  @ApiBody({ type: ProcessRankingRoundDto })
-  @ApiResponse({ status: 201, description: 'Ranking round processed' })
-  async processRankingRound(@Body() dto: ProcessRankingRoundDto) {
-    return this.airdropsService.processRankingRound(
-      dto.growthAirdropAmount,
-      dto.cumulativeAirdropAmount,
-      dto.txHash,
-      dto.blockNumber,
-    );
-  }
+  // NOTE: Airdrop rounds are created by calling the smart contract directly.
+  // The indexer automatically syncs data from the AirdropRoundCreated event.
 
   @Post('ranking/close/:round')
   @ApiOperation({ summary: '[Admin] Close a ranking round' })
@@ -110,8 +92,15 @@ export class AirdropsController {
   @ApiOperation({ summary: '[Admin] Update snapshot points for all users' })
   @ApiResponse({ status: 200, description: 'Snapshots updated' })
   async updateAllSnapshots() {
-    const affected = await this.airdropsService.updateAllUserSnapshots();
-    return { success: true, usersUpdated: affected };
+    console.log('Controller: updateAllSnapshots endpoint called');
+    try {
+      const affected = await this.airdropsService.updateAllUserSnapshots();
+      console.log('Controller: Snapshots updated, affected rows:', affected);
+      return { success: true, usersUpdated: affected };
+    } catch (err) {
+      console.error('Controller: Error updating snapshots:', err.message);
+      throw err;
+    }
   }
 
   @Post('ranking/update-snapshots/batch')
@@ -128,5 +117,20 @@ export class AirdropsController {
   async updateBatchSnapshots(@Body() body: { addresses: string[] }) {
     const affected = await this.airdropsService.updateUserSnapshots(body.addresses);
     return { success: true, usersUpdated: affected };
+  }
+
+  @Post('ranking/reset-snapshots')
+  @ApiOperation({ summary: '[Admin] Reset snapshot points to 0 for all users' })
+  @ApiResponse({ status: 200, description: 'Snapshots reset to 0' })
+  async resetAllSnapshots() {
+    console.log('Controller: resetAllSnapshots endpoint called');
+    try {
+      const affected = await this.airdropsService.resetAllSnapshots();
+      console.log('Controller: Snapshots reset, affected rows:', affected);
+      return { success: true, usersUpdated: affected };
+    } catch (err) {
+      console.error('Controller: Error resetting snapshots:', err.message);
+      throw err;
+    }
   }
 }

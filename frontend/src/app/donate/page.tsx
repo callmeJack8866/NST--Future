@@ -50,6 +50,7 @@ export default function DonatePage() {
   // Form state
   const [selectedToken, setSelectedToken] = useState("USDT")
   const [amount, setAmount] = useState("")
+  const [isRefreshing, setIsRefreshing] = useState(false)
   
   // Hooks - use API hooks for user data from backend
   const { donate, step, error, txHash, isLoading, reset } = useDonate()
@@ -78,6 +79,45 @@ export default function DonatePage() {
 
   const quickAmounts = [100, 250, 500, 1000, 2000, 5000]
 
+  // Refetch data with multiple retry attempts (backend indexer needs time to process)
+  const refetchDataWithRetry = async () => {
+    setIsRefreshing(true)
+    
+    // Retry multiple times with increasing delays
+    const delays = [3000, 5000, 8000, 12000, 15000] // Total: ~43 seconds
+    
+    for (let i = 0; i < delays.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, delays[i]))
+      
+      // Refetch all data
+      await Promise.all([
+        refetchUser(),
+        refetchBalances(),
+        refetchDonations()
+      ])
+      
+      // Check if data has been updated (totalDonationUSD changed)
+      // If updated, we can stop retrying
+      if (i < delays.length - 1) {
+        // Continue to next retry
+        console.log(`Refetch attempt ${i + 1} completed, waiting for indexer...`)
+      }
+    }
+    
+    setIsRefreshing(false)
+  }
+
+  // Manual refresh function
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true)
+    await Promise.all([
+      refetchUser(),
+      refetchBalances(),
+      refetchDonations()
+    ])
+    setIsRefreshing(false)
+  }
+
   // Handle donation
   const handleDonate = async () => {
     if (!isValidAmount || hasInsufficientBalance) return
@@ -89,12 +129,8 @@ export default function DonatePage() {
     
     if (result.success) {
       setAmount("")
-      // Refetch user data after successful donation
-      setTimeout(() => {
-        refetchUser()
-        refetchBalances()
-        refetchDonations()
-      }, 5000)
+      // Start refetching data with retry mechanism
+      refetchDataWithRetry()
     }
   }
 
@@ -297,6 +333,11 @@ export default function DonatePage() {
                       </AlertTitle>
                       <AlertDescription className="space-y-2">
                         <p>{getStepMessage(step)}</p>
+                        {step === "success" && isRefreshing && (
+                          <p className="text-xs text-muted-foreground">
+                            Refreshing your stats... This may take 30-60 seconds while the transaction is indexed.
+                          </p>
+                        )}
                         {txHash && (
                           <a 
                             href={`${explorerUrl}/tx/${txHash}`}
@@ -414,9 +455,14 @@ export default function DonatePage() {
               {/* Progress to Auto Upgrade */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <Gift className="w-5 h-5 text-primary" />
-                    {t("donate.autoNodeUpgrade")}
+                  <CardTitle className="flex items-center justify-between text-base sm:text-lg">
+                    <div className="flex items-center gap-2">
+                      <Gift className="w-5 h-5 text-primary" />
+                      {t("donate.autoNodeUpgrade")}
+                    </div>
+                    {isRefreshing && (
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -490,9 +536,19 @@ export default function DonatePage() {
               {/* Your Stats */}
               <Card className="glass">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <DollarSign className="w-5 h-5 text-muted-foreground" />
-                    {t("donate.yourStats")}
+                  <CardTitle className="flex items-center justify-between text-base sm:text-lg">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-muted-foreground" />
+                      {t("donate.yourStats")}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleManualRefresh}
+                      disabled={isRefreshing || isLoadingUser}
+                    >
+                      <RefreshCw className={cn("w-4 h-4", (isRefreshing || isLoadingUser) && "animate-spin")} />
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">

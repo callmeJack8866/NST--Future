@@ -969,7 +969,10 @@ export interface LeaderboardGrowthItem {
   rank: number
   address: string
   growth: number
+  growthPercentage: number
   points: number
+  currentPoints: number
+  previousPoints: number
   nodeCount: number
 }
 
@@ -988,7 +991,10 @@ function transformLeaderboardGrowth(data: LeaderboardGrowthEntry[]): Leaderboard
     rank: index + 1,
     address: entry.address,
     growth: entry.growthPercentage || 0,
+    growthPercentage: entry.growthPercentage || 0,
     points: parseFloat(entry.points) || 0,
+    currentPoints: parseFloat(entry.points) || 0,
+    previousPoints: parseFloat(entry.lastSnapshotPoints) || 0,
     nodeCount: 0, // Not provided by growth endpoint
   }))
 }

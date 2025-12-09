@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAccount } from "wagmi"
+import { useAccount, useReadContract, useWriteContract, usePublicClient } from "wagmi"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
@@ -10,13 +10,15 @@ import { Button } from "@/components/ui/button"
 import { GlowButton } from "@/components/ui/glow-button"
 import { useLanguage } from "@/contexts/language-context"
 import { cn } from "@/lib/utils"
+import { NST_FINANCE_ABI } from "@/lib/contracts/nst-abi"
+import { getContracts } from "@/lib/contracts/config"
+import { formatEther } from "viem"
 import {
   Trophy,
   TrendingUp,
   Star,
   Medal,
   Crown,
-  Wallet,
   Gift,
   Calendar,
   CheckCircle,
@@ -24,10 +26,13 @@ import {
   Sparkles,
   Loader2,
   RefreshCw,
+  ExternalLink,
+  AlertCircle,
 } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
   useUserInfoApi,
   useLeaderboardPointsApi,
@@ -36,17 +41,52 @@ import {
 } from "@/hooks/useApi"
 
 export default function LeaderboardPage() {
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, chainId } = useAccount()
   const { t } = useLanguage()
+  const publicClient = usePublicClient()
   const [mounted, setMounted] = useState(false)
-  const [isApplying, setIsApplying] = useState(false)
-  const [applyResult, setApplyResult] = useState<"success" | "failed" | null>(null)
+  const [isClaiming, setIsClaiming] = useState(false)
+  const [claimResult, setClaimResult] = useState<{ success: boolean; message: string; txHash?: string } | null>(null)
+
+  const contracts = getContracts(chainId ?? 97)
+  const explorerUrl = chainId === 97 ? "https://testnet.bscscan.com" : "https://bscscan.com"
 
   // API hooks
   const { userInfo, isLoading: isLoadingUser } = useUserInfoApi()
   const { entries: pointsLeaderboard, isLoading: isLoadingPoints, refetch: refetchPoints } = useLeaderboardPointsApi(20)
   const { entries: growthLeaderboard, isLoading: isLoadingGrowth, refetch: refetchGrowth } = useLeaderboardGrowthApi(20)
   const { userPointsRank, userGrowthRank, isEligiblePoints, isEligibleGrowth, isEligible } = useUserLeaderboardRank()
+
+  // Contract reads
+  const { data: currentRound } = useReadContract({
+    address: contracts.NST_FINANCE as `0x${string}`,
+    abi: NST_FINANCE_ABI,
+    functionName: "currentRound",
+  })
+
+  const { data: airdropStatus, refetch: refetchAirdropStatus } = useReadContract({
+    address: contracts.NST_FINANCE as `0x${string}`,
+    abi: NST_FINANCE_ABI,
+    functionName: "checkAirdropStatus",
+    args: address ? [address, currentRound ?? BigInt(1)] : undefined,
+    query: {
+      enabled: !!address && !!currentRound,
+    },
+  })
+
+  // Parse airdrop status
+  const isInGrowthTop20 = airdropStatus?.[0] ?? false
+  const isInPointsTop20 = airdropStatus?.[1] ?? false
+  const hasClaimedGrowth = airdropStatus?.[2] ?? false
+  const hasClaimedPoints = airdropStatus?.[3] ?? false
+  const growthReward = airdropStatus?.[4] ? Number(formatEther(airdropStatus[4])) : 0
+  const pointsReward = airdropStatus?.[5] ? Number(formatEther(airdropStatus[5])) : 0
+  const totalClaimable = airdropStatus?.[6] ? Number(formatEther(airdropStatus[6])) : 0
+
+  const canClaim = totalClaimable > 0
+
+  // Contract write
+  const { writeContractAsync } = useWriteContract()
 
   const isLoading = isLoadingPoints || isLoadingGrowth
   const userPoints = userInfo?.points ?? 0
@@ -59,14 +99,50 @@ export default function LeaderboardPage() {
   const refetchAll = () => {
     refetchPoints()
     refetchGrowth()
+    refetchAirdropStatus()
   }
 
-  const handleApplyForAirdrop = async () => {
-    setIsApplying(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsApplying(false)
-    setApplyResult(isEligible ? "success" : "failed")
-    setTimeout(() => setApplyResult(null), 5000)
+  const handleClaimAirdrop = async () => {
+    if (!address || !currentRound || !canClaim || !publicClient) return
+
+    setIsClaiming(true)
+    setClaimResult(null)
+
+    try {
+      const hash = await writeContractAsync({
+        address: contracts.NST_FINANCE as `0x${string}`,
+        abi: NST_FINANCE_ABI,
+        functionName: "claimAirdrop",
+        args: [currentRound],
+      })
+
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash,
+        confirmations: 1,
+      })
+
+      if (receipt.status === "success") {
+        setClaimResult({
+          success: true,
+          message: `Successfully claimed ${totalClaimable.toLocaleString()} NST!`,
+          txHash: hash,
+        })
+        refetchAirdropStatus()
+      } else {
+        setClaimResult({
+          success: false,
+          message: "Transaction failed",
+        })
+      }
+    } catch (err: any) {
+      console.error("Claim error:", err)
+      setClaimResult({
+        success: false,
+        message: err?.shortMessage || err?.message || "Failed to claim airdrop",
+      })
+    } finally {
+      setIsClaiming(false)
+    }
   }
 
   const getRankIcon = (rank: number) => {
@@ -134,18 +210,51 @@ export default function LeaderboardPage() {
                 {t("leaderboard.subtitle")}
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={refetchAll}
-              disabled={isLoading}
-            >
-              <RefreshCw className={cn("w-4 h-4 mr-2", isLoading && "animate-spin")} />
-              Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="glass">
+                Round #{currentRound?.toString() ?? "0"}
+              </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={refetchAll}
+                disabled={isLoading}
+              >
+                <RefreshCw className={cn("w-4 h-4 mr-2", isLoading && "animate-spin")} />
+                Refresh
+              </Button>
+            </div>
           </div>
 
-          {/* Your Stats & Airdrop Application */}
+          {/* Claim Result Alert */}
+          {claimResult && (
+            <Alert className={cn(
+              "mb-6",
+              claimResult.success ? "border-green-500/50 bg-green-500/10" : "border-destructive/50 bg-destructive/10"
+            )}>
+              {claimResult.success ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <AlertCircle className="w-4 h-4 text-destructive" />
+              )}
+              <AlertTitle>{claimResult.success ? "Success!" : "Error"}</AlertTitle>
+              <AlertDescription>
+                {claimResult.message}
+                {claimResult.txHash && (
+                  <a
+                    href={`${explorerUrl}/tx/${claimResult.txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 text-primary hover:underline"
+                  >
+                    View TX <ExternalLink className="w-3 h-3 inline" />
+                  </a>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Your Stats & Airdrop Claim */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <Card className="glass lg:col-span-2">
               <CardHeader>
@@ -190,53 +299,106 @@ export default function LeaderboardPage() {
               </CardContent>
             </Card>
 
-            <Card className={cn("glass", isEligible && "border-primary/50")}>
+            {/* Airdrop Claim Card */}
+            <Card className={cn("glass", canClaim && "border-primary/50")}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Gift className="w-5 h-5 text-primary" />
-                  {t("leaderboard.applyForAirdrop")}
+                  Claim Airdrop
                 </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">{t("leaderboard.monthlyAirdrops")}</CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
+                  Round #{currentRound?.toString() ?? "0"} Rewards
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center gap-2 text-sm">
-                  {isEligible ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 text-primary" />
-                      <span className="text-primary">{t("leaderboard.youAreEligible")}</span>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">{t("leaderboard.notInTop20")}</span>
-                    </>
-                  )}
+                {/* Eligibility Status */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Growth Top 20</span>
+                    <div className="flex items-center gap-2">
+                      {isInGrowthTop20 ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <span className="text-green-500">{growthReward.toLocaleString()} NST</span>
+                          {hasClaimedGrowth && <Badge variant="outline" className="text-xs">Claimed</Badge>}
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Not eligible</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Points Top 20</span>
+                    <div className="flex items-center gap-2">
+                      {isInPointsTop20 ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <span className="text-green-500">{pointsReward.toLocaleString()} NST</span>
+                          {hasClaimedPoints && <Badge variant="outline" className="text-xs">Claimed</Badge>}
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Not eligible</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {applyResult === "success" && (
-                  <div className="p-3 rounded-lg bg-primary/10 text-primary text-sm flex items-center gap-2">
+                {/* Total Claimable */}
+                {totalClaimable > 0 && (
+                  <div className="p-3 rounded-lg bg-primary/10 text-center">
+                    <p className="text-xs text-muted-foreground mb-1">Total Claimable</p>
+                    <p className="text-2xl font-bold gradient-text">{totalClaimable.toLocaleString()} NST</p>
+                  </div>
+                )}
+
+                {/* Already Claimed */}
+                {(hasClaimedGrowth && hasClaimedPoints) && (isInGrowthTop20 || isInPointsTop20) && (
+                  <div className="p-3 rounded-lg bg-green-500/10 text-green-500 text-sm flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
-                    {t("leaderboard.airdropClaimed")}
+                    You've claimed all rewards for this round!
                   </div>
                 )}
 
-                {applyResult === "failed" && (
-                  <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm flex items-center gap-2">
-                    <XCircle className="w-4 h-4" />
-                    {t("leaderboard.notEligible")}
+                {/* Not Eligible */}
+                {!isInGrowthTop20 && !isInPointsTop20 && Number(currentRound) > 0 && (
+                  <div className="p-3 rounded-lg bg-secondary/30 text-muted-foreground text-sm text-center">
+                    You're not in the Top 20 for this round. Keep earning points!
                   </div>
                 )}
 
-                <GlowButton className="w-full" onClick={handleApplyForAirdrop} disabled={isApplying}>
-                  {isApplying ? (
+                {/* No Active Round */}
+                {Number(currentRound) === 0 && (
+                  <div className="p-3 rounded-lg bg-secondary/30 text-muted-foreground text-sm text-center">
+                    No airdrop rounds yet. Stay tuned!
+                  </div>
+                )}
+
+                {/* Claim Button */}
+                <GlowButton 
+                  className="w-full" 
+                  onClick={handleClaimAirdrop} 
+                  disabled={isClaiming || !canClaim}
+                >
+                  {isClaiming ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
-                      {t("leaderboard.checking")}
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Claiming...
+                    </>
+                  ) : canClaim ? (
+                    <>
+                      <Gift className="w-4 h-4 mr-2" />
+                      Claim {totalClaimable.toLocaleString()} NST
                     </>
                   ) : (
                     <>
                       <Gift className="w-4 h-4 mr-2" />
-                      {t("leaderboard.applyButton")}
+                      {(hasClaimedGrowth || hasClaimedPoints) ? "Already Claimed" : "Nothing to Claim"}
                     </>
                   )}
                 </GlowButton>
@@ -362,7 +524,6 @@ export default function LeaderboardPage() {
                   ) : growthLeaderboard.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <p className="text-sm">No growth data yet.</p>
-                      <p className="text-xs mt-1">Growth is calculated after the first snapshot.</p>
                     </div>
                   ) : (
                     <Table>
@@ -370,16 +531,17 @@ export default function LeaderboardPage() {
                         <TableRow>
                           <TableHead className="w-12 sm:w-16 whitespace-nowrap">{t("leaderboard.rank")}</TableHead>
                           <TableHead className="whitespace-nowrap">{t("leaderboard.address")}</TableHead>
-                          <TableHead className="whitespace-nowrap">{t("leaderboard.growth")}</TableHead>
-                          <TableHead className="whitespace-nowrap">{t("leaderboard.points")}</TableHead>
+                          <TableHead className="whitespace-nowrap">Growth</TableHead>
+                          <TableHead className="whitespace-nowrap">Current</TableHead>
+                          <TableHead className="text-right whitespace-nowrap">Previous</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {growthLeaderboard.map((entry, i) => (
-                          <TableRow 
-                            key={entry.address} 
+                          <TableRow
+                            key={entry.address}
                             className={cn(
-                              i < 3 && "bg-primary/5",
+                              i < 3 && "bg-primary/5", 
                               address && entry.address.toLowerCase() === address.toLowerCase() && "bg-accent/10"
                             )}
                           >
@@ -391,9 +553,14 @@ export default function LeaderboardPage() {
                               )}
                             </TableCell>
                             <TableCell className="whitespace-nowrap">
-                              <span className="font-semibold text-primary">+{entry.growth.toFixed(1)}%</span>
+                              <span className="font-semibold text-green-500">+{entry.growthPercentage?.toFixed(1) ?? 0}%</span>
                             </TableCell>
-                            <TableCell className="whitespace-nowrap">{Math.round(entry.points).toLocaleString()}</TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              <span className="text-primary">{Math.round(entry.currentPoints ?? entry.points ?? 0).toLocaleString()}</span>
+                            </TableCell>
+                            <TableCell className="text-right whitespace-nowrap text-muted-foreground">
+                              {Math.round(entry.previousPoints ?? 0).toLocaleString()}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -404,41 +571,41 @@ export default function LeaderboardPage() {
             </TabsContent>
           </Tabs>
 
-          {/* Airdrop Info */}
+          {/* Info Section */}
           <Card className="glass mt-8">
             <CardHeader>
-              <CardTitle className="text-lg sm:text-xl">{t("leaderboard.howAirdropsWork")}</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                How Airdrops Work
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-primary" />
-                  </div>
-                  <h3 className="text-sm sm:text-base font-semibold">{t("leaderboard.monthlySnapshots")}</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {t("leaderboard.monthlySnapshotsDesc")}
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-lg bg-secondary/30">
+                  <h4 className="font-medium flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                    Growth Top 20
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Users with the highest % increase in points since the last snapshot.
+                    Example: 100 → 1000 = +900% growth.
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Trophy className="w-5 h-5 text-primary" />
-                  </div>
-                  <h3 className="text-sm sm:text-base font-semibold">{t("leaderboard.twoCategories")}</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {t("leaderboard.twoCategoriesDesc")}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Gift className="w-5 h-5 text-primary" />
-                  </div>
-                  <h3 className="text-sm sm:text-base font-semibold">{t("leaderboard.claimYourReward")}</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {t("leaderboard.claimRewardDesc")}
+                <div className="p-4 rounded-lg bg-secondary/30">
+                  <h4 className="font-medium flex items-center gap-2 mb-2">
+                    <Star className="w-4 h-4 text-[#facc15]" />
+                    Points Top 20
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Users with the highest total cumulative points.
+                    Earn points by donating and referring others.
                   </p>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground text-center">
+                Airdrops occur twice monthly (10th & 20th). If you're in the Top 20 for either category,
+                you can claim your NST rewards after the admin processes the round.
+              </p>
             </CardContent>
           </Card>
         </div>

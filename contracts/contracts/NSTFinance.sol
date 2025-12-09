@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title NSTFinance
- * @notice Main contract for NST Finance
+ * @notice Main contract for NST Finance - Simplified Airdrop System
  * @dev Phase 1 deployment on BSC
  */
 contract NSTFinance is Ownable, ReentrancyGuard {
@@ -19,9 +19,9 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     uint256 public constant MINIMUM_DONATION = 100 * 10**18; // 100 USD
     uint256 public constant NODE_PRICE = 2000 * 10**18; // 2000 USD
     uint256 public constant MAX_NODES_PER_USER = 5;
-    uint256 public constant MAX_TOTAL_NODES = 120; // Increased from 100
-    uint256 public constant MAX_PUBLIC_NODES = 100; // Available for public
-    uint256 public constant TEAM_RESERVED_NODES = 20; // Reserved for team
+    uint256 public constant MAX_TOTAL_NODES = 120;
+    uint256 public constant MAX_PUBLIC_NODES = 100;
+    uint256 public constant TEAM_RESERVED_NODES = 20;
     uint256 public constant TEAM_LOCK_DURATION = 730 days; // 2 years
     uint256 public constant AUTO_NODE_THRESHOLD = 2000 * 10**18;
     
@@ -41,8 +41,8 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     
     struct UserInfo {
         uint256 totalDonationUSD;
-        uint256 nodeCount;              // Regular nodes
-        uint256 teamNodeCount;          // Team nodes (locked)
+        uint256 nodeCount;
+        uint256 teamNodeCount;
         address referrer;
         uint256 directNodeCount;
         uint256 directDonationUSD;
@@ -53,46 +53,35 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     }
     
     struct TeamNodeInfo {
-        uint256 count;                  // Number of team nodes
-        uint256 unlockTime;             // When nodes unlock (2 years)
-        bool isTeamMember;              // Whether address is team
+        uint256 count;
+        uint256 unlockTime;
+        bool isTeamMember;
     }
     
+    /**
+     * @notice Simplified Airdrop Round - Monthly Top 20 Rankings
+     * @dev Combines growth and cumulative rankings into one clean structure
+     */
     struct AirdropRound {
         uint256 roundNumber;
         uint256 timestamp;
-        uint256 airdropAmount;
-        uint256 totalEligible;
+        uint256 growthRewardPerUser;      // NST per user for growth Top 20
+        uint256 pointsRewardPerUser;      // NST per user for cumulative Top 20
+        uint256 totalDistributed;          // Track total claimed
         bool isActive;
-    }
-    
-    struct RankingRound {
-        uint256 roundNumber;
-        uint256 timestamp;
-        uint256 growthAirdropAmount;      // Airdrop per user for growth ranking
-        uint256 cumulativeAirdropAmount;  // Airdrop per user for cumulative ranking
-        bool processed;
     }
     
     mapping(address => UserInfo) public users;
     mapping(address => bool) public isUser;
-    mapping(address => TeamNodeInfo) public teamNodes; // Team node tracking
+    mapping(address => TeamNodeInfo) public teamNodes;
     
-    // Points & Airdrop System
-    mapping(address => mapping(uint256 => bool)) public hasClaimedAirdrop;
-    mapping(address => mapping(uint256 => bool)) public isEligibleForAirdrop;
+    // Airdrop System (Simplified)
     mapping(uint256 => AirdropRound) public airdropRounds;
-    uint256 public currentAirdropRound;
-    uint256 public lastSnapshotTimestamp;
-    
-    // Ranking System (Monthly Top 20)
-    mapping(uint256 => RankingRound) public rankingRounds;
-    mapping(uint256 => address[20]) public topGrowthUsers;      // Top 20 by growth % per round
-    mapping(uint256 => address[20]) public topCumulativeUsers;  // Top 20 by total points per round
-    mapping(address => mapping(uint256 => bool)) public hasClaimedGrowthRanking;
-    mapping(address => mapping(uint256 => bool)) public hasClaimedCumulativeRanking;
-    uint256 public currentRankingRound;
-    uint256 public lastRankingTimestamp;
+    mapping(uint256 => address[20]) public topGrowthUsers;      // Top 20 by growth %
+    mapping(uint256 => address[20]) public topPointsUsers;       // Top 20 by total points
+    mapping(address => mapping(uint256 => bool)) public hasClaimedGrowth;
+    mapping(address => mapping(uint256 => bool)) public hasClaimedPoints;
+    uint256 public currentRound;
     
     // Supported stablecoins
     mapping(address => bool) public supportedTokens;
@@ -104,13 +93,13 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     bool public claimEnabled;
     
     // Global stats
-    uint256 public totalNodesIssued;        // Total nodes (public + team)
-    uint256 public publicNodesIssued;       // Public nodes issued
-    uint256 public teamNodesIssued;         // Team nodes issued
+    uint256 public totalNodesIssued;
+    uint256 public publicNodesIssued;
+    uint256 public teamNodesIssued;
     uint256 public totalDonationsUSD;
     uint256 public totalUsers;
     uint256 public totalPointsDistributed;
-    uint256 public deploymentTime;          // Contract deployment time
+    uint256 public deploymentTime;
 
     // ============ Events ============
     
@@ -129,7 +118,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         address indexed referrer
     );
     event TeamNodeAllocated(address indexed teamMember, uint256 count, uint256 unlockTime);
-    event TeamNodeUnlocked(address indexed teamMember, uint256 count);
     event AutoNodeGranted(address indexed user, uint256 nodeNumber);
     event NodeReferralReward(address indexed referrer, address indexed referee, uint256 reward);
     event DonationReferralReward(address indexed referrer, uint256 reward, uint256 donationAmount);
@@ -140,32 +128,29 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     event TreasuryUpdated(address indexed oldTreasury, address indexed newTreasury);
     event NSTTokenSet(address indexed nstToken);
     event ClaimEnabled(bool enabled);
-    
-    // v1.1 Events
     event PointsEarned(address indexed user, uint256 points, string source);
-    event SnapshotTaken(uint256 indexed round, uint256 timestamp);
-    event AirdropRoundCreated(uint256 indexed round, uint256 airdropAmount, uint256 totalEligible);
-    event AirdropEligibilitySet(address indexed user, uint256 indexed round, bool eligible);
-    event AirdropClaimed(address indexed user, uint256 indexed round, uint256 amount);
     
-    // v1.2 Ranking Events
-    event RankingRoundProcessed(
+    // Airdrop Events
+    event AirdropRoundCreated(
         uint256 indexed round,
-        uint256 timestamp,
-        uint256 growthAirdropAmount,
-        uint256 cumulativeAirdropAmount
+        uint256 growthRewardPerUser,
+        uint256 pointsRewardPerUser,
+        uint256 timestamp
     );
-    event TopGrowthRankersSet(uint256 indexed round, address[20] rankers);
-    event TopCumulativeRankersSet(uint256 indexed round, address[20] rankers);
-    event RankingAirdropClaimed(address indexed user, uint256 indexed round, uint256 amount, string rankingType);
-    event SnapshotPointsUpdated(uint256 indexed round, uint256 usersUpdated);
+    event AirdropClaimed(
+        address indexed user,
+        uint256 indexed round,
+        uint256 growthAmount,
+        uint256 pointsAmount
+    );
+    event AirdropRoundClosed(uint256 indexed round);
+    event SnapshotPointsUpdated(uint256 usersUpdated);
 
     // ============ Errors ============
     
     error InvalidAmount();
     error InvalidToken();
     error NodeLimitReached();
-    error GlobalNodeLimitReached();
     error PublicNodeLimitReached();
     error TeamNodeLimitReached();
     error InvalidReferrer();
@@ -173,26 +158,16 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     error NoRewardsToClaim();
     error ZeroAddress();
     error InsufficientBalance();
-    error NotEligibleForAirdrop();
-    error AirdropAlreadyClaimed();
-    error AirdropRoundNotActive();
-    error InvalidAirdropRound();
-    error TeamNodesLocked();
-    error NotTeamMember();
-    error AlreadyTeamMember();
-    
-    // Ranking errors
-    error RankingNotProcessed();
-    error NotInTopRankers();
-    error RankingAlreadyClaimed();
-    error InvalidRankingRound();
+    error InvalidRound();
+    error RoundNotActive();
+    error NotEligible();
+    error AlreadyClaimed();
 
     // ============ Constructor ============
     
     constructor(address _treasury) Ownable(msg.sender) {
         if (_treasury == address(0)) revert ZeroAddress();
         treasury = _treasury;
-        lastSnapshotTimestamp = block.timestamp;
         deploymentTime = block.timestamp;
     }
 
@@ -216,19 +191,15 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         user.totalDonationUSD += usdValue;
         totalDonationsUSD += usdValue;
         
-        // Award points
         _awardDonationPoints(msg.sender, usdValue);
         
-        // Update referrer stats
         if (user.referrer != address(0)) {
             UserInfo storage referrer = users[user.referrer];
             uint256 oldDonations = referrer.directDonationUSD;
             referrer.directDonationUSD += usdValue;
             
-            // Award points to referrer
             _awardReferralPoints(user.referrer, usdValue);
             
-            // Calculate donation referral rewards
             uint256 newThousands = referrer.directDonationUSD / (1000 * 10**18);
             uint256 oldThousands = oldDonations / (1000 * 10**18);
             
@@ -256,10 +227,7 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         
         UserInfo storage user = users[msg.sender];
         
-        // Check user limit (regular nodes only, team nodes don't count toward limit)
         if (user.nodeCount + nodeCount > MAX_NODES_PER_USER) revert NodeLimitReached();
-        
-        // Check public node supply
         if (publicNodesIssued + nodeCount > MAX_PUBLIC_NODES) revert PublicNodeLimitReached();
         
         _registerUser(msg.sender, referrerHint);
@@ -269,10 +237,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         
         IERC20(token).safeTransferFrom(msg.sender, treasury, tokenAmount);
         
-        // user.totalDonationUSD += totalCost;
-        // totalDonationsUSD += totalCost;
-        
-        // Award points
         _awardDonationPoints(msg.sender, totalCost);
         
         bool wasNodeHolder = user.nodeCount > 0;
@@ -333,11 +297,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
 
     // ============ Team Node Functions ============
     
-    /**
-     * @notice Allocate team nodes (owner only, locked for 2 years)
-     * @param teamMember Address to receive team nodes
-     * @param nodeCount Number of nodes to allocate
-     */
     function allocateTeamNodes(address teamMember, uint256 nodeCount) external onlyOwner {
         if (teamMember == address(0)) revert ZeroAddress();
         if (nodeCount == 0) revert InvalidAmount();
@@ -346,7 +305,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         TeamNodeInfo storage teamInfo = teamNodes[teamMember];
         UserInfo storage user = users[teamMember];
         
-        // Register as team member on first allocation
         if (!teamInfo.isTeamMember) {
             teamInfo.isTeamMember = true;
             teamInfo.unlockTime = deploymentTime + TEAM_LOCK_DURATION;
@@ -361,17 +319,11 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         emit TeamNodeAllocated(teamMember, nodeCount, teamInfo.unlockTime);
     }
     
-    /**
-     * @notice Check if team nodes are unlocked
-     */
     function areTeamNodesUnlocked(address teamMember) public view returns (bool) {
         TeamNodeInfo memory teamInfo = teamNodes[teamMember];
         return teamInfo.isTeamMember && block.timestamp >= teamInfo.unlockTime;
     }
     
-    /**
-     * @notice Get total node count (regular + team nodes)
-     */
     function getTotalNodeCount(address user) public view returns (uint256) {
         return users[user].nodeCount + users[user].teamNodeCount;
     }
@@ -382,8 +334,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         UserInfo storage userInfo = users[user];
         
         uint256 basePoints = (usdValue * POINTS_PER_USD) / 10**18;
-        
-        // Double points for node holders (including team nodes)
         uint256 totalNodes = getTotalNodeCount(user);
         uint256 points = totalNodes > 0 ? basePoints * NODE_HOLDER_MULTIPLIER : basePoints;
         
@@ -404,113 +354,52 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         emit PointsEarned(referrer, points, "referral");
     }
 
-    // ============ Snapshot & Airdrop System ============
+    // ============ Airdrop System (Simplified) ============
     
-    function takeSnapshot() external onlyOwner {
-        currentAirdropRound++;
-        lastSnapshotTimestamp = block.timestamp;
-        
-        emit SnapshotTaken(currentAirdropRound, block.timestamp);
-    }
-    
-    function updateSnapshotPoints(address[] calldata userAddresses) external onlyOwner {
-        for (uint256 i = 0; i < userAddresses.length; i++) {
-            address user = userAddresses[i];
-            users[user].lastSnapshotPoints = users[user].points;
-        }
-    }
-    
+    /**
+     * @notice Create a new airdrop round with Top 20 rankings
+     * @dev Called by admin on 10th and 20th of each month
+     * @param _topGrowthUsers Top 20 users by growth % (sorted, highest first)
+     * @param _topPointsUsers Top 20 users by total points (sorted, highest first)
+     * @param growthRewardPerUser NST amount per user for growth ranking
+     * @param pointsRewardPerUser NST amount per user for points ranking
+     */
     function createAirdropRound(
-        uint256 round,
-        address[] calldata eligibleUsers,
-        uint256 airdropAmount
-    ) external onlyOwner {
-        if (round == 0) revert InvalidAirdropRound();
-        
-        AirdropRound storage airdrop = airdropRounds[round];
-        airdrop.roundNumber = round;
-        airdrop.timestamp = block.timestamp;
-        airdrop.airdropAmount = airdropAmount;
-        airdrop.totalEligible = eligibleUsers.length;
-        airdrop.isActive = true;
-        
-        for (uint256 i = 0; i < eligibleUsers.length; i++) {
-            isEligibleForAirdrop[eligibleUsers[i]][round] = true;
-            emit AirdropEligibilitySet(eligibleUsers[i], round, true);
-        }
-        
-        emit AirdropRoundCreated(round, airdropAmount, eligibleUsers.length);
-    }
-    
-    function claimAirdrop(uint256 round) external nonReentrant {
-        if (round == 0 || round > currentAirdropRound) revert InvalidAirdropRound();
-        
-        AirdropRound storage airdrop = airdropRounds[round];
-        if (!airdrop.isActive) revert AirdropRoundNotActive();
-        
-        if (!isEligibleForAirdrop[msg.sender][round]) revert NotEligibleForAirdrop();
-        if (hasClaimedAirdrop[msg.sender][round]) revert AirdropAlreadyClaimed();
-        
-        hasClaimedAirdrop[msg.sender][round] = true;
-        
-        nstToken.safeTransfer(msg.sender, airdrop.airdropAmount);
-        
-        emit AirdropClaimed(msg.sender, round, airdrop.airdropAmount);
-    }
-    
-    function closeAirdropRound(uint256 round) external onlyOwner {
-        airdropRounds[round].isActive = false;
-    }
-
-    // ============ Monthly Ranking System ============
-    
-    /**
-     * @notice Process a ranking round with Top 20 Growth and Top 20 Cumulative users
-     * @dev Called by admin on 10th and 20th of each month. Rankings calculated off-chain.
-     * @param _topGrowthUsers Top 20 users by growth percentage (sorted, highest first)
-     * @param _topCumulativeUsers Top 20 users by cumulative points (sorted, highest first)
-     * @param growthAirdropAmount NST amount per user for growth ranking
-     * @param cumulativeAirdropAmount NST amount per user for cumulative ranking
-     */
-    function processRankingRound(
         address[20] calldata _topGrowthUsers,
-        address[20] calldata _topCumulativeUsers,
-        uint256 growthAirdropAmount,
-        uint256 cumulativeAirdropAmount
+        address[20] calldata _topPointsUsers,
+        uint256 growthRewardPerUser,
+        uint256 pointsRewardPerUser
     ) external onlyOwner {
-        currentRankingRound++;
-        lastRankingTimestamp = block.timestamp;
+        currentRound++;
         
-        // Store ranking round data
-        RankingRound storage round = rankingRounds[currentRankingRound];
-        round.roundNumber = currentRankingRound;
+        // Store round data
+        AirdropRound storage round = airdropRounds[currentRound];
+        round.roundNumber = currentRound;
         round.timestamp = block.timestamp;
-        round.growthAirdropAmount = growthAirdropAmount;
-        round.cumulativeAirdropAmount = cumulativeAirdropAmount;
-        round.processed = true;
+        round.growthRewardPerUser = growthRewardPerUser;
+        round.pointsRewardPerUser = pointsRewardPerUser;
+        round.isActive = true;
         
-        // Store top rankers
-        topGrowthUsers[currentRankingRound] = _topGrowthUsers;
-        topCumulativeUsers[currentRankingRound] = _topCumulativeUsers;
+        // Store top users
+        topGrowthUsers[currentRound] = _topGrowthUsers;
+        topPointsUsers[currentRound] = _topPointsUsers;
         
-        // Auto-update snapshot points for all ranked users
-        _updateSnapshotPointsForRankers(_topGrowthUsers);
-        _updateSnapshotPointsForRankers(_topCumulativeUsers);
+        // Update snapshot points for all ranked users
+        _updateSnapshotForRankers(_topGrowthUsers);
+        _updateSnapshotForRankers(_topPointsUsers);
         
-        emit RankingRoundProcessed(
-            currentRankingRound,
-            block.timestamp,
-            growthAirdropAmount,
-            cumulativeAirdropAmount
+        emit AirdropRoundCreated(
+            currentRound,
+            growthRewardPerUser,
+            pointsRewardPerUser,
+            block.timestamp
         );
-        emit TopGrowthRankersSet(currentRankingRound, _topGrowthUsers);
-        emit TopCumulativeRankersSet(currentRankingRound, _topCumulativeUsers);
     }
     
     /**
-     * @notice Internal function to update snapshot points for ranked users
+     * @notice Internal function to update snapshot points
      */
-    function _updateSnapshotPointsForRankers(address[20] memory rankers) internal {
+    function _updateSnapshotForRankers(address[20] memory rankers) internal {
         uint256 updated = 0;
         for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
             if (rankers[i] != address(0)) {
@@ -518,76 +407,87 @@ contract NSTFinance is Ownable, ReentrancyGuard {
                 updated++;
             }
         }
-        emit SnapshotPointsUpdated(currentRankingRound, updated);
+        emit SnapshotPointsUpdated(updated);
     }
     
     /**
-     * @notice Batch update snapshot points for non-ranked users
-     * @dev Call this after processRankingRound to reset baseline for everyone
+     * @notice Batch update snapshot points for all users
+     * @dev Call after creating airdrop round to reset baseline
      */
-    function batchUpdateSnapshotPoints(address[] calldata userAddresses) external onlyOwner {
+    function batchUpdateSnapshots(address[] calldata userAddresses) external onlyOwner {
         for (uint256 i = 0; i < userAddresses.length; i++) {
             users[userAddresses[i]].lastSnapshotPoints = users[userAddresses[i]].points;
         }
+        emit SnapshotPointsUpdated(userAddresses.length);
     }
     
     /**
-     * @notice Claim growth ranking airdrop
-     * @param round The ranking round number
+     * @notice Claim airdrop for a specific round
+     * @dev Users can claim both growth and points rewards in ONE transaction
+     * @param round The round number to claim
      */
-    function claimGrowthRankingAirdrop(uint256 round) external nonReentrant {
-        if (round == 0 || round > currentRankingRound) revert InvalidRankingRound();
+    function claimAirdrop(uint256 round) external nonReentrant {
+        if (round == 0 || round > currentRound) revert InvalidRound();
         
-        RankingRound storage rankingRound = rankingRounds[round];
-        if (!rankingRound.processed) revert RankingNotProcessed();
-        if (hasClaimedGrowthRanking[msg.sender][round]) revert RankingAlreadyClaimed();
+        AirdropRound storage airdropRound = airdropRounds[round];
+        if (!airdropRound.isActive) revert RoundNotActive();
         
-        // Check if user is in top growth rankers
-        bool isRanker = false;
-        for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
-            if (topGrowthUsers[round][i] == msg.sender) {
-                isRanker = true;
-                break;
-            }
+        uint256 totalReward = 0;
+        
+        // Check and claim growth reward
+        bool isInGrowthTop20 = _isInRanking(topGrowthUsers[round], msg.sender);
+        if (isInGrowthTop20 && !hasClaimedGrowth[msg.sender][round]) {
+            hasClaimedGrowth[msg.sender][round] = true;
+            totalReward += airdropRound.growthRewardPerUser;
         }
-        if (!isRanker) revert NotInTopRankers();
         
-        hasClaimedGrowthRanking[msg.sender][round] = true;
-        nstToken.safeTransfer(msg.sender, rankingRound.growthAirdropAmount);
+        // Check and claim points reward
+        bool isInPointsTop20 = _isInRanking(topPointsUsers[round], msg.sender);
+        if (isInPointsTop20 && !hasClaimedPoints[msg.sender][round]) {
+            hasClaimedPoints[msg.sender][round] = true;
+            totalReward += airdropRound.pointsRewardPerUser;
+        }
         
-        emit RankingAirdropClaimed(msg.sender, round, rankingRound.growthAirdropAmount, "growth");
+        if (totalReward == 0) {
+            // Either not eligible or already claimed
+            if (!isInGrowthTop20 && !isInPointsTop20) revert NotEligible();
+            revert AlreadyClaimed();
+        }
+        
+        airdropRound.totalDistributed += totalReward;
+        nstToken.safeTransfer(msg.sender, totalReward);
+        
+        emit AirdropClaimed(
+            msg.sender,
+            round,
+            isInGrowthTop20 && !hasClaimedGrowth[msg.sender][round] ? 0 : airdropRound.growthRewardPerUser,
+            isInPointsTop20 && !hasClaimedPoints[msg.sender][round] ? 0 : airdropRound.pointsRewardPerUser
+        );
     }
     
     /**
-     * @notice Claim cumulative ranking airdrop
-     * @param round The ranking round number
+     * @notice Check if address is in ranking array
      */
-    function claimCumulativeRankingAirdrop(uint256 round) external nonReentrant {
-        if (round == 0 || round > currentRankingRound) revert InvalidRankingRound();
-        
-        RankingRound storage rankingRound = rankingRounds[round];
-        if (!rankingRound.processed) revert RankingNotProcessed();
-        if (hasClaimedCumulativeRanking[msg.sender][round]) revert RankingAlreadyClaimed();
-        
-        // Check if user is in top cumulative rankers
-        bool isRanker = false;
+    function _isInRanking(address[20] storage ranking, address user) internal view returns (bool) {
         for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
-            if (topCumulativeUsers[round][i] == msg.sender) {
-                isRanker = true;
-                break;
+            if (ranking[i] == user) {
+                return true;
             }
         }
-        if (!isRanker) revert NotInTopRankers();
-        
-        hasClaimedCumulativeRanking[msg.sender][round] = true;
-        nstToken.safeTransfer(msg.sender, rankingRound.cumulativeAirdropAmount);
-        
-        emit RankingAirdropClaimed(msg.sender, round, rankingRound.cumulativeAirdropAmount, "cumulative");
+        return false;
+    }
+    
+    /**
+     * @notice Close an airdrop round (disable claims)
+     */
+    function closeAirdropRound(uint256 round) external onlyOwner {
+        airdropRounds[round].isActive = false;
+        emit AirdropRoundClosed(round);
     }
 
-    // ============ NST Reward Functions ============
+    // ============ NST Reward Functions (Referral Rewards) ============
     
-    function claimNST() external nonReentrant {
+    function claimNSTRewards() external nonReentrant {
         if (!claimEnabled) revert ClaimNotEnabled();
         
         UserInfo storage user = users[msg.sender];
@@ -678,35 +578,6 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         );
     }
     
-    function checkAirdropEligibility(address user, uint256 round) external view returns (
-        bool eligible,
-        bool claimed,
-        uint256 amount
-    ) {
-        return (
-            isEligibleForAirdrop[user][round],
-            hasClaimedAirdrop[user][round],
-            airdropRounds[round].airdropAmount
-        );
-    }
-    
-    function getAirdropRound(uint256 round) external view returns (
-        uint256 roundNumber,
-        uint256 timestamp,
-        uint256 airdropAmount,
-        uint256 totalEligible,
-        bool isActive
-    ) {
-        AirdropRound memory airdrop = airdropRounds[round];
-        return (
-            airdrop.roundNumber,
-            airdrop.timestamp,
-            airdrop.airdropAmount,
-            airdrop.totalEligible,
-            airdrop.isActive
-        );
-    }
-    
     function getUserPointsGrowth(address user) external view returns (uint256 growthBasisPoints) {
         UserInfo memory userInfo = users[user];
         
@@ -732,20 +603,28 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         );
     }
     
-    // ============ Ranking View Functions ============
+    // ============ Airdrop View Functions ============
     
     /**
-     * @notice Get ranking round details
+     * @notice Get airdrop round details
      */
-    function getRankingRound(uint256 round) external view returns (
+    function getAirdropRound(uint256 round) external view returns (
         uint256 roundNumber,
         uint256 timestamp,
-        uint256 growthAirdropAmount,
-        uint256 cumulativeAirdropAmount,
-        bool processed
+        uint256 growthRewardPerUser,
+        uint256 pointsRewardPerUser,
+        uint256 totalDistributed,
+        bool isActive
     ) {
-        RankingRound memory r = rankingRounds[round];
-        return (r.roundNumber, r.timestamp, r.growthAirdropAmount, r.cumulativeAirdropAmount, r.processed);
+        AirdropRound memory r = airdropRounds[round];
+        return (
+            r.roundNumber,
+            r.timestamp,
+            r.growthRewardPerUser,
+            r.pointsRewardPerUser,
+            r.totalDistributed,
+            r.isActive
+        );
     }
     
     /**
@@ -756,24 +635,25 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @notice Get top cumulative users for a round
+     * @notice Get top points users for a round
      */
-    function getTopCumulativeUsers(uint256 round) external view returns (address[20] memory) {
-        return topCumulativeUsers[round];
+    function getTopPointsUsers(uint256 round) external view returns (address[20] memory) {
+        return topPointsUsers[round];
     }
     
     /**
-     * @notice Check user's ranking claim status for a round
+     * @notice Check user's airdrop eligibility and claim status
      */
-    function checkRankingClaimStatus(address user, uint256 round) external view returns (
+    function checkAirdropStatus(address user, uint256 round) external view returns (
         bool isInGrowthTop20,
-        bool isInCumulativeTop20,
-        bool hasClaimedGrowth,
-        bool hasClaimedCumulative,
-        uint256 growthAmount,
-        uint256 cumulativeAmount
+        bool isInPointsTop20,
+        bool hasClaimedGrowthReward,
+        bool hasClaimedPointsReward,
+        uint256 growthReward,
+        uint256 pointsReward,
+        uint256 totalClaimable
     ) {
-        // Check if in growth top 20
+        // Check growth eligibility
         for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
             if (topGrowthUsers[round][i] == user) {
                 isInGrowthTop20 = true;
@@ -781,52 +661,63 @@ contract NSTFinance is Ownable, ReentrancyGuard {
             }
         }
         
-        // Check if in cumulative top 20
+        // Check points eligibility
         for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
-            if (topCumulativeUsers[round][i] == user) {
-                isInCumulativeTop20 = true;
+            if (topPointsUsers[round][i] == user) {
+                isInPointsTop20 = true;
                 break;
             }
         }
         
-        RankingRound memory r = rankingRounds[round];
+        AirdropRound memory r = airdropRounds[round];
+        hasClaimedGrowthReward = hasClaimedGrowth[user][round];
+        hasClaimedPointsReward = hasClaimedPoints[user][round];
+        
+        growthReward = isInGrowthTop20 ? r.growthRewardPerUser : 0;
+        pointsReward = isInPointsTop20 ? r.pointsRewardPerUser : 0;
+        
+        // Calculate total claimable
+        if (isInGrowthTop20 && !hasClaimedGrowthReward) {
+            totalClaimable += r.growthRewardPerUser;
+        }
+        if (isInPointsTop20 && !hasClaimedPointsReward) {
+            totalClaimable += r.pointsRewardPerUser;
+        }
         
         return (
             isInGrowthTop20,
-            isInCumulativeTop20,
-            hasClaimedGrowthRanking[user][round],
-            hasClaimedCumulativeRanking[user][round],
-            r.growthAirdropAmount,
-            r.cumulativeAirdropAmount
+            isInPointsTop20,
+            hasClaimedGrowthReward,
+            hasClaimedPointsReward,
+            growthReward,
+            pointsReward,
+            totalClaimable
         );
     }
     
     /**
-     * @notice Get user's rank position in a round (0 = not ranked, 1-20 = position)
+     * @notice Get user's rank position in a round
      */
     function getUserRankPosition(address user, uint256 round) external view returns (
         uint256 growthPosition,
-        uint256 cumulativePosition
+        uint256 pointsPosition
     ) {
         for (uint256 i = 0; i < TOP_RANKERS_COUNT; i++) {
             if (topGrowthUsers[round][i] == user) {
                 growthPosition = i + 1;
             }
-            if (topCumulativeUsers[round][i] == user) {
-                cumulativePosition = i + 1;
+            if (topPointsUsers[round][i] == user) {
+                pointsPosition = i + 1;
             }
         }
-        return (growthPosition, cumulativePosition);
+        return (growthPosition, pointsPosition);
     }
     
     /**
-     * @notice Get ranking system stats
+     * @notice Get current round number
      */
-    function getRankingStats() external view returns (
-        uint256 _currentRankingRound,
-        uint256 _lastRankingTimestamp
-    ) {
-        return (currentRankingRound, lastRankingTimestamp);
+    function getCurrentRound() external view returns (uint256) {
+        return currentRound;
     }
 
     // ============ Admin Functions ============
@@ -887,3 +778,4 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         }
     }
 }
+

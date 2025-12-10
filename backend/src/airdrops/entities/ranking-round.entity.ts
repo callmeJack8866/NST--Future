@@ -21,10 +21,10 @@ export class RankingRound {
   @Column({ type: 'decimal', precision: 36, scale: 18 })
   cumulativeAirdropAmount: string;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', default: [] })
   topGrowthUsers: string[]; // Top 20 addresses sorted by growth %
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'jsonb', default: [] })
   topCumulativeUsers: string[]; // Top 20 addresses sorted by total points
 
   @Column({ type: 'jsonb', default: [] })

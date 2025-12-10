@@ -3,10 +3,10 @@ import { Address } from 'viem';
 // Contract addresses from deploy.json (BSC Testnet)
 export const CONTRACTS = {
   BSC_TESTNET: {
-    NST_FINANCE: '0x2025cF1312D5692E77FcF8bb5ffAE6621C106E39' as Address,
-    USDT: '0xaB8729c64385E202750c1A08Ac25cA3410E5201d' as Address,
-    USDC: '0x1e7FC218ef637705Ec3aFfEDee9C6CfE31368CBf' as Address,
-    NST: '0x73E3ef5e243133dfd14E4dAc31bdF7c8a36eE7Bc' as Address,
+    NST_FINANCE: '0x2Ade89fCce1225dDD85b99e413C59ff11949eEF0' as Address,
+    USDT: '0x641E82Bbc15fd511B6231B00c8582390F5bAc3b4' as Address,
+    USDC: '0x2313213281BB93B085Af40809DddACFd496965E1' as Address,
+    NST: '0x1c173fDBa3d93e74e26647918144B045A65e3081' as Address,
   },
   BSC_MAINNET: {
     NST_FINANCE: '0x1234567890123456789012345678901234567890' as Address, // Update when deployed
@@ -16,7 +16,7 @@ export const CONTRACTS = {
   },
 };
 
-// Get contracts based on chain ID
+// Get contracts based on chain IDs
 export function getContracts(chainId: number) {
   if (chainId === 97) return CONTRACTS.BSC_TESTNET;
   if (chainId === 56) return CONTRACTS.BSC_MAINNET;

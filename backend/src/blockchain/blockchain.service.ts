@@ -207,21 +207,15 @@ export class BlockchainService implements OnModuleInit {
     };
   }
 
-  parseSnapshotTaken(event: EventLog) {
-    return {
-      round: Number(event.args[0]),
-      timestamp: Number(event.args[1]),
-      txHash: event.transactionHash,
-      blockNumber: event.blockNumber,
-    };
-  }
-
   parseAirdropRoundCreated(event: EventLog) {
+    // Event: AirdropRoundCreated(uint256 indexed round, address[20] growthUsers, address[20] pointsUsers, uint256 growthRewardPerUser, uint256 pointsRewardPerUser, uint256 timestamp)
     return {
       round: Number(event.args[0]),
-      growthRewardPerUser: event.args[1].toString(),
-      pointsRewardPerUser: event.args[2].toString(),
-      timestamp: Number(event.args[3]),
+      topGrowthUsers: event.args[1] as string[], // address[20]
+      topCumulativeUsers: event.args[2] as string[], // address[20] (pointsUsers)
+      growthRewardPerUser: event.args[3].toString(),
+      pointsRewardPerUser: event.args[4].toString(),
+      timestamp: Number(event.args[5]),
       txHash: event.transactionHash,
       blockNumber: event.blockNumber,
     };

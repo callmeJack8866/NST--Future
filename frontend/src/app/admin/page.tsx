@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useAccount } from "wagmi"
 import { formatEther } from "viem"
 import { Navbar } from "@/components/layout/navbar"
@@ -17,13 +17,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 import { useAdminContract } from "@/hooks/useAdminContract"
+import { toast } from "sonner"
 import {
   usePreparedAirdropData,
   useRankingRounds,
   useRankingStats,
-  processRankingRoundApi,
   closeRankingRoundApi,
   updateAllSnapshotsApi,
+  resetAllSnapshotsApi,
 } from "@/hooks/useAdminApi"
 import {
   Shield,
@@ -43,6 +44,8 @@ import {
   Box,
   Plus,
   Ban,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react"
 
 export default function AdminPage() {
@@ -60,10 +63,12 @@ export default function AdminPage() {
   const [teamNodeCount, setTeamNodeCount] = useState("1")
   const [withdrawAmount, setWithdrawAmount] = useState("")
   const [snapshotAddresses, setSnapshotAddresses] = useState("")
+  const [expandedRound, setExpandedRound] = useState<number | null>(null)
   
   // Messages
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Hooks
   const contract = useAdminContract()
@@ -99,7 +104,12 @@ export default function AdminPage() {
 
     const topGrowthAddresses = preparedData.topGrowthUsers.map(u => u.address)
     const topPointsAddresses = preparedData.topCumulativeUsers.map(u => u.address)
+    console.log('Creating airdrop round #', preparedData.round)
+    console.log('Top Growth Addresses:', topGrowthAddresses)
+    console.log('Top Points Addresses:', topPointsAddresses)
 
+    // Call smart contract to create airdrop round
+    // The indexer will automatically sync data from the AirdropRoundCreated event
     const result = await contract.createAirdropRound(
       topGrowthAddresses,
       topPointsAddresses,
@@ -108,11 +118,35 @@ export default function AdminPage() {
     )
 
     if (result.success) {
-      await processRankingRoundApi(growthAirdropAmount, pointsAirdropAmount, result.hash)
-      setSuccess(`Airdrop round ${preparedData.round} processed successfully!`)
-      refreshAll()
+      setSuccess(`Airdrop round ${preparedData.round} created on-chain! TX: ${result.hash}. Waiting for indexer to sync...`)
+      toast.success(`Airdrop round ${preparedData.round} created successfully!`)
+      
+      setIsRefreshing(true)
+      
+      // Progressive refetch with delays to allow blockchain indexer to update
+      const delays = [3000, 5000, 8000, 12000, 15000] // Total: ~43 seconds
+      
+      for (let i = 0; i < delays.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, delays[i]))
+        
+        // Refetch all data
+        await Promise.all([
+          contract.refetchAll(),
+          refetchPrepared(),
+          refetchRounds(),
+          refetchStats()
+        ])
+        
+        if (i < delays.length - 1) {
+          console.log(`Refetch attempt ${i + 1}/${delays.length} completed, waiting for indexer...`)
+        }
+      }
+      
+      setIsRefreshing(false)
+      setSuccess(`Airdrop round ${preparedData.round} created and synced successfully!`)
     } else {
-      setError(result.error || "Failed to process airdrop")
+      setError(result.error || "Failed to create airdrop round")
+      toast.error(result.error || "Failed to create airdrop round")
     }
   }
 
@@ -121,10 +155,34 @@ export default function AdminPage() {
     const result = await contract.closeAirdropRound(round)
     if (result.success) {
       await closeRankingRoundApi(round)
-      setSuccess(`Round ${round} closed`)
-      refetchRounds()
+      setSuccess(`Round ${round} closed successfully! Refreshing data...`)
+      toast.success(`Round ${round} closed successfully!`)
+      
+      setIsRefreshing(true)
+      
+      // Progressive refetch with delays to allow blockchain indexer to update
+      const delays = [3000, 5000, 8000] // Total: ~16 seconds (shorter for close action)
+      
+      for (let i = 0; i < delays.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, delays[i]))
+        
+        // Refetch round data
+        await Promise.all([
+          contract.refetchAll(),
+          refetchRounds(),
+          refetchStats()
+        ])
+        
+        if (i < delays.length - 1) {
+          console.log(`Close round refetch attempt ${i + 1} completed, waiting for indexer...`)
+        }
+      }
+      
+      setIsRefreshing(false)
+      setSuccess(`Round ${round} closed and data refreshed successfully!`)
     } else {
       setError(result.error || "Failed to close round")
+      toast.error(result.error || "Failed to close round")
     }
   }
 
@@ -228,11 +286,41 @@ export default function AdminPage() {
 
   const handleUpdateAllSnapshots = async () => {
     clearMessages()
-    const result = await updateAllSnapshotsApi()
-    if (result.success) {
-      setSuccess(`Updated snapshots for ${result.usersUpdated} users in database`)
-    } else {
-      setError(result.error || "Failed to update snapshots in database")
+    console.log('handleUpdateAllSnapshots called')
+    try {
+      const result = await updateAllSnapshotsApi()
+      console.log('updateAllSnapshotsApi result:', result)
+      if (result.success) {
+        setSuccess(`Updated snapshots for ${result.usersUpdated} users in database`)
+        toast.success(`Updated snapshots for ${result.usersUpdated} users in database`)
+      } else {
+        setError(result.error || "Failed to update snapshots in database")
+        toast.error(result.error || "Failed to update snapshots in database")
+      }
+    } catch (err) {
+      console.error('Error in handleUpdateAllSnapshots:', err)
+      setError(err instanceof Error ? err.message : 'Unknown error occurred')
+      toast.error(err instanceof Error ? err.message : 'Unknown error occurred')
+    }
+  }
+
+  const handleResetAllSnapshots = async () => {
+    clearMessages()
+    console.log('handleResetAllSnapshots called')
+    try {
+      const result = await resetAllSnapshotsApi()
+      console.log('resetAllSnapshotsApi result:', result)
+      if (result.success) {
+        setSuccess(`Reset snapshots to 0 for ${result.usersUpdated} users. All users will now show 100% growth!`)
+        toast.success(`Reset snapshots to 0 for ${result.usersUpdated} users`)
+      } else {
+        setError(result.error || "Failed to reset snapshots in database")
+        toast.error(result.error || "Failed to reset snapshots in database")
+      }
+    } catch (err) {
+      console.error('Error in handleResetAllSnapshots:', err)
+      setError(err instanceof Error ? err.message : 'Unknown error occurred')
+      toast.error(err instanceof Error ? err.message : 'Unknown error occurred')
     }
   }
 
@@ -300,9 +388,9 @@ export default function AdminPage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={refreshAll} disabled={contract.isProcessing}>
-                <RefreshCw className={cn("w-4 h-4 mr-2", contract.isProcessing && "animate-spin")} />
-                Refresh
+              <Button variant="ghost" size="sm" onClick={refreshAll} disabled={contract.isProcessing || isRefreshing}>
+                <RefreshCw className={cn("w-4 h-4 mr-2", (contract.isProcessing || isRefreshing) && "animate-spin")} />
+                {isRefreshing ? "Refreshing..." : "Refresh"}
               </Button>
               <Badge variant="outline" className="glass px-4 py-2">
                 Contract Owner
@@ -321,10 +409,15 @@ export default function AdminPage() {
 
           {success && (
             <Alert className="mb-6 border-green-500/50 bg-green-500/10">
-              <CheckCircle className="w-4 h-4 text-green-500" />
+              {isRefreshing ? (
+                <Loader2 className="w-4 h-4 text-green-500 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              )}
               <AlertTitle>Success</AlertTitle>
               <AlertDescription>
                 {success}
+                {isRefreshing && " Please wait while we sync with the blockchain..."}
                 {contract.txHash && (
                   <a
                     href={`${explorerUrl}/tx/${contract.txHash}`}
@@ -529,8 +622,10 @@ export default function AdminPage() {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Round</TableHead>
-                            <TableHead>Growth</TableHead>
-                            <TableHead>Points</TableHead>
+                            <TableHead>Growth Winners</TableHead>
+                            <TableHead>Growth Reward</TableHead>
+                            <TableHead>Points Winners</TableHead>
+                            <TableHead>Points Reward</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Date</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -538,34 +633,125 @@ export default function AdminPage() {
                         </TableHeader>
                         <TableBody>
                           {rankingRounds.map((round) => (
-                            <TableRow key={round.id}>
-                              <TableCell className="font-medium">#{round.round}</TableCell>
-                              <TableCell>{parseFloat(round.growthAirdropAmount).toLocaleString()} NST</TableCell>
-                              <TableCell>{parseFloat(round.cumulativeAirdropAmount).toLocaleString()} NST</TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant="outline"
-                                  className={round.isActive ? "border-green-500 text-green-500" : "border-muted-foreground"}
-                                >
-                                  {round.isActive ? "Active" : "Closed"}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-muted-foreground text-sm">
-                                {new Date(round.createdAt).toLocaleDateString()}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                {round.isActive && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleCloseRound(round.round)}
-                                    disabled={contract.isActionProcessing("closeAirdrop")}
+                            <React.Fragment key={round.id}>
+                              <TableRow 
+                                className="cursor-pointer hover:bg-secondary/50 transition-colors"
+                                onClick={() => setExpandedRound(expandedRound === round.round ? null : round.round)}
+                              >
+                                <TableCell className="font-medium">
+                                  <div className="flex items-center gap-2">
+                                    {expandedRound === round.round ? (
+                                      <ChevronDown className="w-4 h-4 text-primary" />
+                                    ) : (
+                                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                                    )}
+                                    #{round.round}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-xs text-muted-foreground">
+                                    {round.topGrowthUsers?.length || 0} users
+                                  </div>
+                                </TableCell>
+                                <TableCell>{parseFloat(round.growthAirdropAmount).toLocaleString()} NST</TableCell>
+                                <TableCell>
+                                  <div className="text-xs text-muted-foreground">
+                                    {round.topCumulativeUsers?.length || 0} users
+                                  </div>
+                                </TableCell>
+                                <TableCell>{parseFloat(round.cumulativeAirdropAmount).toLocaleString()} NST</TableCell>
+                                <TableCell>
+                                  <Badge
+                                    variant="outline"
+                                    className={round.isActive ? "border-green-500 text-green-500" : "border-muted-foreground"}
                                   >
-                                    {contract.isActionProcessing("closeAirdrop") ? <Loader2 className="w-3 h-3 animate-spin" /> : "Close"}
-                                  </Button>
-                                )}
-                              </TableCell>
-                            </TableRow>
+                                    {round.isActive ? "Active" : "Closed"}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-muted-foreground text-sm">
+                                  {new Date(round.createdAt).toLocaleDateString()}
+                                </TableCell>
+                                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                                  {round.isActive && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleCloseRound(round.round)}
+                                      disabled={contract.isActionProcessing("closeAirdrop")}
+                                    >
+                                      {contract.isActionProcessing("closeAirdrop") ? <Loader2 className="w-3 h-3 animate-spin" /> : "Close"}
+                                    </Button>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                              
+                              {expandedRound === round.round && (
+                                <TableRow key={`${round.id}-expanded`}>
+                                  <TableCell colSpan={8} className="bg-secondary/20">
+                                    <div className="py-4 px-2">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                          <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                            <TrendingUp className="w-4 h-4 text-primary" />
+                                            Top Growth Users ({round.topGrowthUsers?.length || 0})
+                                          </h4>
+                                          <div className="space-y-1 max-h-64 overflow-y-auto">
+                                            {round.topGrowthUsers && round.topGrowthUsers.length > 0 ? (
+                                              round.topGrowthUsers.map((addr, idx) => (
+                                                <div key={addr} className="flex items-center justify-between text-sm p-2 rounded bg-background/50">
+                                                  <span className="text-muted-foreground">#{idx + 1}</span>
+                                                  <a
+                                                    href={`${explorerUrl}/address/${addr}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="font-mono text-xs hover:text-primary flex items-center gap-1"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                  >
+                                                    {formatAddress(addr)}
+                                                    <ExternalLink className="w-3 h-3" />
+                                                  </a>
+                                                  <span className="text-primary font-medium">{parseFloat(round.growthAirdropAmount).toLocaleString()} NST</span>
+                                                </div>
+                                              ))
+                                            ) : (
+                                              <p className="text-xs text-muted-foreground text-center py-4">No growth users</p>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                            <Star className="w-4 h-4 text-[#facc15]" />
+                                            Top Points Users ({round.topCumulativeUsers?.length || 0})
+                                          </h4>
+                                          <div className="space-y-1 max-h-64 overflow-y-auto">
+                                            {round.topCumulativeUsers && round.topCumulativeUsers.length > 0 ? (
+                                              round.topCumulativeUsers.map((addr, idx) => (
+                                                <div key={addr} className="flex items-center justify-between text-sm p-2 rounded bg-background/50">
+                                                  <span className="text-muted-foreground">#{idx + 1}</span>
+                                                  <a
+                                                    href={`${explorerUrl}/address/${addr}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="font-mono text-xs hover:text-primary flex items-center gap-1"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                  >
+                                                    {formatAddress(addr)}
+                                                    <ExternalLink className="w-3 h-3" />
+                                                  </a>
+                                                  <span className="text-primary font-medium">{parseFloat(round.cumulativeAirdropAmount).toLocaleString()} NST</span>
+                                                </div>
+                                              ))
+                                            ) : (
+                                              <p className="text-xs text-muted-foreground text-center py-4">No points users</p>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </React.Fragment>
                           ))}
                         </TableBody>
                       </Table>
@@ -726,7 +912,7 @@ export default function AdminPage() {
                     <CardDescription>Update lastSnapshotPoints for users (resets growth baseline)</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label>Batch Update (addresses, comma or newline separated)</Label>
                         <textarea
@@ -747,14 +933,27 @@ export default function AdminPage() {
                       <div className="space-y-2">
                         <Label>Update All Users in Database</Label>
                         <p className="text-xs text-muted-foreground mb-2">
-                          Updates lastSnapshotPoints = points for all users in the database
+                          Sets lastSnapshotPoints = points for all users (resets growth to 0%)
                         </p>
                         <Button
                           variant="outline"
                           className="w-full glass bg-transparent"
                           onClick={handleUpdateAllSnapshots}
                         >
-                          Update All in Database
+                          Update All (Current Points)
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Reset All Snapshots to 0</Label>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          Sets lastSnapshotPoints = 0 for all users (allows 100% growth)
+                        </p>
+                        <Button
+                          variant="outline"
+                          className="w-full glass bg-transparent border-green-500/50 text-green-500 hover:bg-green-500/10"
+                          onClick={handleResetAllSnapshots}
+                        >
+                          Reset All to 0
                         </Button>
                       </div>
                     </div>

@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlockchainService } from './blockchain.service';
 import { IndexerService } from './indexer.service';
 import { SyncStateManagerService } from './services/sync-state-manager.service';
 import { BlockchainEventPollerService } from './services/blockchain-event-poller.service';
+import { AirdropsModule } from '../airdrops/airdrops.module';
 import { SyncState } from './sync-state.entity';
 import { User } from '../users/entities/user.entity';
 import { Donation } from '../donations/entities/donation.entity';
@@ -27,6 +28,7 @@ import { RankingRound } from '../airdrops/entities/ranking-round.entity';
       LeaderboardSnapshot,
       RankingRound,
     ]),
+    forwardRef(() => AirdropsModule), // Handle circular dependency
   ],
   providers: [
     BlockchainService,

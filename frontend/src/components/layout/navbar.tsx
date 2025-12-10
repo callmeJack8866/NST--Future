@@ -24,7 +24,7 @@ import {
 
 const navItems = [
   { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, shortLabel: "Dashboard" },
-  { href: "/donate", labelKey: "nav.donate", icon: Heart, shortLabel: "Donate" },
+  { href: "/donate", labelKey: "nav.donate", icon: Heart, shortLabel: "Contribute" },
   { href: "/nodes", labelKey: "nav.nodes", icon: Box, shortLabel: "Nodes" },
   { href: "/leaderboard", labelKey: "nav.leaderboard", icon: Trophy, shortLabel: "Leaderboard" },
   { href: "/referral", labelKey: "nav.referral", icon: Users, shortLabel: "Referral" },

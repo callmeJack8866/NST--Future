@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { Toaster } from "sonner"
 import "./globals.css"
 import { Web3Provider } from "@/components/providers/web3-provider"
 import { LanguageProvider } from "@/contexts/language-context"
@@ -27,6 +28,7 @@ export default function RootLayout({
         <LanguageProvider>
           <Web3Provider>{children}</Web3Provider>
         </LanguageProvider>
+        <Toaster position="top-right" richColors />
         <Analytics />
       </body>
     </html>

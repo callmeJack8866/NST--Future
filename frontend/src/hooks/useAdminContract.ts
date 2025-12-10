@@ -189,13 +189,17 @@ export function useAdminContract() {
     
     // Pad arrays to 20 addresses
     const growthAddresses: `0x${string}`[] = [...topGrowthUsers.map(a => a as `0x${string}`)]
+    console.log('growthAddresses - 3333333333333', growthAddresses)
     while (growthAddresses.length < 20) growthAddresses.push(zeroAddress)
     
     const pointsAddresses: `0x${string}`[] = [...topPointsUsers.map(a => a as `0x${string}`)]
+    console.log('pointsAddresses - 4444444444444', pointsAddresses)
     while (pointsAddresses.length < 20) pointsAddresses.push(zeroAddress)
 
     const growthTuple = growthAddresses.slice(0, 20) as unknown as Address20Tuple
+    console.log('growthTuple - 5555555555555', growthTuple)
     const pointsTuple = pointsAddresses.slice(0, 20) as unknown as Address20Tuple
+    console.log('pointsTuple - 6666666666666', pointsTuple)
 
     const result = await executeWrite("createAirdrop", "createAirdropRound", [
       growthTuple,

@@ -133,6 +133,8 @@ contract NSTFinance is Ownable, ReentrancyGuard {
     // Airdrop Events
     event AirdropRoundCreated(
         uint256 indexed round,
+        address[20] growthUsers,
+        address[20] pointsUsers,
         uint256 growthRewardPerUser,
         uint256 pointsRewardPerUser,
         uint256 timestamp
@@ -390,6 +392,8 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         
         emit AirdropRoundCreated(
             currentRound,
+            _topGrowthUsers,
+            _topPointsUsers,
             growthRewardPerUser,
             pointsRewardPerUser,
             block.timestamp
@@ -433,19 +437,23 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         if (!airdropRound.isActive) revert RoundNotActive();
         
         uint256 totalReward = 0;
+        uint256 growthAmountClaimed = 0;
+        uint256 pointsAmountClaimed = 0;
         
         // Check and claim growth reward
         bool isInGrowthTop20 = _isInRanking(topGrowthUsers[round], msg.sender);
         if (isInGrowthTop20 && !hasClaimedGrowth[msg.sender][round]) {
             hasClaimedGrowth[msg.sender][round] = true;
-            totalReward += airdropRound.growthRewardPerUser;
+            growthAmountClaimed = airdropRound.growthRewardPerUser;
+            totalReward += growthAmountClaimed;
         }
         
         // Check and claim points reward
         bool isInPointsTop20 = _isInRanking(topPointsUsers[round], msg.sender);
         if (isInPointsTop20 && !hasClaimedPoints[msg.sender][round]) {
             hasClaimedPoints[msg.sender][round] = true;
-            totalReward += airdropRound.pointsRewardPerUser;
+            pointsAmountClaimed = airdropRound.pointsRewardPerUser;
+            totalReward += pointsAmountClaimed;
         }
         
         if (totalReward == 0) {
@@ -460,8 +468,8 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         emit AirdropClaimed(
             msg.sender,
             round,
-            isInGrowthTop20 && !hasClaimedGrowth[msg.sender][round] ? 0 : airdropRound.growthRewardPerUser,
-            isInPointsTop20 && !hasClaimedPoints[msg.sender][round] ? 0 : airdropRound.pointsRewardPerUser
+            growthAmountClaimed,
+            pointsAmountClaimed
         );
     }
     
@@ -614,7 +622,9 @@ contract NSTFinance is Ownable, ReentrancyGuard {
         uint256 growthRewardPerUser,
         uint256 pointsRewardPerUser,
         uint256 totalDistributed,
-        bool isActive
+        bool isActive,
+        address[20] memory _topGrowthUsers,
+        address[20] memory _topPointsUsers
     ) {
         AirdropRound memory r = airdropRounds[round];
         return (
@@ -623,7 +633,9 @@ contract NSTFinance is Ownable, ReentrancyGuard {
             r.growthRewardPerUser,
             r.pointsRewardPerUser,
             r.totalDistributed,
-            r.isActive
+            r.isActive,
+            _topGrowthUsers,
+            _topPointsUsers
         );
     }
     

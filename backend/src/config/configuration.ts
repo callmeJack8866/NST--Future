@@ -14,8 +14,8 @@ export default () => ({
       startBlock: parseInt(process.env.START_BLOCK || '77256600', 10) || 77256600,
       batchSize: parseInt(process.env.INDEXER_BATCH_SIZE || '1000', 10) || 1000,
       pollInterval: parseInt(process.env.INDEXER_POLL_INTERVAL || '5000', 10) || 5000,
-      usdtAddress: process.env.USDT_ADDRESS || '0xaB8729c64385E202750c1A08Ac25cA3410E5201d',
-      usdcAddress: process.env.USDC_ADDRESS || '0x1e7FC218ef637705Ec3aFfEDee9C6CfE31368CBf',
+      usdtAddress: process.env.USDT_ADDRESS || '0x641E82Bbc15fd511B6231B00c8582390F5bAc3b4',
+      usdcAddress: process.env.USDC_ADDRESS || '0x2313213281BB93B085Af40809DddACFd496965E1',
     },
     frontend: {
       url: process.env.FRONTEND_URL || 'http://localhost:3002',

@@ -106,7 +106,7 @@ export default function NodesPage() {
     setIsRefreshing(true)
     
     // Retry multiple times with increasing delays
-    const delays = [3000, 5000, 8000, 12000, 15000] // Total: ~43 seconds
+    const delays = [2000, 4000, 6000, 8000, 10000] // Total: ~30 seconds
     
     for (let i = 0; i < delays.length; i++) {
       await new Promise(resolve => setTimeout(resolve, delays[i]))

@@ -45,7 +45,22 @@ export class RankingRound {
   @Column({ type: 'int', nullable: true })
   blockNumber: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ 
+    type: 'jsonb', 
+    nullable: true,
+    transformer: {
+      to: (value: any) => {
+        // Ensure value is properly serializable
+        if (!value) return null;
+        // Deep clone to ensure clean serialization
+        return JSON.parse(JSON.stringify(value));
+      },
+      from: (value: any) => {
+        // TypeORM already parses JSONB, just return as-is
+        return value;
+      }
+    }
+  })
   snapshotData: {
     growthRankings: Array<{
       address: string;

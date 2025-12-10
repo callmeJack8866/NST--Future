@@ -37,7 +37,7 @@ export default function ReferralPage() {
     setMounted(true)
   }, [])
 
-  const referralLink = `https://net.finance?ref=${address || "0x..."}`
+  const referralLink = `https://nst.finance?ref=${address || "0x..."}`
   
   // Calculate values from API data
   const directNodeCount = referralStats?.directNodeCount ?? userInfo?.directNodeCount ?? 0

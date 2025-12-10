@@ -219,8 +219,9 @@ export class BlockchainService implements OnModuleInit {
   parseAirdropRoundCreated(event: EventLog) {
     return {
       round: Number(event.args[0]),
-      airdropAmount: event.args[1].toString(),
-      totalEligible: Number(event.args[2]),
+      growthRewardPerUser: event.args[1].toString(),
+      pointsRewardPerUser: event.args[2].toString(),
+      timestamp: Number(event.args[3]),
       txHash: event.transactionHash,
       blockNumber: event.blockNumber,
     };
@@ -230,7 +231,8 @@ export class BlockchainService implements OnModuleInit {
     return {
       user: event.args[0],
       round: Number(event.args[1]),
-      amount: event.args[2].toString(),
+      growthAmount: event.args[2].toString(),
+      pointsAmount: event.args[3].toString(),
       txHash: event.transactionHash,
       blockNumber: event.blockNumber,
     };

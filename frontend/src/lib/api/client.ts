@@ -122,5 +122,135 @@ export async function getNodeStats(): Promise<ApiResponse<NodeStatsResponse>> {
   return fetchApi<NodeStatsResponse>("/stats/nodes")
 }
 
+// Nodes API
+export interface NodeResponse {
+  id: string
+  userAddress: string
+  type: "public" | "team" | "auto" | "free_referral"
+  count: number
+  costUSD: string
+  txHash: string | null
+  blockNumber: number | null
+  createdAt: string
+}
+
+export interface NodeSummaryResponse {
+  public: number
+  team: number
+  auto: number
+  freeReferral: number
+  total: number
+}
+
+export interface NodeHolderResponse {
+  userAddress: string
+  totalNodes: string
+}
+
+export interface RecentNodePurchaseResponse {
+  userAddress: string
+  count: number
+  costUSD: string
+  txHash: string
+  createdAt: string
+}
+
+export async function getUserNodes(address: string): Promise<ApiResponse<NodeResponse[]>> {
+  return fetchApi<NodeResponse[]>(`/nodes/user/${address.toLowerCase()}`)
+}
+
+export async function getUserNodeSummary(address: string): Promise<ApiResponse<NodeSummaryResponse>> {
+  return fetchApi<NodeSummaryResponse>(`/nodes/user/${address.toLowerCase()}/summary`)
+}
+
+export async function getRecentNodePurchases(limit = 20): Promise<ApiResponse<RecentNodePurchaseResponse[]>> {
+  return fetchApi<RecentNodePurchaseResponse[]>(`/nodes/recent?limit=${limit}`)
+}
+
+export async function getNodeHolders(): Promise<ApiResponse<NodeHolderResponse[]>> {
+  return fetchApi<NodeHolderResponse[]>(`/nodes/holders`)
+}
+
+// Referrals API
+export interface ReferralDetailResponse {
+  address: string
+  totalDonationUSD: string
+  nodeCount: number
+  joinedAt: string
+}
+
+export interface ReferralStatsResponse {
+  totalReferrals: number
+  directNodeCount: number
+  directDonationUSD: string
+  referrals: ReferralDetailResponse[]
+}
+
+export interface ReferralRecordResponse {
+  id: string
+  referrerAddress: string
+  refereeAddress: string
+  txHash: string | null
+  blockNumber: number | null
+  boundAt: string
+}
+
+export async function getReferralsByReferrer(address: string): Promise<ApiResponse<ReferralRecordResponse[]>> {
+  return fetchApi<ReferralRecordResponse[]>(`/referrals/user/${address.toLowerCase()}`)
+}
+
+export async function getReferralStats(address: string): Promise<ApiResponse<ReferralStatsResponse>> {
+  return fetchApi<ReferralStatsResponse>(`/referrals/user/${address.toLowerCase()}/stats`)
+}
+
+export async function getUserReferrer(address: string): Promise<ApiResponse<string | null>> {
+  return fetchApi<string | null>(`/referrals/user/${address.toLowerCase()}/referrer`)
+}
+
+// Leaderboard API
+export interface LeaderboardPointsEntry {
+  address: string
+  points: string
+  nodeCount: number
+  totalDonationUSD: string
+}
+
+export interface LeaderboardGrowthEntry {
+  address: string
+  points: string
+  lastSnapshotPoints: string
+  growthPercentage: number
+}
+
+export interface LeaderboardDonorsEntry {
+  address: string
+  totalDonationUSD: string
+  nodeCount: number
+  points: string
+}
+
+export interface LeaderboardReferrersEntry {
+  address: string
+  directNodeCount: number
+  directDonationUSD: string
+  nodeCount: number
+}
+
+export async function getLeaderboardPoints(limit = 20): Promise<ApiResponse<LeaderboardPointsEntry[]>> {
+  return fetchApi<LeaderboardPointsEntry[]>(`/leaderboard/points?limit=${limit}`)
+}
+
+export async function getLeaderboardGrowth(limit = 20): Promise<ApiResponse<LeaderboardGrowthEntry[]>> {
+  return fetchApi<LeaderboardGrowthEntry[]>(`/leaderboard/growth?limit=${limit}`)
+}
+
+export async function getLeaderboardDonors(limit = 20): Promise<ApiResponse<LeaderboardDonorsEntry[]>> {
+  return fetchApi<LeaderboardDonorsEntry[]>(`/leaderboard/donors?limit=${limit}`)
+}
+
+export async function getLeaderboardReferrers(limit = 20): Promise<ApiResponse<LeaderboardReferrersEntry[]>> {
+  return fetchApi<LeaderboardReferrersEntry[]>(`/leaderboard/referrers?limit=${limit}`)
+}
+
 export { API_BASE_URL }
 

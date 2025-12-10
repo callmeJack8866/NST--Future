@@ -13,7 +13,7 @@ import { Referral } from '../referrals/entities/referral.entity';
 import { NstReward, RewardSource } from '../rewards/entities/nst-reward.entity';
 import { PointsHistory, PointsSource } from '../rewards/entities/points-history.entity';
 import { LeaderboardSnapshot } from '../leaderboard/entities/leaderboard-snapshot.entity';
-import { AirdropRound } from '../airdrops/entities/airdrop-round.entity';
+import { RankingRound } from '../airdrops/entities/ranking-round.entity';
 
 @Injectable()
 export class IndexerService implements OnModuleInit, OnModuleDestroy {
@@ -66,8 +66,8 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
     private pointsHistoryRepo: Repository<PointsHistory>,
     @InjectRepository(LeaderboardSnapshot)
     private leaderboardRepo: Repository<LeaderboardSnapshot>,
-    @InjectRepository(AirdropRound)
-    private airdropRoundRepo: Repository<AirdropRound>,
+    @InjectRepository(RankingRound)
+    private rankingRoundRepo: Repository<RankingRound>,
   ) {}
 
   async onModuleInit() {
@@ -434,6 +434,7 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
 
     // Convert raw blockchain value (18 decimals) to human-readable format
     const rewardHuman = (parseFloat(data.reward) / 1e18).toString();
+    const donationAmountHuman = parseFloat(data.donationAmount) / 1e18;
 
     const reward = this.nstRewardRepo.create({
       userAddress: data.referrer.toLowerCase(),
@@ -442,6 +443,14 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
       txHash: data.txHash,
       blockNumber: data.blockNumber,
     });
+
+    // Increment directDonationUSD instead of replacing it
+    await this.userRepo.increment(
+      { address: data.referrer.toLowerCase() },
+      'directDonationUSD',
+      donationAmountHuman
+    );
+
     await this.nstRewardRepo.save(reward);
   }
 
@@ -515,32 +524,43 @@ export class IndexerService implements OnModuleInit, OnModuleDestroy {
 
   private async handleAirdropRoundCreated(event: EventLog) {
     const data = this.blockchainService.parseAirdropRoundCreated(event);
+    this.logger.log(`Airdrop round ${data.round} created on-chain`);
 
-    const existingRound = await this.airdropRoundRepo.findOne({
+    const existingRound = await this.rankingRoundRepo.findOne({
       where: { round: data.round },
     });
 
-    if (!existingRound) {
-      const airdropRound = this.airdropRoundRepo.create({
-        round: data.round,
-        airdropAmount: data.airdropAmount,
-        eligibleUsers: [],
-        blockNumber: data.blockNumber,
-      });
-      await this.airdropRoundRepo.save(airdropRound);
+    if (existingRound && !existingRound.txHash) {
+      existingRound.txHash = data.txHash;
+      existingRound.blockNumber = data.blockNumber;
+      existingRound.isProcessed = true;
+      await this.rankingRoundRepo.save(existingRound);
     }
   }
 
   private async handleAirdropClaimed(event: EventLog) {
     const data = this.blockchainService.parseAirdropClaimed(event);
+    this.logger.log(`Airdrop claimed by ${data.user} for round ${data.round}`);
 
-    const airdropRound = await this.airdropRoundRepo.findOne({
+    const rankingRound = await this.rankingRoundRepo.findOne({
       where: { round: data.round },
     });
 
-    if (airdropRound) {
-      airdropRound.claimedUsers.push(data.user.toLowerCase());
-      await this.airdropRoundRepo.save(airdropRound);
+    if (rankingRound) {
+      const normalizedUser = data.user.toLowerCase();
+      
+      // Mark user as claimed based on which reward type they received
+      const growthAmountBigInt = BigInt(data.growthAmount || '0');
+      const pointsAmountBigInt = BigInt(data.pointsAmount || '0');
+      
+      if (growthAmountBigInt > 0n && !rankingRound.growthClaimedUsers.includes(normalizedUser)) {
+        rankingRound.growthClaimedUsers.push(normalizedUser);
+      }
+      if (pointsAmountBigInt > 0n && !rankingRound.cumulativeClaimedUsers.includes(normalizedUser)) {
+        rankingRound.cumulativeClaimedUsers.push(normalizedUser);
+      }
+      
+      await this.rankingRoundRepo.save(rankingRound);
     }
   }
 

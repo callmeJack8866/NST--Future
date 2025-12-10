@@ -223,7 +223,7 @@
   },
   "leaderboard": {
     "title": "Leaderboard",
-    "subtitle": "Compete for monthly NST airdrops. Rankings update on the 10th and 20th of each month.",
+    "subtitle": "Complete for monthly NST airdrops. Rankings update on the 10th and 20th of each month.",
     "connectMessage": "Connect your wallet to view rankings and apply for NST airdrops.",
     "yourRankings": "Your Contribution Performance",
     "totalPoints": "Total Points",
@@ -286,7 +286,7 @@
     "donationReferralRewards": "Donation Referral Rewards",
     "totalEarned": "Total Reward",
     "freeNodeProgress": "Free Node Progress",
-    "moreForFreeNode": "5 more node referrals for a free node",
+    "moreForFreeNode": "more node referrals for a free node",
     "earnedFreeNode": "🎉 You earned a free node!",
     "rewardRules": "Reward Rules",
     "nodeReferral": "Node Referral",

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useAccount } from "wagmi"
 import {
   getUserDashboard,
@@ -9,11 +9,25 @@ import {
   getGlobalStats,
   getNodeStats,
   getRecentDonations,
+  getUserNodes,
+  getUserNodeSummary,
+  getRecentNodePurchases,
+  getNodeHolders,
+  getReferralsByReferrer,
+  getReferralStats,
+  getUserReferrer,
   type UserDashboardResponse,
   type DonationResponse,
   type ReferralResponse,
   type GlobalStatsResponse,
   type NodeStatsResponse,
+  type NodeResponse,
+  type NodeSummaryResponse,
+  type RecentNodePurchaseResponse,
+  type NodeHolderResponse,
+  type ReferralDetailResponse,
+  type ReferralStatsResponse,
+  type ReferralRecordResponse,
 } from "@/lib/api/client"
 
 // ============================================================================
@@ -462,6 +476,655 @@ export function useAutoNodeEligibilityApi() {
     isLoading,
     hasAutoNode: userInfo?.hasAutoNode ?? false,
     totalDonated: userInfo?.totalDonationUSD ?? 0,
+  }
+}
+
+// ============================================================================
+// Node Types
+// ============================================================================
+
+export interface UserNode {
+  id: string
+  userAddress: string
+  type: "public" | "team" | "auto" | "free_referral"
+  count: number
+  costUSD: number
+  txHash: string | null
+  blockNumber: number | null
+  createdAt: Date
+}
+
+export interface NodeSummary {
+  public: number
+  team: number
+  auto: number
+  freeReferral: number
+  total: number
+}
+
+export interface RecentNodePurchase {
+  userAddress: string
+  count: number
+  costUSD: number
+  txHash: string
+  createdAt: Date
+}
+
+export interface NodeHolder {
+  userAddress: string
+  totalNodes: number
+}
+
+// ============================================================================
+// Node Transform Functions
+// ============================================================================
+
+function transformUserNode(data: NodeResponse): UserNode {
+  return {
+    id: data.id,
+    userAddress: data.userAddress,
+    type: data.type,
+    count: data.count,
+    costUSD: parseFloat(data.costUSD) || 0,
+    txHash: data.txHash,
+    blockNumber: data.blockNumber,
+    createdAt: new Date(data.createdAt),
+  }
+}
+
+function transformRecentNodePurchase(data: RecentNodePurchaseResponse): RecentNodePurchase {
+  return {
+    userAddress: data.userAddress,
+    count: data.count,
+    costUSD: parseFloat(data.costUSD) || 0,
+    txHash: data.txHash,
+    createdAt: new Date(data.createdAt),
+  }
+}
+
+function transformNodeHolder(data: NodeHolderResponse): NodeHolder {
+  return {
+    userAddress: data.userAddress,
+    totalNodes: parseInt(data.totalNodes) || 0,
+  }
+}
+
+// ============================================================================
+// Node Hooks
+// ============================================================================
+
+/**
+ * Hook to fetch user's nodes from the backend API
+ */
+export function useUserNodesApi() {
+  const { address, isConnected } = useAccount()
+  const [nodes, setNodes] = useState<UserNode[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchNodes = useCallback(async () => {
+    if (!address || !isConnected) {
+      setNodes([])
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getUserNodes(address)
+      
+      if (response.error) {
+        setError(response.error)
+      } else if (response.data) {
+        setNodes(response.data.map(transformUserNode))
+      } else {
+        setNodes([])
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch nodes")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [address, isConnected])
+
+  useEffect(() => {
+    fetchNodes()
+  }, [fetchNodes])
+
+  return {
+    nodes,
+    isLoading,
+    error,
+    refetch: fetchNodes,
+  }
+}
+
+/**
+ * Hook to fetch user's node summary from the backend API
+ */
+export function useUserNodeSummaryApi() {
+  const { address, isConnected } = useAccount()
+  const [summary, setSummary] = useState<NodeSummary | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchSummary = useCallback(async () => {
+    if (!address || !isConnected) {
+      setSummary(null)
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getUserNodeSummary(address)
+      
+      if (response.error) {
+        setError(response.error)
+      } else if (response.data) {
+        setSummary(response.data)
+      } else {
+        setSummary({
+          public: 0,
+          team: 0,
+          auto: 0,
+          freeReferral: 0,
+          total: 0,
+        })
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch node summary")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [address, isConnected])
+
+  useEffect(() => {
+    fetchSummary()
+  }, [fetchSummary])
+
+  return {
+    summary,
+    isLoading,
+    error,
+    refetch: fetchSummary,
+  }
+}
+
+/**
+ * Hook to fetch recent node purchases from the backend API
+ */
+export function useRecentNodePurchasesApi(limit = 20) {
+  const [purchases, setPurchases] = useState<RecentNodePurchase[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchPurchases = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getRecentNodePurchases(limit)
+      
+      if (response.error) {
+        setError(response.error)
+      } else if (response.data) {
+        setPurchases(response.data.map(transformRecentNodePurchase))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch recent purchases")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [limit])
+
+  useEffect(() => {
+    fetchPurchases()
+  }, [fetchPurchases])
+
+  return {
+    purchases,
+    isLoading,
+    error,
+    refetch: fetchPurchases,
+  }
+}
+
+/**
+ * Hook to fetch all node holders from the backend API
+ */
+export function useNodeHoldersApi() {
+  const [holders, setHolders] = useState<NodeHolder[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchHolders = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getNodeHolders()
+      
+      if (response.error) {
+        setError(response.error)
+      } else if (response.data) {
+        setHolders(response.data.map(transformNodeHolder))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch node holders")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchHolders()
+  }, [fetchHolders])
+
+  return {
+    holders,
+    isLoading,
+    error,
+    refetch: fetchHolders,
+  }
+}
+
+// ============================================================================
+// Referral Types
+// ============================================================================
+
+export interface ReferralDetail {
+  address: string
+  totalDonationUSD: number
+  nodeCount: number
+  joinedAt: Date
+}
+
+export interface ReferralStats {
+  totalReferrals: number
+  directNodeCount: number
+  directDonationUSD: number
+  referrals: ReferralDetail[]
+}
+
+export interface ReferralRecord {
+  id: string
+  referrerAddress: string
+  refereeAddress: string
+  txHash: string | null
+  blockNumber: number | null
+  boundAt: Date
+}
+
+// ============================================================================
+// Referral Transform Functions
+// ============================================================================
+
+function transformReferralDetail(data: ReferralDetailResponse): ReferralDetail {
+  return {
+    address: data.address,
+    totalDonationUSD: parseFloat(data.totalDonationUSD) || 0,
+    nodeCount: data.nodeCount,
+    joinedAt: new Date(data.joinedAt),
+  }
+}
+
+function transformReferralStats(data: ReferralStatsResponse): ReferralStats {
+  return {
+    totalReferrals: data.totalReferrals,
+    directNodeCount: data.directNodeCount,
+    directDonationUSD: parseFloat(data.directDonationUSD) || 0,
+    referrals: data.referrals.map(transformReferralDetail),
+  }
+}
+
+function transformReferralRecord(data: ReferralRecordResponse): ReferralRecord {
+  return {
+    id: data.id,
+    referrerAddress: data.referrerAddress,
+    refereeAddress: data.refereeAddress,
+    txHash: data.txHash,
+    blockNumber: data.blockNumber,
+    boundAt: new Date(data.boundAt),
+  }
+}
+
+// ============================================================================
+// Referral Hooks
+// ============================================================================
+
+/**
+ * Hook to fetch referral statistics from the backend API
+ */
+export function useReferralStatsApi() {
+  const { address, isConnected } = useAccount()
+  const [stats, setStats] = useState<ReferralStats | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchStats = useCallback(async () => {
+    if (!address || !isConnected) {
+      setStats(null)
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getReferralStats(address)
+      
+      if (response.error) {
+        setError(response.error)
+        setStats(null)
+      } else if (response.data) {
+        setStats(transformReferralStats(response.data))
+      } else {
+        // No referral stats (user not found)
+        setStats({
+          totalReferrals: 0,
+          directNodeCount: 0,
+          directDonationUSD: 0,
+          referrals: [],
+        })
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch referral stats")
+      setStats(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [address, isConnected])
+
+  useEffect(() => {
+    fetchStats()
+  }, [fetchStats])
+
+  return {
+    stats,
+    isLoading,
+    error,
+    refetch: fetchStats,
+  }
+}
+
+/**
+ * Hook to fetch referral records from the backend API
+ */
+export function useReferralRecordsApi() {
+  const { address, isConnected } = useAccount()
+  const [records, setRecords] = useState<ReferralRecord[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchRecords = useCallback(async () => {
+    if (!address || !isConnected) {
+      setRecords([])
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getReferralsByReferrer(address)
+      
+      if (response.error) {
+        setError(response.error)
+      } else if (response.data) {
+        setRecords(response.data.map(transformReferralRecord))
+      } else {
+        setRecords([])
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch referral records")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [address, isConnected])
+
+  useEffect(() => {
+    fetchRecords()
+  }, [fetchRecords])
+
+  return {
+    records,
+    isLoading,
+    error,
+    refetch: fetchRecords,
+  }
+}
+
+/**
+ * Hook to fetch user's referrer from the backend API
+ */
+export function useUserReferrerApi() {
+  const { address, isConnected } = useAccount()
+  const [referrer, setReferrer] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchReferrer = useCallback(async () => {
+    if (!address || !isConnected) {
+      setReferrer(null)
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getUserReferrer(address)
+      
+      if (response.error) {
+        setError(response.error)
+      } else {
+        setReferrer(response.data)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch referrer")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [address, isConnected])
+
+  useEffect(() => {
+    fetchReferrer()
+  }, [fetchReferrer])
+
+  return {
+    referrer,
+    isLoading,
+    error,
+    refetch: fetchReferrer,
+  }
+}
+
+// ============================================================================
+// Leaderboard Hooks
+// ============================================================================
+
+import {
+  getLeaderboardPoints,
+  getLeaderboardGrowth,
+  getLeaderboardDonors,
+  getLeaderboardReferrers,
+  LeaderboardPointsEntry,
+  LeaderboardGrowthEntry,
+  LeaderboardDonorsEntry,
+  LeaderboardReferrersEntry,
+} from "@/lib/api/client"
+
+export interface LeaderboardEntry {
+  rank: number
+  address: string
+  points: number
+  nodeCount: number
+  donations: number
+}
+
+export interface LeaderboardGrowthItem {
+  rank: number
+  address: string
+  growth: number
+  growthPercentage: number
+  points: number
+  currentPoints: number
+  previousPoints: number
+  nodeCount: number
+}
+
+function transformLeaderboardPoints(data: LeaderboardPointsEntry[], userAddress?: string): LeaderboardEntry[] {
+  return data.map((entry, index) => ({
+    rank: index + 1,
+    address: entry.address,
+    points: parseFloat(entry.points) || 0,
+    nodeCount: entry.nodeCount,
+    donations: parseFloat(entry.totalDonationUSD) || 0,
+  }))
+}
+
+function transformLeaderboardGrowth(data: LeaderboardGrowthEntry[]): LeaderboardGrowthItem[] {
+  return data.map((entry, index) => ({
+    rank: index + 1,
+    address: entry.address,
+    growth: entry.growthPercentage || 0,
+    growthPercentage: entry.growthPercentage || 0,
+    points: parseFloat(entry.points) || 0,
+    currentPoints: parseFloat(entry.points) || 0,
+    previousPoints: parseFloat(entry.lastSnapshotPoints) || 0,
+    nodeCount: 0, // Not provided by growth endpoint
+  }))
+}
+
+/**
+ * Hook to fetch points leaderboard from the backend API
+ */
+export function useLeaderboardPointsApi(limit = 20) {
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchLeaderboard = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getLeaderboardPoints(limit)
+      
+      if (response.error) {
+        setError(response.error)
+        setEntries([])
+      } else if (response.data) {
+        setEntries(transformLeaderboardPoints(response.data))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch leaderboard")
+      setEntries([])
+    } finally {
+      setIsLoading(false)
+    }
+  }, [limit])
+
+  useEffect(() => {
+    fetchLeaderboard()
+  }, [fetchLeaderboard])
+
+  return {
+    entries,
+    isLoading,
+    error,
+    refetch: fetchLeaderboard,
+  }
+}
+
+/**
+ * Hook to fetch growth leaderboard from the backend API
+ */
+export function useLeaderboardGrowthApi(limit = 20) {
+  const [entries, setEntries] = useState<LeaderboardGrowthItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchLeaderboard = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await getLeaderboardGrowth(limit)
+      
+      if (response.error) {
+        setError(response.error)
+        setEntries([])
+      } else if (response.data) {
+        setEntries(transformLeaderboardGrowth(response.data))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch leaderboard")
+      setEntries([])
+    } finally {
+      setIsLoading(false)
+    }
+  }, [limit])
+
+  useEffect(() => {
+    fetchLeaderboard()
+  }, [fetchLeaderboard])
+
+  return {
+    entries,
+    isLoading,
+    error,
+    refetch: fetchLeaderboard,
+  }
+}
+
+/**
+ * Hook to get user's rank in the leaderboard
+ */
+export function useUserLeaderboardRank() {
+  const { address, isConnected } = useAccount()
+  const { entries: pointsEntries, isLoading: isLoadingPoints } = useLeaderboardPointsApi(100)
+  const { entries: growthEntries, isLoading: isLoadingGrowth } = useLeaderboardGrowthApi(100)
+
+  const userPointsRank = useMemo(() => {
+    if (!address || !isConnected || pointsEntries.length === 0) return 0
+    const index = pointsEntries.findIndex(
+      (entry) => entry.address.toLowerCase() === address.toLowerCase()
+    )
+    return index >= 0 ? index + 1 : 0
+  }, [address, isConnected, pointsEntries])
+
+  const userGrowthRank = useMemo(() => {
+    if (!address || !isConnected || growthEntries.length === 0) return 0
+    const index = growthEntries.findIndex(
+      (entry) => entry.address.toLowerCase() === address.toLowerCase()
+    )
+    return index >= 0 ? index + 1 : 0
+  }, [address, isConnected, growthEntries])
+
+  const userPoints = useMemo(() => {
+    if (!address || !isConnected || pointsEntries.length === 0) return 0
+    const entry = pointsEntries.find(
+      (entry) => entry.address.toLowerCase() === address.toLowerCase()
+    )
+    return entry?.points ?? 0
+  }, [address, isConnected, pointsEntries])
+
+  const isEligiblePoints = userPointsRank > 0 && userPointsRank <= 20
+  const isEligibleGrowth = userGrowthRank > 0 && userGrowthRank <= 20
+  const isEligible = isEligiblePoints || isEligibleGrowth
+
+  return {
+    userPointsRank,
+    userGrowthRank,
+    userPoints,
+    isEligiblePoints,
+    isEligibleGrowth,
+    isEligible,
+    isLoading: isLoadingPoints || isLoadingGrowth,
   }
 }
 
